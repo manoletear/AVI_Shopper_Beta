@@ -1,0 +1,280 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// MODELS - AVI SHOPPER BACKEND
+// ============================================
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  password      String
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  shoppingLists ShoppingList[]
+  consents      UserConsent?
+  preferences   UserPreference?
+  orders        Order[]
+  budgets       Budget[]
+  alerts        Alert[]
+  nutritionData NutritionData[]
+
+  @@map("users")
+}
+
+model UserConsent {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  precios   Boolean  @default(true)
+  consumo   Boolean  @default(true)
+  salud     Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("user_consents")
+}
+
+model UserPreference {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  dietType  String?  // vegetarian, vegan, keto, etc.
+  allergies String?  // JSON array of allergens
+  favorites String?  // JSON array of favorite product IDs
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("user_preferences")
+}
+
+model ShoppingList {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name      String   @default("Mi lista")
+  items     ShoppingItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("shopping_lists")
+}
+
+model ShoppingItem {
+  id             String       @id @default(cuid())
+  shoppingListId String
+  shoppingList   ShoppingList @relation(fields: [shoppingListId], references: [id], onDelete: Cascade)
+
+  productId      String?
+  product        Product?     @relation(fields: [productId], references: [id])
+
+  name           String
+  quantity       Int          @default(1)
+  urgent         Boolean      @default(false)
+  checked        Boolean      @default(false)
+
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@map("shopping_items")
+}
+
+model Product {
+  id          String   @id @default(cuid())
+
+  name        String
+  description String?
+  category    String
+  brand       String?
+  barcode     String?  @unique
+  imageUrl    String?
+
+  // Nutrition info
+  calories    Float?
+  protein     Float?
+  carbs       Float?
+  fat         Float?
+  fiber       Float?
+  sugar       Float?
+  sodium      Float?
+
+  // Classification
+  isUltraProcessed Boolean @default(false)
+  nutritionScore   Int?    // 0-100
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  prices      ProductPrice[]
+  items       ShoppingItem[]
+
+  @@map("products")
+}
+
+model Store {
+  id          String   @id @default(cuid())
+
+  name        String
+  slug        String   @unique
+  address     String?
+  latitude    Float?
+  longitude   Float?
+  imageUrl    String?
+
+  // Delivery info
+  deliveryFee Int      // in CLP cents
+  minOrder    Int?     // in CLP cents
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  prices      ProductPrice[]
+  orders      Order[]
+
+  @@map("stores")
+}
+
+model ProductPrice {
+  id        String   @id @default(cuid())
+
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  storeId   String
+  store     Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  price     Int      // in CLP cents
+  stock     Int      @default(0)
+  inStock   Boolean  @default(true)
+
+  validFrom DateTime @default(now())
+  validTo   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([productId, storeId])
+  @@map("product_prices")
+}
+
+model Order {
+  id        String   @id @default(cuid())
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+
+  storeId   String
+  store     Store    @relation(fields: [storeId], references: [id])
+
+  status    String   // pending, confirmed, in_delivery, delivered, cancelled
+
+  items     String   // JSON array of items
+
+  subtotal  Int      // in CLP cents
+  delivery  Int      // in CLP cents
+  total     Int      // in CLP cents
+
+  // Delivery info
+  eta       DateTime?
+  deliveredAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("orders")
+}
+
+model Budget {
+  id        String   @id @default(cuid())
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  period    String   // weekly, monthly
+  amount    Int      // in CLP cents
+  spent     Int      @default(0)
+
+  startDate DateTime
+  endDate   DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("budgets")
+}
+
+model Alert {
+  id        String   @id @default(cuid())
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type      String   // budget, stock, savings, nutrition
+  title     String
+  message   String
+  level     String   // info, warn, good
+
+  read      Boolean  @default(false)
+  dismissed Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("alerts")
+}
+
+model NutritionData {
+  id        String   @id @default(cuid())
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  date      DateTime
+
+  // Daily stats
+  score          Int    // 0-100
+  ultraProcessed Float  // percentage
+  fruits         Int    // servings
+  protein        Float  // grams
+  calories       Float
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, date])
+  @@map("nutrition_data")
+}
+
+model ShortcutTemplate {
+  id        String   @id @default(cuid())
+
+  name      String   // "Asado", "Cumple", "Desayunos", etc.
+  slug      String   @unique
+  items     String   // JSON array of items
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("shortcut_templates")
+}
