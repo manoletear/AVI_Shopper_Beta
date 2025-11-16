@@ -7,7 +7,7 @@ import { NotFoundError, ForbiddenError } from '@/lib/errors';
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { listId: string; itemId: string } }
+  { params }: { params: { id: string; itemId: string } }
 ) {
   try {
     const userId = await requireAuth();
@@ -58,7 +58,7 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { listId: string; itemId: string } }
+  { params }: { params: { id: string; itemId: string } }
 ) {
   try {
     const userId = await requireAuth();
