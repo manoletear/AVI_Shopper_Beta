@@ -11,12 +11,15 @@
     "db:seed": "ts-node --compiler-options {\\\"module\\\":\\\"CommonJS\\\"} prisma/seed.ts",
     "db:studio": "prisma studio",
     "db:reset": "prisma migrate reset",
-    "sync:prices": "ts-node --compiler-options {\\\"module\\\":\\\"CommonJS\\\"} scripts/sync-prices.ts"
+    "sync:prices": "ts-node --compiler-options {\\\"module\\\":\\\"CommonJS\\\"} scripts/sync-prices.ts",
+    "agents": "ts-node --compiler-options {\\\"module\\\":\\\"CommonJS\\\"} agents/runner.ts",
+    "agents:pipeline": "ts-node --compiler-options {\\\"module\\\":\\\"CommonJS\\\"} agents/runner.ts --pipeline"
   },
   "prisma": {
     "seed": "ts-node --compiler-options {\\\"module\\\":\\\"CommonJS\\\"} prisma/seed.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.88.0",
     "@prisma/client": "^6.19.0",
     "@types/bcrypt": "^6.0.0",
     "@types/jsonwebtoken": "^9.0.10",
