@@ -119,3 +119,27 @@ export const updatePreferenceSchema = z.object({
   allergies: z.array(z.string()).optional(),
   favorites: z.array(z.string()).optional(),
 });
+
+// ============================================
+// STORE ACCOUNT VALIDATIONS
+// ============================================
+
+export const createStoreAccountSchema = z.object({
+  storeId: z.string().min(1, 'El ID de tienda es requerido'),
+  accountEmail: z.string().email('Email inválido'),
+  accountName: z.string().min(2, 'El nombre debe tener al menos 2 caracteres').optional(),
+  accountPhone: z.string().optional(),
+  loyaltyNumber: z.string().optional(),
+});
+
+export const updateStoreAccountSchema = z.object({
+  accountEmail: z.string().email('Email inválido').optional(),
+  accountName: z.string().min(2).optional(),
+  accountPhone: z.string().optional(),
+  loyaltyNumber: z.string().optional(),
+  status: z.enum(['active', 'pending', 'suspended']).optional(),
+});
+
+export const autoCreateStoreAccountSchema = z.object({
+  storeId: z.string().min(1, 'El ID de tienda es requerido'),
+});

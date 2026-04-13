@@ -31,6 +31,7 @@ model User {
   budgets       Budget[]
   alerts        Alert[]
   nutritionData NutritionData[]
+  storeAccounts StoreAccount[]
 
   @@map("users")
 }
@@ -149,8 +150,9 @@ model Store {
   updatedAt   DateTime @updatedAt
 
   // Relations
-  prices      ProductPrice[]
-  orders      Order[]
+  prices        ProductPrice[]
+  orders        Order[]
+  storeAccounts StoreAccount[]
 
   @@map("stores")
 }
@@ -277,4 +279,30 @@ model ShortcutTemplate {
   updatedAt DateTime @updatedAt
 
   @@map("shortcut_templates")
+}
+
+model StoreAccount {
+  id        String   @id @default(cuid())
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  storeId   String
+  store     Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  // Credenciales de la cuenta del supermercado
+  accountEmail    String   // Email de la cuenta en el supermercado
+  accountName     String?  // Nombre en la cuenta del supermercado
+  accountPhone    String?  // Teléfono asociado
+  loyaltyNumber   String?  // Número de tarjeta de fidelidad/puntos
+  isVerified      Boolean  @default(false)
+  isAutoCreated   Boolean  @default(false) // true si AVI creó la cuenta automáticamente
+
+  status    String   @default("active") // active, pending, suspended
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, storeId])
+  @@map("store_accounts")
 }

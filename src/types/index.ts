@@ -94,3 +94,24 @@ export interface AlertData {
   actionLabel?: string;
   actionUrl?: string;
 }
+
+// ============================================
+// STORE ACCOUNT TYPES
+// ============================================
+
+export type StoreAccountStatus = 'active' | 'pending' | 'suspended';
+
+export interface StoreAccountData {
+  id: string;
+  storeId: string;
+  storeName: string;
+  storeSlug: string;
+  accountEmail: string;
+  accountName: string | null;
+  accountPhone: string | null;
+  loyaltyNumber: string | null;
+  isVerified: boolean;
+  isAutoCreated: boolean;
+  status: StoreAccountStatus;
+  createdAt: string;
+}
