@@ -43,3 +43,6 @@ prisma/migrations/*_migration/
 
 # Prisma
 .prisma/
+
+# TypeScript
+tsconfig.tsbuildinfo
