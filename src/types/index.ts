@@ -101,39 +101,6 @@ export interface AlertData {
 
 export type StoreAccountStatus = 'active' | 'pending' | 'suspended';
 
-// ============================================
-// CHAT & ORCHESTRATOR TYPES
-// ============================================
-
-export type ChatRole = 'user' | 'avi' | 'system';
-export type AgentId = 'orchestrator' | 'shopping' | 'pricing' | 'nutrition' | 'budget' | 'account' | 'delivery';
-
-export interface ChatMessage {
-  id: string;
-  role: ChatRole;
-  content: string;
-  agentId?: AgentId;
-  timestamp: string;
-  metadata?: {
-    intent?: string;
-    agentsInvolved?: AgentId[];
-    products?: Array<{ name: string; price?: number }>;
-    savings?: number;
-    actionButtons?: Array<{ label: string; action: string }>;
-  };
-}
-
-export interface ChatSession {
-  id: string;
-  messages: ChatMessage[];
-  context: {
-    currentList?: string[];
-    budget?: number;
-    familySize?: number;
-    activeAgents: AgentId[];
-  };
-}
-
 export interface StoreAccountData {
   id: string;
   storeId: string;

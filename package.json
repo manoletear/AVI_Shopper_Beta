@@ -10,7 +10,8 @@
     "db:migrate": "prisma migrate dev",
     "db:seed": "ts-node --compiler-options {\\\"module\\\":\\\"CommonJS\\\"} prisma/seed.ts",
     "db:studio": "prisma studio",
-    "db:reset": "prisma migrate reset"
+    "db:reset": "prisma migrate reset",
+    "sync:prices": "ts-node --compiler-options {\\\"module\\\":\\\"CommonJS\\\"} scripts/sync-prices.ts"
   },
   "prisma": {
     "seed": "ts-node --compiler-options {\\\"module\\\":\\\"CommonJS\\\"} prisma/seed.ts"
