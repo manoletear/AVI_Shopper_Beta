@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useSession } from 'next-auth/react'
 import { ArrowLeft, ShoppingCart, Plus, Check, X, Edit3, Trash2, AlertCircle, Zap, Shield, CreditCard } from 'lucide-react'
 
 // Supermercados disponibles en Chile
@@ -25,21 +26,32 @@ interface StoreAccount {
 }
 
 export default function CuentasSupermercadoPage() {
-  // Estado simulado de cuentas vinculadas
-  const [accounts, setAccounts] = useState<StoreAccount[]>([
-    {
-      id: '1',
-      storeId: 'jumbo',
-      storeName: 'Jumbo',
-      accountEmail: 'ana.garcia@email.com',
-      accountName: 'Ana García',
-      accountPhone: '+56 9 1234 5678',
-      loyaltyNumber: 'JMB-987654',
-      isVerified: true,
-      isAutoCreated: false,
-      status: 'active',
-    },
-  ])
+  const { data: session } = useSession()
+  const [accounts, setAccounts] = useState<StoreAccount[]>([])
+
+  // Cargar cuentas reales desde la API
+  useEffect(() => {
+    if (!session) return
+    fetch('/api/users/store-accounts')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data) {
+          setAccounts(data.data.map((a: any) => ({
+            id: a.id,
+            storeId: a.storeSlug || a.storeId,
+            storeName: a.storeName,
+            accountEmail: a.accountEmail,
+            accountName: a.accountName,
+            accountPhone: a.accountPhone,
+            loyaltyNumber: a.loyaltyNumber,
+            isVerified: a.isVerified,
+            isAutoCreated: a.isAutoCreated,
+            status: a.status,
+          })))
+        }
+      })
+      .catch(() => {})
+  }, [session])
 
   const [showLinkForm, setShowLinkForm] = useState(false)
   const [selectedStore, setSelectedStore] = useState<string | null>(null)
