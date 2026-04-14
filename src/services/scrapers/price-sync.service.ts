@@ -42,7 +42,7 @@ async function findOrCreateProduct(item: ScrapedProduct): Promise<string> {
   // Buscar por nombre similar
   const existing = await prisma.product.findFirst({
     where: {
-      name: { contains: item.name.substring(0, 20) },
+      name: { contains: item.name.substring(0, 20), mode: 'insensitive' },
       brand: item.brand || undefined,
     },
   });
