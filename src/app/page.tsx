@@ -12,6 +12,11 @@ export default function HomePage() {
             <span className="text-xl font-semibold">Shopper</span>
             <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">Beta</span>
           </div>
+          <div className="flex items-center space-x-3">
+            <a href="/demo" className="text-sm text-gray-600 hover:text-blue-600">Demo</a>
+            <a href="/login" className="text-sm text-gray-600 hover:text-blue-600">Iniciar Sesión</a>
+            <a href="/registro" className="bg-blue-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-700">Registrarse</a>
+          </div>
         </div>
       </header>
 
@@ -28,13 +33,13 @@ export default function HomePage() {
               gestiona listas familiares y ahorra tiempo y dinero.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button className="bg-blue-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-blue-700 flex items-center justify-center">
+              <a href="/registro" className="bg-blue-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-blue-700 flex items-center justify-center">
                 Crear Lista Gratis
                 <ArrowRight className="ml-2 h-5 w-5" />
-              </button>
-              <button className="border border-gray-300 px-8 py-3 rounded-lg font-medium hover:bg-gray-50">
+              </a>
+              <a href="/demo" className="border border-gray-300 px-8 py-3 rounded-lg font-medium hover:bg-gray-50">
                 Ver Demo
-              </button>
+              </a>
             </div>
           </div>
         </div>
@@ -78,9 +83,9 @@ export default function HomePage() {
           <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
             Miles de familias ya ahorran tiempo y dinero con AVI Shopper
           </p>
-          <button className="bg-white text-blue-600 px-8 py-3 rounded-lg font-medium hover:bg-gray-100">
+          <a href="/registro" className="inline-block bg-white text-blue-600 px-8 py-3 rounded-lg font-medium hover:bg-gray-100">
             Comenzar Gratis Ahora
-          </button>
+          </a>
         </div>
       </section>
 
