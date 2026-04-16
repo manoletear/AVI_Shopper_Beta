@@ -3,6 +3,21 @@
 import { useState, useEffect } from 'react'
 import { ArrowLeft, Plus, ShoppingCart, Users, Check, DollarSign, X, Edit3, Clock, MapPin, Brain, Smartphone, AlertCircle, Star, Zap } from 'lucide-react'
 
+interface Product {
+  id: number;
+  name: string;
+  category: string;
+  brand: string;
+  basePrice: number;
+  nutrition: { calories: number; protein: number; carbs: number } | null;
+}
+
+interface FamilyListItem {
+  id: number;
+  quantity: number;
+  addedBy: string;
+}
+
 // Base de datos simulada realista con 80+ productos chilenos
 const PRODUCT_DATABASE = [
   // Lácteos
@@ -102,18 +117,18 @@ const FAMILY_MEMBERS = [
 export default function DemoPage() {
   const [currentStep, setCurrentStep] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
-  const [familyList, setFamilyList] = useState([
+  const [familyList, setFamilyList] = useState<FamilyListItem[]>([
     { id: 1, quantity: 2, addedBy: 'Ana' },
     { id: 6, quantity: 1, addedBy: 'Carlos' },
     { id: 9, quantity: 1, addedBy: 'Sofía' },
     { id: 18, quantity: 1, addedBy: 'Ana' }
   ])
   const [newItem, setNewItem] = useState('')
-  const [searchResults, setSearchResults] = useState([])
+  const [searchResults, setSearchResults] = useState<Product[]>([])
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [showSubstitutions, setShowSubstitutions] = useState(false)
-  const [acceptedSubstitutions, setAcceptedSubstitutions] = useState({})
-  const [priceMatrix, setPriceMatrix] = useState({})
+  const [acceptedSubstitutions, setAcceptedSubstitutions] = useState<Record<string, boolean>>({})
+  const [priceMatrix, setPriceMatrix] = useState<Record<number, Record<string, number>>>({})
   const [selectedStores, setSelectedStores] = useState(['jumbo', 'lider'])
   const [showWhatsApp, setShowWhatsApp] = useState(false)
   const [whatsappMessages, setWhatsappMessages] = useState([
@@ -123,7 +138,7 @@ export default function DemoPage() {
   // Simular precios dinámicos en tiempo real
   useEffect(() => {
     const generatePriceMatrix = () => {
-      const matrix = {}
+      const matrix: Record<number, Record<string, number>> = {}
       PRODUCT_DATABASE.forEach(product => {
         matrix[product.id] = {}
         STORES.forEach(store => {
@@ -144,7 +159,7 @@ export default function DemoPage() {
     return () => clearInterval(interval)
   }, [])
 
-  const formatPrice = (price) => {
+  const formatPrice = (price: number) => {
     return new Intl.NumberFormat('es-CL', {
       style: 'currency',
       currency: 'CLP',
@@ -152,7 +167,7 @@ export default function DemoPage() {
     }).format(price)
   }
 
-  const searchProducts = (query) => {
+  const searchProducts = (query: string) => {
     if (!query.trim()) {
       setSearchResults([])
       return
@@ -167,7 +182,7 @@ export default function DemoPage() {
     setSearchResults(results)
   }
 
-  const addToList = (productId, addedBy = 'Usuario') => {
+  const addToList = (productId: number, addedBy = 'Usuario') => {
     const existingItem = familyList.find(item => item.id === productId)
     if (existingItem) {
       setFamilyList(familyList.map(item =>
@@ -182,11 +197,11 @@ export default function DemoPage() {
     setSearchResults([])
   }
 
-  const removeFromList = (productId) => {
+  const removeFromList = (productId: number) => {
     setFamilyList(familyList.filter(item => item.id !== productId))
   }
 
-  const updateQuantity = (productId, newQuantity) => {
+  const updateQuantity = (productId: number, newQuantity: number) => {
     if (newQuantity <= 0) {
       removeFromList(productId)
       return
@@ -198,14 +213,14 @@ export default function DemoPage() {
     ))
   }
 
-  const getProductById = (id) => PRODUCT_DATABASE.find(p => p.id === id)
+  const getProductById = (id: number) => PRODUCT_DATABASE.find(p => p.id === id)
 
-  const getBestPrice = (productId) => {
+  const getBestPrice = (productId: number) => {
     if (!priceMatrix[productId]) return 0
-    return Math.min(...Object.values(priceMatrix[productId]))
+    return Math.min(...Object.values(priceMatrix[productId]) as number[])
   }
 
-  const getBestStore = (productId) => {
+  const getBestStore = (productId: number) => {
     if (!priceMatrix[productId]) return ''
     const prices = priceMatrix[productId]
     return Object.keys(prices).reduce((best, store) =>
@@ -218,7 +233,7 @@ export default function DemoPage() {
       const product = getProductById(item.id)
       if (!product || !priceMatrix[item.id]) return total
       
-      const maxPrice = Math.max(...Object.values(priceMatrix[item.id]))
+      const maxPrice = Math.max(...Object.values(priceMatrix[item.id]) as number[])
       const minPrice = getBestPrice(item.id)
       return total + ((maxPrice - minPrice) * item.quantity)
     }, 0)
@@ -311,10 +326,11 @@ export default function DemoPage() {
               placeholder="Escribe tu mensaje..."
               className="w-full p-2 border rounded text-sm"
               onKeyPress={(e) => {
-                if (e.key === 'Enter' && e.target.value.trim()) {
+                const target = e.target as HTMLInputElement
+                if (e.key === 'Enter' && target.value.trim()) {
                   setWhatsappMessages([...whatsappMessages, {
                     sender: 'user',
-                    message: e.target.value,
+                    message: target.value,
                     time: new Date().toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })
                   }])
                   setTimeout(() => {
@@ -324,7 +340,7 @@ export default function DemoPage() {
                       time: new Date().toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })
                     }])
                   }, 1000)
-                  e.target.value = ''
+                  target.value = ''
                 }
               }}
             />

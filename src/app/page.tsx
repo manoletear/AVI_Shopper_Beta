@@ -1,4 +1,5 @@
-﻿import { ArrowRight, ShoppingCart, Users, DollarSign, Brain } from 'lucide-react'
+﻿import Link from 'next/link'
+import { ArrowRight, ShoppingCart, Users, DollarSign, Brain } from 'lucide-react'
 
 export default function HomePage() {
   return (
@@ -12,6 +13,10 @@ export default function HomePage() {
             <span className="text-xl font-semibold">Shopper</span>
             <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">Beta</span>
           </div>
+          <nav className="flex items-center space-x-6">
+            <Link href="/demo/" className="text-sm text-gray-600 hover:text-gray-900">Demo</Link>
+            <Link href="/community/proyectos-activos/" className="text-sm text-gray-600 hover:text-gray-900">Comunidad</Link>
+          </nav>
         </div>
       </header>
 
