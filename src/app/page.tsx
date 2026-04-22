@@ -1,4 +1,5 @@
-﻿import { ArrowRight, ShoppingCart, Users, DollarSign, Brain } from 'lucide-react'
+﻿import Link from 'next/link'
+import { ArrowRight, ShoppingCart, Users, DollarSign, Brain, Car } from 'lucide-react'
 
 export default function HomePage() {
   return (
@@ -32,9 +33,13 @@ export default function HomePage() {
                 Crear Lista Gratis
                 <ArrowRight className="ml-2 h-5 w-5" />
               </button>
-              <button className="border border-gray-300 px-8 py-3 rounded-lg font-medium hover:bg-gray-50">
+              <Link href="/demo/" className="border border-gray-300 px-8 py-3 rounded-lg font-medium hover:bg-gray-50 flex items-center justify-center">
                 Ver Demo
-              </button>
+              </Link>
+              <Link href="/chileautos/" className="bg-green-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-green-700 flex items-center justify-center">
+                <Car className="mr-2 h-5 w-5" />
+                Buscar autos en ChileAutos.cl
+              </Link>
             </div>
           </div>
         </div>
@@ -65,6 +70,37 @@ export default function HomePage() {
               <h3 className="text-xl font-semibold mb-2">División Automática</h3>
               <p className="text-gray-600">Separa tu carrito por tiendas para maximizar ahorros</p>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ChileAutos Integration */}
+      <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="bg-gradient-to-r from-green-600 to-emerald-600 rounded-2xl p-8 md:p-12 text-white flex flex-col md:flex-row items-center gap-8">
+            <div className="flex-1">
+              <div className="inline-flex items-center gap-2 bg-white/20 text-sm px-3 py-1 rounded-full mb-4">
+                <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
+                Nuevo — Conectado a ChileAutos.cl
+              </div>
+              <h2 className="text-3xl md:text-4xl font-bold mb-3">
+                Ahora también compras autos
+              </h2>
+              <p className="text-green-50 mb-6 text-lg">
+                AVI Shopper se integra con ChileAutos.cl para ayudarte a
+                comparar precios, años y kilometraje de autos usados y nuevos
+                en todo Chile.
+              </p>
+              <Link
+                href="/chileautos/"
+                className="inline-flex items-center gap-2 bg-white text-green-700 px-6 py-3 rounded-lg font-semibold hover:bg-green-50 transition-colors"
+              >
+                <Car className="h-5 w-5" />
+                Explorar autos
+                <ArrowRight className="h-5 w-5" />
+              </Link>
+            </div>
+            <div className="text-7xl md:text-9xl">🚗</div>
           </div>
         </div>
       </section>
