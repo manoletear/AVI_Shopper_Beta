@@ -5,6 +5,41 @@
 
 ---
 
+## IMPORTANTE: Mundial 2026 y Partidos en Rio
+
+El Mundial 2026 se juega en **USA, Canada y Mexico** (11 junio - 19 julio). **NO hay partidos del Mundial en Rio de Janeiro.**
+
+### Que pasa con los partidos locales?
+
+- **El Brasileirao (liga brasilena) PARA del 1 de junio al 22 de julio** (~50 dias de pausa)
+- La ultima fecha antes de la pausa es el **31 de mayo** (rodada 18)
+- El campeonato vuelve el **22 de julio** (rodada 19)
+- **NO habra partidos de futbol en el Maracana durante junio y gran parte de julio**
+
+### Pero hay algo MEJOR: Village Superbet en el Jockey Club
+
+Durante todo el Mundial (3 junio - 19 julio) funciona el **Village Superbet** en el **Jockey Club Brasileiro** de Rio:
+
+- **Pantallas gigantes** con TODOS los partidos del Mundial (incluidos los de Brasil)
+- Conciertos en vivo: Anitta, Ludmilla, Marisa Monte, Belo, BaianaSystem, Ferrugem, Djonga y mas
+- Activaciones inmersivas de marcas
+- Gastronomia, juegos y entretenimiento
+- Ambiente festivo tipo festival
+- Web: [villagefestival.com.br](https://www.villagefestival.com.br/)
+- Instagram: [@village.rio](https://www.instagram.com/village.rio/)
+
+**Tambien en otras ciudades:** Brahma Fan Festivals en Sao Paulo, Salvador, Belo Horizonte, Porto Alegre, Goiania y Recife (entrada gratuita).
+
+### Cuando SI hay partidos en vivo en Rio?
+
+| Periodo | Hay partidos? | Que hacer? |
+|---------|---------------|------------|
+| **Antes del 31 mayo** | SI - Brasileirao rodada 18 | Ver partido en Maracana |
+| **1 junio - 19 julio** | NO - Pausa por el Mundial | Village Superbet + Tour Maracana |
+| **Desde 22 julio** | SI - Brasileirao vuelve (rodada 19) | Ver partido en Maracana |
+
+---
+
 ## 1. Tour del Estadio Maracana
 
 El clasico imprescindible. A los 9 y 12 anos ya entienden la historia y disfrutan cada rincon.
@@ -139,11 +174,21 @@ Alternativa menos concurrida al Maracana. Estadio del Botafogo, sede olimpica 20
 
 ## Plan Recomendado para 3 Dias de Futbol en Rio (ninos 9 y 12)
 
+### Opcion A: Si viajan ANTES del 31 mayo o DESPUES del 22 julio (HAY partidos)
+
 | Dia | Manana | Tarde |
 |-----|--------|-------|
 | **Dia 1** | Tour Maracana "Unforgettable" (2 horas) | Futbol playa en Copacabana |
 | **Dia 2** | Playa / otras actividades | Partido en VIVO en Maracana con guia (el de 9 GRATIS) |
 | **Dia 3** | Futbol callejero en favela Tavares Bastos | Partido gratis en Lagoa (si es jueves) |
+
+### Opcion B: Si viajan entre 1 junio y 19 julio (pausa por Mundial, NO hay partidos locales)
+
+| Dia | Manana | Tarde/Noche |
+|-----|--------|-------------|
+| **Dia 1** | Tour Maracana "Unforgettable" (2 horas) | Futbol playa en Copacabana |
+| **Dia 2** | Futbol callejero en favela Tavares Bastos | **Village Superbet** - ver partido del Mundial en pantalla gigante + conciertos |
+| **Dia 3** | Partido gratis en Lagoa (si es jueves) | **Village Superbet** - partido de Brasil en pantalla gigante |
 
 ---
 
@@ -189,3 +234,8 @@ Alternativa menos concurrida al Maracana. Estadio del Botafogo, sede olimpica 20
 - [ESPN - Calendario Carioca 2026](https://www.espn.com/soccer/schedule/_/league/bra.camp.carioca)
 - [Rio Cultural Secrets - Tour Maracana](https://www.rioculturalsecrets.com/tour-maracana-rio-de-janeiro/)
 - [Maracana Stadium Tours](https://www.rio-de-janeiro.com/maracana-stadium-tours/)
+- [Village Superbet - Fan Fest Rio (Jockey Club)](https://www.villagefestival.com.br/)
+- [Village Superbet - Atracoes e Datas](https://www.voudegrade.com.br/village-rio-2026-atracoes-jockey-club-copa/)
+- [Pausa del Brasileirao por el Mundial](https://www.365scores.com/pt-br/news/magazine/quando-brasileirao-para-copa-do-mundo-2026/)
+- [CNN Brasil - Paralisacoes do Brasileirao 2026](https://www.cnnbrasil.com.br/esportes/brasileirao/tem-jogos-durante-a-copa-do-mundo-veja-as-paralisacoes-do-brasileirao-2026/)
+- [FIFA Fan Festival 2026](https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026/fifa-fan-festival)
