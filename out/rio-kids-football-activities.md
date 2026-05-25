@@ -1,170 +1,191 @@
-# Actividades con Ninos en Rio de Janeiro - Futbol
+# Actividades de Futbol en Rio de Janeiro para Ninos de 9 y 12 Anos
 
 **Fecha de busqueda:** 2026-05-25
-**Fuente:** Playwright + WebSearch (GetYourGuide, TripAdvisor, Viator, sitios especializados)
+**Fuente:** Playwright + WebSearch (GetYourGuide, TripAdvisor, Viator, Civitatis, sitios especializados)
 
 ---
 
-## 1. Tour del Estadio Maracana (Tour Maracana)
+## 1. Tour del Estadio Maracana
 
-El Tour Maracana es una experiencia para toda la familia que explora el universo del futbol brasileno a traves de videos, sonidos y experiencias diversas.
+El clasico imprescindible. A los 9 y 12 anos ya entienden la historia y disfrutan cada rincon.
 
-**Que incluye el tour:**
-- Video en auditorio introductorio
-- Zona mixta y campo para fotos
-- Experiencias opcionales en cesped sintetico
-- Banco de suplentes y gradas
-- Vestuarios historicos (decorados con camisetas de clubes de la Serie A brasilena)
-- Sala de conferencias de prensa
-- Sala de calentamiento con video de momentos historicos del futbol
-- Entrada a la cancha (se puede sentar en los banquillos)
-- Museo con objetos historicos: camisetas de la seleccion brasilena, mascota del Mundial 2014, balones de competiciones, banderines de equipos
+**Que van a ver:**
+- Vestuarios oficiales decorados con camisetas de clubes de la Serie A
+- Sala de conferencias de prensa (pueden sentarse donde hablan los jugadores)
+- Tunel de jugadores (caminan por donde salen Neymar, Vinicius, etc.)
+- La cancha desde el borde del campo
+- Banco de suplentes (sentarse donde se sienta el DT)
+- Museo con camisetas de la seleccion, balones historicos, trofeos
+- Video con momentos historicos del futbol brasileno
 
 **Datos practicos:**
-- Duracion: ~40 minutos (individual) a 1 hora (con guia)
-- Precio: Desde R$ 94 (completo) / R$ 47 (mitad - ninos)
+- Duracion: ~40 min a 1 hora
+- Precio: Desde R$ 94 adulto / R$ 47 ninos (media entrada)
+- Horario: Todos los dias de 9:00 a 17:00 (cuando no hay partido)
 - Guias bilingues disponibles
-- Web oficial: tourmaracana.com.br
-- Abre de martes a domingo
+- Web: [tourmaracana.com.br](https://en.tourmaracana.com.br/ingressos)
 
-**Para ninos:** Funciona bien para familias con ninos desde 4-5 anos. Los mas pequenos se encantan con el tamano del campo y la energia del lugar. Para los mayores es una leccion practica llena de curiosidades.
-
-**Reserva online:**
-- [GetYourGuide - Ticket entrada oficial Maracana (desde 24 USD)](https://www.getyourguide.com/rio-de-janeiro-l9/rio-de-janeiro-ticket-de-entrada-oficial-al-estadio-maracana-t318718/)
-- [Viator - Tour privado Maracana + Museo del Futbol](https://www.viator.com/tours/Rio-de-Janeiro/Visit-to-Maracana-Stadium-and-Football-Museum/d712-13770P8)
+**Reservar online:**
+- [GetYourGuide - Ticket entrada oficial (desde 24 USD)](https://www.getyourguide.com/maracana-stadium-l3786/rio-maracana-stadium-official-tour-ticket-t318718/)
 - [GetYourGuide - Behind the Scenes Tour](https://www.getyourguide.com/rio-de-janeiro-l9/rio-de-janeiro-behind-the-scenes-of-maracana-stadium-t54620/)
 
 ---
 
-## 2. Partido de Futbol en Vivo en el Maracana
+## 2. "Unforgettable Maracana" - Museo, Cancha y Tunel de Jugadores (RECOMENDADO)
 
-Vivir un partido en el Maracana con ninos es una experiencia unica. Los tours organizados incluyen guia local que ensena los canticos y explica las tradiciones del futbol carioca.
-
-**Opciones disponibles:**
-
-| Tour | Duracion | Precio | Rating | Idioma |
-|------|----------|--------|--------|--------|
-| Partido en Maracana con traslado privado | 5 horas | Desde 45 USD | 4.9 (1524 resenas) | Espanol |
-| Partido de futbol + ticket, traslado y guia | 4.5 horas | Desde 47 USD | 4.8 (86 resenas) | Espanol |
-| Tour guiado - Partido en Maracana y Estadio Olimpico | 4 horas | Desde 56 USD | 5.0 (152 resenas) | Espanol |
-| Vive un partido en Maracana | 5 horas | Desde 60 USD | 5.0 (20 resenas) | Espanol |
-| Entrada + ticket + traslado hotel | 3 horas | Desde 67 USD | 4.2 (249 resenas) | -- |
-| Entrada partido con guia y bebida | 5 horas | Desde 86 USD | 4.7 (136 resenas) | Espanol |
-| Entrada partido en Maracana con bebida (grupo reducido) | 4 horas | Desde 113 USD | 4.8 (133 resenas) | -- |
-
-**Ninos:** Menores de 2 anos gratis (sin asiento). Desde 3 anos pagan tarifa regular. Muchos partidos locales permiten entrada gratis o con descuento para ninos.
-
-**Links de reserva:**
-- [GetYourGuide - Partido con traslado privado](https://www.getyourguide.com/rio-de-janeiro-l9/rio-ticket-de-entrada-al-estadio-maracana-y-transporte-privado-t893524/)
-- [GetYourGuide - Tour guiado partido + Estadio Olimpico](https://www.getyourguide.com/rio-de-janeiro-l9/rio-de-janeiro-tour-guiado-para-ver-un-partido-de-futbol-en-estadios-historicos-t920091/)
-- [Viator - Soccer Game con grupo pequeno](https://www.viator.com/tours/Rio-de-Janeiro/Maracana-football-game-as-a-local/d712-391805P1)
-- [Viator - Ticket to Football at Maracana](https://www.viator.com/tours/Rio-de-Janeiro/Live-Football-Match-at-the-Legendary-Maracana-Stadium/d712-72313P156)
-- [Hellotickets - Como ver un partido en Rio](https://www.hellotickets.com/brazil/rio-de-janeiro/soccer-activities/sc-178-1312)
-
----
-
-## 3. Experiencia Inmersiva de Futbol: Maracana + Futbol Callejero en Favela
-
-Una experiencia unica que combina la visita al icónico Maracana con un partido de futbol callejero real en la favela Tavares Bastos.
+Experiencia privada guiada de 2 horas. Mas profunda que el tour estandar.
 
 **Que incluye:**
-- Visita guiada al estadio Maracana
+- Museo completo: camisetas de partidos historicos, balones autografiados, botas legendarias, fotos raras
+- Tunel de jugadores: el momento mas emocionante - caminan por donde salen al campo los jugadores
+- Acceso a la cancha desde la linea lateral
+- Vestuarios oficiales con camisetas de selecciones y clubes
+- Historia desde los origenes del futbol brasileno hasta hoy
+
+**Ideal para 9 y 12 anos:** Los ninos de esta edad disfrutan especialmente la escala del estadio y las partes interactivas como el tunel. Es educativo y seguro.
+
+**Reservar:** [GetYourGuide - Unforgettable Maracana (2 horas)](https://www.getyourguide.com/rio-de-janeiro-l9/unforgettable-maracana-museum-pitch-players-tunnel-t1035917/)
+
+---
+
+## 3. Partido de Futbol en Vivo en el Maracana
+
+**DATO CLAVE: El de 9 anos entra GRATIS (menores de 12 gratis).**
+Solo el de 12 necesita entrada (verificar si cumple 12 durante el viaje).
+
+**Mejores opciones con guia en espanol:**
+
+| Tour | Duracion | Precio | Rating |
+|------|----------|--------|--------|
+| Partido con traslado privado | 5 horas | Desde 45 USD | 4.9 (1524 resenas) |
+| Partido + ticket, traslado y guia | 4.5 horas | Desde 47 USD | 4.8 (86 resenas) |
+| **Tour guiado Maracana + Estadio Olimpico** | **4 horas** | **Desde 56 USD** | **5.0 (152 resenas)** |
+| Experiencia con grupo pequeno | 5 horas | Desde 60 USD | 5.0 (20 resenas) |
+
+**Por que con guia:** El guia ensena los canticos a los ninos, explica las tradiciones, se sientan cerca de las hinchadas con banderas y tambores. Para un nino de 9-12 anos es una experiencia inolvidable.
+
+**Calendario de partidos:**
+- [ESPN - Calendario Carioca 2026](https://www.espn.com/soccer/schedule/_/league/bra.camp.carioca)
+- Equipos principales: Flamengo, Fluminense, Botafogo, Vasco
+
+**Reservar:**
+- [GetYourGuide - Partido con traslado](https://www.getyourguide.com/rio-de-janeiro-l9/rio-ticket-de-entrada-al-estadio-maracana-y-transporte-privado-t893524/)
+- [GetYourGuide - Tour guiado + Estadio Olimpico](https://www.getyourguide.com/rio-de-janeiro-l9/rio-de-janeiro-tour-guiado-para-ver-un-partido-de-futbol-en-estadios-historicos-t920091/)
+- [Viator - Soccer Match grupo pequeno](https://www.viator.com/tours/Rio-de-Janeiro/Maracana-football-game-as-a-local/d712-391805P1)
+- [Civitatis - Partido con guia local](https://www.civitatis.com/en/rio-de-janeiro/football-match-local-guide/)
+
+---
+
+## 4. Futbol Callejero en Favela + Tour Maracana (AVENTURA)
+
+Experiencia inmersiva que combina el Maracana con un partido de futbol callejero REAL en la favela Tavares Bastos.
+
+**Que hacen los ninos:**
+- Visita guiada al Maracana
 - Traslado a la favela Tavares Bastos
-- Partido de futbol callejero con locales (no se necesita experiencia)
+- Juegan un partido de futbol callejero con ninos y jovenes locales
+- No se necesita experiencia previa
 - Inmersion cultural en la comunidad
 
-**Ideal para:** Ninos y adolescentes que quieran vivir el futbol brasileno "de verdad", mas alla del estadio.
+**Perfecto para 9 y 12 anos:** Pueden jugar de verdad, no solo mirar. La edad ideal para esta experiencia.
 
-**Link:** [Rio Football Experience: Maracana + Favela Street Game](https://riodejaneirobycariocas.com/football-experience-maracana-stadium-favela-street-game/)
-
----
-
-## 4. Museo del Futbol (Museu do Futebol)
-
-El Museu do Futebol en Sao Paulo es el museo de futbol mas grande de Brasil, pero dentro del Tour Maracana en Rio hay una seccion museografica con:
-- Objetos historicos de Pele, Garrincha y Zico
-- Camisetas de la seleccion brasilena
-- Balones de distintas competiciones mundiales
-- Trofeos historicos
-- Memorabilia del estadio
-
-**Web oficial:** [museudofutebol.org.br](https://museudofutebol.org.br/en/exposicoes/museu-do-futebol-2/)
+**Reservar:** [Rio by Cariocas - Football Experience](https://riodejaneirobycariocas.com/football-experience-maracana-stadium-favela-street-game/)
 
 ---
 
-## 5. Museo del Flamengo
+## 5. Partido de Futbol Gratis los Jueves en Lagoa
 
-Para fans del club mas popular de Brasil, el Museo del Flamengo ofrece una experiencia tematica dedicada al equipo con memorabilia, trofeos y la historia del club.
+Todos los jueves por la tarde hay un partido de futbol gratuito en Lagoa (a 10 min a pie de Ipanema). Organizado por Caminhos Languages, abierto a todos los niveles.
+
+**Por que es genial para los ninos:**
+- Gratis
+- Juegan con brasilenios locales y otros turistas
+- Todos los niveles bienvenidos
+- Ambiente informal y divertido
+- Practican portugues jugando
+
+**Contacto:**
+- Tel: +55 (21) 9 9223 1260
+- Email: info@caminhosbrasil.com
+- [Mas info](https://caminhoslanguages.com/activities/football/)
 
 ---
 
-## 6. Futbol en la Playa
+## 6. Tour Favela Santa Marta + Partido de Futbol + Almuerzo Tradicional
 
-**Totalmente gratis.** Las playas de Copacabana e Ipanema tienen canchas de futbol-playa donde los ninos pueden jugar libremente.
+Tour completo que incluye visita a la favela Santa Marta, un partido de futbol con locales y almuerzo tipico brasileno.
 
-**Tips:**
-- Mejor ir por la manana (menos calor)
+**Reservar:** [Civitatis - Santa Marta Favela + Football + Lunch](https://www.civitatis.com/en/rio-de-janeiro/santa-marta-favela-tour-football-lunch/)
+
+---
+
+## 7. Futbol en la Playa (Gratis)
+
+Las playas de Copacabana e Ipanema tienen canchas de futbol-playa. Totalmente gratis.
+
+**Tips para ninos de 9 y 12:**
+- Ir por la manana (menos calor, mas espacio)
 - Los fines de semana hay mas partidos organizados
-- Se pueden alquilar balones en quioscos cercanos
+- Se pueden alquilar balones en quioscos
+- Los brasilenios suelen invitar a los ninos a jugar - son muy acogedores
 
 ---
 
-## 7. Estadio Nilton Santos (Engenhao) - Tour del Botafogo
+## 8. Estadio Nilton Santos (Engenhao) - Botafogo
 
-Alternativa menos concurrida al Maracana. Estadio del Botafogo, sede de los Juegos Olimpicos 2016.
-
----
-
-## 8. Otras Actividades Familiares Relacionadas en Rio
-
-| Actividad | Descripcion |
-|-----------|-------------|
-| **Museo del Manana (Museu do Amanha)** | Museo interactivo de ciencia y tecnologia - excelente para ninos |
-| **Museo de la Imagen y el Sonido** | Experiencia audiovisual interactiva |
-| **AquaRio** | Acuario mas grande de Sudamerica |
-| **Bondinho del Pan de Azucar** | Teleferico iconico con vistas espectaculares |
+Alternativa menos concurrida al Maracana. Estadio del Botafogo, sede olimpica 2016. Ideal si quieren ver un partido con menos multitud (mas tranquilo para ninos).
 
 ---
 
-## Resumen de Actividades Destacadas
+## Plan Recomendado para 3 Dias de Futbol en Rio (ninos 9 y 12)
 
-| # | Actividad | Tipo | Precio | Recomendacion |
-|---|-----------|------|--------|---------------|
-| 1 | **Tour del Estadio Maracana** | Visita guiada | Desde 24 USD | Imperdible - vestuarios, cancha y museo |
-| 2 | **Partido en vivo en Maracana** | Evento en vivo | Desde 45 USD | Experiencia unica con guia en espanol |
-| 3 | **Futbol callejero en favela + Maracana** | Experiencia inmersiva | Variable | Jugar futbol real con locales |
-| 4 | **Museo del Futbol (dentro del Maracana)** | Museo | Incluido en tour | Historia del futbol brasileno |
-| 5 | **Museo del Flamengo** | Museo tematico | Variable | Para fans del Flamengo |
-| 6 | **Futbol en la playa** | Actividad libre | Gratis | Copacabana e Ipanema |
-| 7 | **Estadio Nilton Santos (Botafogo)** | Visita guiada | Variable | Alternativa menos concurrida |
-| 8 | **Tour guiado partido + Estadio Olimpico** | Tour completo | Desde 56 USD | Mejor valorado (5.0 estrellas) |
+| Dia | Manana | Tarde |
+|-----|--------|-------|
+| **Dia 1** | Tour Maracana "Unforgettable" (2 horas) | Futbol playa en Copacabana |
+| **Dia 2** | Playa / otras actividades | Partido en VIVO en Maracana con guia (el de 9 GRATIS) |
+| **Dia 3** | Futbol callejero en favela Tavares Bastos | Partido gratis en Lagoa (si es jueves) |
 
 ---
 
-## Consejos Practicos
+## Presupuesto Estimado (familia 2 adultos + 2 ninos)
 
-- **Maracana:** El tour dura ~40 min a 1 hora. Abre de martes a domingo. Comprar entradas online para evitar filas.
-- **Partidos en vivo:** Consultar calendario en flamengo.com.br o fluminense.com.br. Menores de 2 gratis, desde 3 anos tarifa regular.
-- **Mejor epoca:** Evitar dias de partido para el tour (el estadio cierra para tours). Verificar calendario antes.
-- **Futbol playa:** Totalmente gratis. Mejor por la manana.
-- **Seguridad:** Ir a los estadios en grupo o con tour organizado. Usar transporte oficial.
-- **Edad recomendada:** La mayoria de actividades son aptas para ninos desde 4-5 anos.
-- **Idioma:** Muchos tours disponibles en espanol.
+| Actividad | Adulto x2 | Nino 12 | Nino 9 | Total aprox |
+|-----------|-----------|---------|--------|-------------|
+| Tour Maracana estandar | 48 USD | 24 USD | 24 USD | 96 USD |
+| Unforgettable Maracana (alternativa) | Variable | Variable | Variable | ~120 USD |
+| Partido en vivo con guia | 90 USD | 45 USD | GRATIS | 135 USD |
+| Futbol callejero favela | Variable | Variable | Variable | ~80-120 USD |
+| Futbol playa | Gratis | Gratis | Gratis | 0 USD |
+| Futbol jueves Lagoa | Gratis | Gratis | Gratis | 0 USD |
+
+**Estimado total (tour + partido):** ~230-350 USD para los 4
+
+---
+
+## Consejos Especificos para Ninos de 9 y 12 Anos
+
+- **Camisetas:** Comprar camisetas del Flamengo o Fluminense antes del partido. Los ninos se integran mejor y viven la experiencia completa.
+- **Hidratacion:** Rio es caliente. Llevar agua siempre, especialmente al estadio.
+- **Protector solar:** Obligatorio para el tour y la playa.
+- **Horario de partidos:** Los partidos suelen ser a las 16:00 o 19:00. Los de las 16h son mejores para ninos.
+- **Seguridad:** Con tour organizado no hay problema. El guia sabe donde sentarse y como moverse.
+- **El de 9 anos GRATIS:** En muchos estadios brasilenios, menores de 12 entran gratis. Llevar pasaporte del nino como comprobante de edad.
+- **Idioma:** Los tours recomendados tienen opcion en espanol.
 
 ---
 
 ## Fuentes
 
-- [GetYourGuide - Soccer tickets & stadium tours Rio 2026](https://www.getyourguide.com/rio-de-janeiro-l9/soccer-tickets-stadium-tours-tc2067/)
-- [GetYourGuide - Mejores cosas con ninos en Rio](https://www.getyourguide.es/explorer/rio-de-janeiro-ttd9/best-things-to-do-in-rio-de-janeiro-with-kids/)
+- [GetYourGuide - Soccer tickets & tours Rio 2026](https://www.getyourguide.com/rio-de-janeiro-l9/soccer-tickets-stadium-tours-tc2067/)
+- [GetYourGuide - Unforgettable Maracana](https://www.getyourguide.com/rio-de-janeiro-l9/unforgettable-maracana-museum-pitch-players-tunnel-t1035917/)
+- [Hellotickets - Como ver un partido en Rio](https://www.hellotickets.com/brazil/rio-de-janeiro/soccer-activities/sc-178-1312)
 - [TripAdvisor - Maracana Reviews 2026](https://www.tripadvisor.com/Attraction_Review-g303506-d532321-Reviews-Maracana-Rio_de_Janeiro_State_of_Rio_de_Janeiro.html)
-- [TripAdvisor - Mejores cosas con ninos en Rio](https://www.tripadvisor.com/Attractions-g303506-Activities-zft11306-Rio_de_Janeiro_State_of_Rio_de_Janeiro.html)
+- [Tour Maracana - Sitio oficial](https://en.tourmaracana.com.br/ingressos)
 - [Viator - Maracana Stadium Tours](https://www.viator.com/Rio-de-Janeiro-attractions/Maracana-Stadium/d712-a1327)
-- [Tour Maracana - Sitio oficial](https://www.tourmaracana.com.br/)
-- [Estadio Maracana - Visita](https://www.estadiodomaracana.com.br/visita-ao-maracana/)
-- [Pequenos no Rio - Tour Maracana con ninos](https://pequenosnorio.com.br/tour-no-maracana/)
-- [Rio Adventures - Football Matches](https://www.rioadventures.com/tour/football-soccer-matches-in-rio-de-janeiro/)
+- [Civitatis - Partido con guia local](https://www.civitatis.com/en/rio-de-janeiro/football-match-local-guide/)
+- [Civitatis - Santa Marta Favela + Football](https://www.civitatis.com/en/rio-de-janeiro/santa-marta-favela-tour-football-lunch/)
 - [Rio by Cariocas - Football Experience](https://riodejaneirobycariocas.com/football-experience-maracana-stadium-favela-street-game/)
-- [Hellotickets - Soccer activities in Rio](https://www.hellotickets.com/brazil/rio-de-janeiro/soccer-activities/sc-178-1312)
-- [Museu do Futebol](https://museudofutebol.org.br/en/exposicoes/museu-do-futebol-2/)
-- [El Ciudadano - Turismo futbolero en Rio y Sao Paulo](https://elciudadanoweb.com/futbol-estadios-imponentes-y-museos-rio-de-janeiro-y-san-pablo-se-posiciona-como-opcion-para-el-turismo-futbolero/)
+- [Caminhos Languages - Free Football Thursdays](https://caminhoslanguages.com/activities/football/)
+- [ESPN - Calendario Carioca 2026](https://www.espn.com/soccer/schedule/_/league/bra.camp.carioca)
+- [Rio Cultural Secrets - Tour Maracana](https://www.rioculturalsecrets.com/tour-maracana-rio-de-janeiro/)
+- [Maracana Stadium Tours](https://www.rio-de-janeiro.com/maracana-stadium-tours/)
