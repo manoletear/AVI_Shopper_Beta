@@ -10,6 +10,10 @@ FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+ENV DATABASE_URL=file:./dev.db
+ENV NEXTAUTH_SECRET=build-secret
+ENV NEXTAUTH_URL=http://localhost:3000
+ENV SKIP_ENV_VALIDATION=1
 RUN npx prisma generate
 RUN npm run build
 
@@ -21,6 +25,7 @@ RUN adduser --system --uid 1001 nextjs
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder /app/prisma ./prisma
 USER nextjs
 EXPOSE 3000
 ENV PORT=3000
