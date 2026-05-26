@@ -16,7 +16,7 @@ ENV NEXTAUTH_SECRET=build-secret
 ENV NEXTAUTH_URL=http://localhost:3000
 ENV SKIP_ENV_VALIDATION=1
 RUN npx prisma generate
-RUN npm run build
+RUN chmod +x ./node_modules/.bin/next && npm run build
 
 FROM base AS runner
 WORKDIR /app
