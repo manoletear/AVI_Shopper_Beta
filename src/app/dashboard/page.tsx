@@ -5,7 +5,7 @@ import { useSession, signOut } from 'next-auth/react'
 import {
   ShoppingCart, ListChecks, DollarSign, Heart, Store,
   ArrowRight, LogOut, Settings, AlertCircle, TrendingUp,
-  Wallet, Package,
+  Wallet, Package, User,
 } from 'lucide-react'
 
 interface DashboardData {
@@ -163,8 +163,9 @@ export default function DashboardPage() {
         <div className="grid sm:grid-cols-2 gap-4 mb-8">
           {[
             { href: '/listas', label: 'Mis Listas', description: 'Crea y gestiona listas de compras familiares', icon: ListChecks, color: 'bg-purple-100 text-purple-600' },
-            { href: '/comparar', label: 'Comparar Precios', description: 'Busca lo mas barato en Jumbo, Lider y Santa Isabel', icon: DollarSign, color: 'bg-green-100 text-green-600' },
+            { href: '/comparar', label: 'Comparar Precios', description: 'Busca lo mas barato en 4 supermercados', icon: DollarSign, color: 'bg-green-100 text-green-600' },
             { href: '/salud', label: 'Mi Salud', description: 'Analisis nutricional y recomendaciones', icon: Heart, color: 'bg-red-100 text-red-600' },
+            { href: '/perfil', label: 'Perfil Nutricional', description: 'Configura dieta, alergias y objetivos de salud', icon: User, color: 'bg-indigo-100 text-indigo-600' },
             { href: '/configuracion/cuentas', label: 'Supermercados', description: 'Vincula tus cuentas de supermercados', icon: Store, color: 'bg-orange-100 text-orange-600' },
           ].map((item) => {
             const Icon = item.icon
