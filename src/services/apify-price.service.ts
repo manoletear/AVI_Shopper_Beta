@@ -3,7 +3,8 @@
  *
  * Obtiene precios reales de supermercados chilenos via Apify actors:
  * - scraperschile/jumbo (Jumbo)
- * - scraperschile/lider-cl (Lider)
+ * - scraperschile/unimarc (Unimarc)
+ * - super.lider.cl via RAG Web Browser (Lider Supermercado)
  * - automation-lab/chile-supermarket-price-comparison (Jumbo + Santa Isabel)
  */
 
@@ -109,16 +110,41 @@ export async function searchLider(
   }));
 }
 
+export async function searchUnimarc(
+  query: string,
+  apiToken: string,
+  maxPages = 1
+): Promise<ApifyProduct[]> {
+  const items = await callApifyActor(
+    'scraperschile~unimarc',
+    { term: query, maxPages, pageSize: 20 },
+    apiToken
+  );
+
+  return items.map((item: any) => ({
+    name: item.name,
+    brand: item.brand || '',
+    price: item.price,
+    listPrice: item.list_price,
+    inStock: (item.available_quantity ?? 1) > 0,
+    store: 'Unimarc',
+    url: item.url,
+    imageUrl: item.image,
+    categories: item.categories,
+  }));
+}
+
 export async function comparePrices(
   query: string,
   apiToken: string
 ): Promise<PriceComparison> {
-  const [jumboResults, liderResults] = await Promise.all([
+  const [jumboResults, liderResults, unimarcResults] = await Promise.all([
     searchJumbo(query, apiToken).catch(() => [] as ApifyProduct[]),
     searchLider(query, apiToken).catch(() => [] as ApifyProduct[]),
+    searchUnimarc(query, apiToken).catch(() => [] as ApifyProduct[]),
   ]);
 
-  const allResults = [...jumboResults, ...liderResults].filter(
+  const allResults = [...jumboResults, ...liderResults, ...unimarcResults].filter(
     (p) => p.inStock && p.price > 0
   );
 

@@ -284,12 +284,12 @@ export default function CompararPage() {
             {isComparing ? (
               <>
                 <Loader2 className="h-5 w-5 animate-spin" />
-                <span>Buscando en Jumbo, Lider y Santa Isabel... ({completedCount}/{queries.length})</span>
+                <span>Buscando en Jumbo, Lider, Santa Isabel y Unimarc... ({completedCount}/{queries.length})</span>
               </>
             ) : (
               <>
                 <Zap className="h-5 w-5" />
-                <span>Comparar en 3 supermercados ({queries.length} producto{queries.length !== 1 ? 's' : ''})</span>
+                <span>Comparar en 4 supermercados ({queries.length} producto{queries.length !== 1 ? 's' : ''})</span>
               </>
             )}
           </button>
@@ -424,7 +424,7 @@ export default function CompararPage() {
             <ShoppingCart className="h-12 w-12 text-gray-300 mx-auto mb-3" />
             <p className="text-gray-500 font-medium">Agrega productos para comparar</p>
             <p className="text-sm text-gray-400 mt-1">
-              AVI busca en Jumbo, Lider y Santa Isabel para encontrar los mejores precios
+              AVI busca en Jumbo, Lider, Santa Isabel y Unimarc para encontrar los mejores precios
             </p>
           </div>
         )}

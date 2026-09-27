@@ -74,6 +74,7 @@ export async function GET(request: NextRequest) {
       byStore: {
         jumbo: comparison.results.filter((r) => r.store === 'Jumbo'),
         lider: comparison.results.filter((r) => r.store === 'Lider'),
+        unimarc: comparison.results.filter((r) => r.store === 'Unimarc'),
       },
       healthAnalysis: analyze ? healthAnalysis : undefined,
       scrapedAt: comparison.scrapedAt,
