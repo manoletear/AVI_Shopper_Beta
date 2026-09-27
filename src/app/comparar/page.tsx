@@ -1,11 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import {
   ArrowLeft, Search, ShoppingCart, Plus, X, Loader2,
   DollarSign, TrendingDown, Heart, AlertTriangle,
-  Check, Store, Zap, Trash2, Settings,
+  Check, Store, Zap, Trash2, Settings, Shield,
 } from 'lucide-react'
 
 interface ProductResult {
@@ -19,6 +19,8 @@ interface ProductResult {
   healthScore?: number
   healthLevel?: string
   isUltraProcessed?: boolean
+  allergenWarnings?: string[]
+  dietWarning?: string
 }
 
 interface ComparisonItem {
@@ -42,6 +44,86 @@ export default function CompararPage() {
   const [comparisons, setComparisons] = useState<Map<string, ComparisonItem>>(new Map())
   const [isComparing, setIsComparing] = useState(false)
   const [showResults, setShowResults] = useState(false)
+
+  // Perfil nutricional del usuario
+  const [userAllergies, setUserAllergies] = useState<string[]>([])
+  const [userDiet, setUserDiet] = useState('')
+  const [userGoals, setUserGoals] = useState<string[]>([])
+
+  // Mapa de alergenos → patrones en nombres de productos
+  const ALLERGEN_PATTERNS: Record<string, RegExp> = {
+    gluten: /pan|fideos|galleta|harina|trigo|avena|cebada|centeno|pasta|marraqueta|molde|tortilla/i,
+    lactosa: /leche|queso|yogurt|mantequilla|crema|helado|manjar/i,
+    frutos_secos: /nuez|almendra|maní|mani|avellana|pistacho|castaña/i,
+    mariscos: /camarón|camaron|langostino|jaiba|cholga|chorito|almeja|ostra/i,
+    huevo: /huevo|mayonesa/i,
+    soya: /soya|soja|tofu|edamame/i,
+  }
+
+  // Dietas → productos que no deberian consumir
+  const DIET_RESTRICTIONS: Record<string, RegExp> = {
+    vegetarian: /jamon|jamón|carne|pollo|cerdo|res|pavo|salchicha|vienesa|tocino|chorizo/i,
+    vegan: /jamon|jamón|carne|pollo|cerdo|pavo|leche|queso|yogurt|mantequilla|huevo|miel|mayonesa/i,
+    keto: /harina|pan |azucar|azúcar|fideos|arroz|papa|galleta/i,
+    diabetic: /azucar|azúcar|coca.cola|bebida|jugo|néctar|nectar|galleta|chocolate|helado/i,
+    celiac: /pan|fideos|galleta|harina|trigo|avena|cebada|centeno|pasta|marraqueta|tortilla/i,
+  }
+
+  // Cargar preferencias del usuario
+  useEffect(() => {
+    if (!session) return
+    fetch('/api/users/preferences')
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.success && data.data) {
+          setUserAllergies(data.data.allergies || [])
+          setUserDiet(data.data.dietType || '')
+          if (data.data.favorites && Array.isArray(data.data.favorites)) {
+            const meta = data.data.favorites.find((f: string) => f.startsWith('meta:'))
+            if (meta) {
+              try {
+                const parsed = JSON.parse(meta.replace('meta:', ''))
+                setUserGoals(parsed.healthGoals || [])
+              } catch {}
+            }
+          }
+        }
+      })
+      .catch(() => {})
+  }, [session])
+
+  // Verificar alergenos y restricciones de dieta en un producto
+  const checkProduct = (product: ProductResult): ProductResult => {
+    const warnings: string[] = []
+    let dietWarning = ''
+
+    // Check alergenos
+    for (const allergen of userAllergies) {
+      const pattern = ALLERGEN_PATTERNS[allergen]
+      if (pattern && pattern.test(product.name)) {
+        const labels: Record<string, string> = {
+          gluten: 'Gluten', lactosa: 'Lactosa', frutos_secos: 'Frutos secos',
+          mariscos: 'Mariscos', huevo: 'Huevo', soya: 'Soya',
+        }
+        warnings.push(labels[allergen] || allergen)
+      }
+    }
+
+    // Check dieta
+    if (userDiet) {
+      const pattern = DIET_RESTRICTIONS[userDiet]
+      if (pattern && pattern.test(product.name)) {
+        const labels: Record<string, string> = {
+          vegetarian: 'No vegetariano', vegan: 'No vegano',
+          keto: 'Alto en carbohidratos', diabetic: 'Alto en azucar',
+          celiac: 'Contiene gluten',
+        }
+        dietWarning = labels[userDiet] || `No apto para ${userDiet}`
+      }
+    }
+
+    return { ...product, allergenWarnings: warnings, dietWarning }
+  }
 
   const addProduct = () => {
     const trimmed = inputValue.trim()
@@ -87,7 +169,7 @@ export default function CompararPage() {
 
           for (const [store, products] of Object.entries(byStore)) {
             for (const p of (products as any[])) {
-              allResults.push({
+              const result = checkProduct({
                 name: p.name,
                 brand: p.brand || '',
                 price: p.price,
@@ -96,6 +178,7 @@ export default function CompararPage() {
                 url: p.url,
                 imageUrl: p.imageUrl,
               })
+              allResults.push(result)
             }
           }
 
@@ -298,6 +381,20 @@ export default function CompararPage() {
         {/* Results */}
         {showResults && (
           <>
+            {/* User profile active banner */}
+            {(userAllergies.length > 0 || userDiet) && (
+              <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-3 mb-4 flex items-center space-x-2">
+                <Shield className="h-4 w-4 text-indigo-600 flex-shrink-0" />
+                <p className="text-xs text-indigo-700">
+                  <span className="font-medium">Perfil activo: </span>
+                  {userDiet && <span className="capitalize">{userDiet}</span>}
+                  {userDiet && userAllergies.length > 0 && ' · '}
+                  {userAllergies.length > 0 && `Alergias: ${userAllergies.join(', ')}`}
+                  {' — '}
+                  <a href="/perfil" className="underline">editar</a>
+                </p>
+              </div>
+            )}
             {/* Split Recommendation */}
             {splits.length > 0 && !isComparing && (
               <div className="bg-green-50 border border-green-200 rounded-xl p-5 mb-6">
@@ -389,7 +486,18 @@ export default function CompararPage() {
                                   {r.isUltraProcessed && (
                                     <span className="text-xs bg-red-100 text-red-600 px-1.5 py-0.5 rounded">Ultra-proc</span>
                                   )}
+                                  {r.dietWarning && (
+                                    <span className="text-xs bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded">{r.dietWarning}</span>
+                                  )}
                                 </div>
+                                {r.allergenWarnings && r.allergenWarnings.length > 0 && (
+                                  <div className="flex items-center space-x-1 mt-1">
+                                    <AlertTriangle className="h-3 w-3 text-red-500" />
+                                    <span className="text-xs text-red-600 font-medium">
+                                      Alergeno: {r.allergenWarnings.join(', ')}
+                                    </span>
+                                  </div>
+                                )}
                               </div>
 
                               <div className="text-right flex-shrink-0">

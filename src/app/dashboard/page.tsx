@@ -166,6 +166,7 @@ export default function DashboardPage() {
             { href: '/comparar', label: 'Comparar Precios', description: 'Busca lo mas barato en 4 supermercados', icon: DollarSign, color: 'bg-green-100 text-green-600' },
             { href: '/salud', label: 'Mi Salud', description: 'Analisis nutricional y recomendaciones', icon: Heart, color: 'bg-red-100 text-red-600' },
             { href: '/perfil', label: 'Perfil Nutricional', description: 'Configura dieta, alergias y objetivos de salud', icon: User, color: 'bg-indigo-100 text-indigo-600' },
+            { href: '/presupuesto', label: 'Presupuesto', description: 'Controla tus gastos semanales o mensuales', icon: Wallet, color: 'bg-emerald-100 text-emerald-600' },
             { href: '/configuracion/cuentas', label: 'Supermercados', description: 'Vincula tus cuentas de supermercados', icon: Store, color: 'bg-orange-100 text-orange-600' },
           ].map((item) => {
             const Icon = item.icon

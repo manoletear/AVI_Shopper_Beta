@@ -15,6 +15,7 @@ export const config = {
     '/comparar/:path*',
     '/perfil/:path*',
     '/presupuesto/:path*',
+    '/presupuesto/:path*',
     '/configuracion/:path*',
   ],
 };
