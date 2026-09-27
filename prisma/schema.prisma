@@ -1,13 +1,15 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-generator client {
-  provider = "prisma-client-js"
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  schemas  = ["avi_shopper"]
 }
 
-datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
 }
 
 // ============================================
@@ -33,6 +35,7 @@ model User {
   nutritionData NutritionData[]
   storeAccounts StoreAccount[]
 
+  @@schema("avi_shopper")
   @@map("users")
 }
 
@@ -48,6 +51,7 @@ model UserConsent {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@schema("avi_shopper")
   @@map("user_consents")
 }
 
@@ -63,6 +67,7 @@ model UserPreference {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@schema("avi_shopper")
   @@map("user_preferences")
 }
 
@@ -77,6 +82,7 @@ model ShoppingList {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@schema("avi_shopper")
   @@map("shopping_lists")
 }
 
@@ -96,6 +102,7 @@ model ShoppingItem {
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
+  @@schema("avi_shopper")
   @@map("shopping_items")
 }
 
@@ -129,6 +136,7 @@ model Product {
   prices      ProductPrice[]
   items       ShoppingItem[]
 
+  @@schema("avi_shopper")
   @@map("products")
 }
 
@@ -154,6 +162,7 @@ model Store {
   orders        Order[]
   storeAccounts StoreAccount[]
 
+  @@schema("avi_shopper")
   @@map("stores")
 }
 
@@ -177,6 +186,7 @@ model ProductPrice {
   updatedAt DateTime @updatedAt
 
   @@unique([productId, storeId])
+  @@schema("avi_shopper")
   @@map("product_prices")
 }
 
@@ -204,6 +214,7 @@ model Order {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@schema("avi_shopper")
   @@map("orders")
 }
 
@@ -223,6 +234,7 @@ model Budget {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@schema("avi_shopper")
   @@map("budgets")
 }
 
@@ -243,6 +255,7 @@ model Alert {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@schema("avi_shopper")
   @@map("alerts")
 }
 
@@ -265,6 +278,7 @@ model NutritionData {
   updatedAt DateTime @updatedAt
 
   @@unique([userId, date])
+  @@schema("avi_shopper")
   @@map("nutrition_data")
 }
 
@@ -278,6 +292,7 @@ model ShortcutTemplate {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@schema("avi_shopper")
   @@map("shortcut_templates")
 }
 
@@ -304,5 +319,6 @@ model StoreAccount {
   updatedAt DateTime @updatedAt
 
   @@unique([userId, storeId])
+  @@schema("avi_shopper")
   @@map("store_accounts")
 }
