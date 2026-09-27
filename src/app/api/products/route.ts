@@ -19,7 +19,6 @@ export async function GET(request: NextRequest) {
     if (search) {
       where.name = {
         contains: search,
-        mode: 'insensitive',
       };
     }
 

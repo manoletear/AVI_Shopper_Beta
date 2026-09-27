@@ -7,6 +7,8 @@
  * - automation-lab/chile-supermarket-price-comparison (Jumbo + Santa Isabel)
  */
 
+import { searchSuperLider } from './super-lider.service';
+
 const APIFY_BASE = 'https://api.apify.com/v2';
 
 interface ApifyProduct {
@@ -92,26 +94,19 @@ export async function searchJumbo(
 export async function searchLider(
   query: string,
   apiToken: string,
-  maxPages = 1
 ): Promise<ApifyProduct[]> {
-  const items = await callApifyActor(
-    'scraperschile~lider-cl',
-    { term: query, maxPages, pageSize: 20 },
-    apiToken
-  );
+  const result = await searchSuperLider(query, apiToken);
 
-  return items
-    .filter((item: any) => item.availability === 'In stock')
-    .map((item: any) => ({
-      name: item.name,
-      brand: item.brand || '',
-      price: item.price,
-      listPrice: item.was_price ? parseInt(String(item.was_price).replace(/[^0-9]/g, '')) : undefined,
-      inStock: true,
-      store: 'Lider',
-      url: item.url,
-      imageUrl: item.thumbnail,
-    }));
+  return result.products.map((item) => ({
+    name: item.name,
+    brand: item.brand || '',
+    price: item.price,
+    listPrice: item.originalPrice,
+    inStock: item.inStock,
+    store: 'Lider' as const,
+    url: item.url,
+    imageUrl: item.imageUrl,
+  }));
 }
 
 export async function comparePrices(
