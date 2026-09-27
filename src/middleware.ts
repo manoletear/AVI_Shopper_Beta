@@ -12,6 +12,7 @@ export const config = {
     '/dashboard/:path*',
     '/listas/:path*',
     '/salud/:path*',
+    '/comparar/:path*',
     '/presupuesto/:path*',
     '/configuracion/:path*',
   ],
