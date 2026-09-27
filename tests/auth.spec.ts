@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Auth Flow', () => {
   test('landing page has navigation links', async ({ page }) => {
     await page.goto('/');
-    await expect(page.locator('text=AVI')).toBeVisible();
+    await expect(page.getByText('AVI', { exact: true }).first()).toBeVisible();
     await expect(page.locator('a[href="/login"]')).toBeVisible();
     await expect(page.locator('a[href="/registro"]')).toBeVisible();
     await expect(page.locator('a[href="/demo"]')).toBeVisible();

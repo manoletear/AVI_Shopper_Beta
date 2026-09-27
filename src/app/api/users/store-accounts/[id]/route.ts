@@ -95,7 +95,7 @@ export async function PATCH(
     });
   } catch (error: any) {
     if (error.name === 'ZodError') {
-      return errorResponse(error.errors[0].message, 400, 'VALIDATION_ERROR');
+      const issues = error.issues || error.errors || []; return errorResponse(issues[0]?.message || 'Datos invalidos', 400, 'VALIDATION_ERROR');
     }
     if (error.statusCode) {
       return errorResponse(error.message, error.statusCode, error.code);

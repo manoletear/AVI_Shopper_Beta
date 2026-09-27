@@ -52,7 +52,9 @@ export async function POST(request: NextRequest) {
     return createdResponse(user);
   } catch (error: any) {
     if (error.name === 'ZodError') {
-      return errorResponse(error.errors[0].message, 400, 'VALIDATION_ERROR');
+      const issues = error.issues || error.errors || [];
+      const message = issues[0]?.message || 'Datos invalidos';
+      return errorResponse(message, 400, 'VALIDATION_ERROR');
     }
 
     if (error.statusCode) {
