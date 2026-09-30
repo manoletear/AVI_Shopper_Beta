@@ -307,3 +307,26 @@ model StoreAccount {
   @@unique([userId, storeId])
   @@map("store_accounts")
 }
+
+model PriceObservation {
+  id          String   @id @default(cuid())
+
+  productName String
+  brand       String?
+  storeSlug   String
+  storeName   String
+  price       Int
+  listPrice   Int?
+  inStock     Boolean  @default(true)
+  url         String?
+  imageUrl    String?
+  searchTerm  String?
+
+  observedAt  DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  @@index([productName, storeSlug])
+  @@index([storeSlug, observedAt(sort: Desc)])
+  @@index([searchTerm, observedAt(sort: Desc)])
+  @@map("price_observations")
+}

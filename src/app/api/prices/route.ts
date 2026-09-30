@@ -2,20 +2,52 @@ import { NextRequest } from 'next/server';
 import { successResponse, errorResponse } from '@/lib/responses';
 import { comparePrices } from '@/services/apify-price.service';
 import { scoreProductHealth, matchProducts } from '@/services/typesafe-decision.service';
+import { savePriceObservations, getLatestPrices } from '@/services/price-observation.service';
 
-// GET /api/prices?q=leche+colun&analyze=true
+// GET /api/prices?q=leche+colun&analyze=true&cached=true
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const query = searchParams.get('q');
     const analyze = searchParams.get('analyze') === 'true';
+    const useCached = searchParams.get('cached') === 'true';
 
     if (!query) {
       return errorResponse('Parámetro "q" requerido', 400, 'MISSING_QUERY');
     }
 
+    // Si cached=true, buscar precios recientes en DB (menos de 12 horas)
+    if (useCached) {
+      const cached = await getLatestPrices(query, 12);
+      if (cached.length > 0) {
+        const cheapest = cached.reduce((min, p) => (p.price < min.price ? p : min));
+        return successResponse({
+          query,
+          totalResults: cached.length,
+          cheapest,
+          results: cached,
+          source: 'cache',
+          maxAgeHours: Math.max(...cached.map((c) => c.hoursAgo)),
+          scrapedAt: cached[0].observedAt,
+        });
+      }
+    }
+
     const apifyToken = process.env.APIFY_API_TOKEN;
     if (!apifyToken) {
+      // Fallback: buscar en cache aunque no se pidio
+      const cached = await getLatestPrices(query, 24);
+      if (cached.length > 0) {
+        const cheapest = cached.reduce((min, p) => (p.price < min.price ? p : min));
+        return successResponse({
+          query,
+          totalResults: cached.length,
+          cheapest,
+          results: cached,
+          source: 'cache',
+          maxAgeHours: Math.max(...cached.map((c) => c.hoursAgo)),
+        });
+      }
       return errorResponse(
         'APIFY_API_TOKEN no configurado. Agrega tu token en .env',
         503,
@@ -77,8 +109,25 @@ export async function GET(request: NextRequest) {
         unimarc: comparison.results.filter((r) => r.store === 'Unimarc'),
       },
       healthAnalysis: analyze ? healthAnalysis : undefined,
+      source: 'live',
       scrapedAt: comparison.scrapedAt,
     });
+
+    // Guardar precios observados en background (no bloquea respuesta)
+    savePriceObservations(
+      comparison.results.map((r) => ({
+        productName: r.name,
+        brand: r.brand,
+        storeSlug: r.store.toLowerCase(),
+        storeName: r.store,
+        price: r.price,
+        listPrice: r.listPrice,
+        inStock: r.inStock,
+        url: r.url,
+        imageUrl: r.imageUrl,
+        searchTerm: query!,
+      }))
+    ).catch(() => {});
   } catch (error: any) {
     console.error('Price search error:', error);
     return errorResponse(error.message || 'Error al buscar precios', 500);

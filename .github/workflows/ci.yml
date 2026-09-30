@@ -21,8 +21,15 @@ jobs:
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
 
+      - name: Switch Prisma to SQLite for CI
+        run: |
+          sed -i 's/provider  = "postgresql"/provider = "sqlite"/' prisma/schema.prisma
+          sed -i '/directUrl/d' prisma/schema.prisma
+
       - name: Generate Prisma client
         run: npx prisma generate
+        env:
+          DATABASE_URL: "file:./dev.db"
 
       - name: Type check
         run: npx tsc --noEmit --project tsconfig.json
@@ -49,8 +56,15 @@ jobs:
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
 
+      - name: Switch Prisma to SQLite for CI
+        run: |
+          sed -i 's/provider  = "postgresql"/provider = "sqlite"/' prisma/schema.prisma
+          sed -i '/directUrl/d' prisma/schema.prisma
+
       - name: Generate Prisma client
         run: npx prisma generate
+        env:
+          DATABASE_URL: "file:./dev.db"
 
       - name: Setup database
         run: npx prisma db push
