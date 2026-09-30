@@ -10,6 +10,7 @@ export default withAuth({
 export const config = {
   matcher: [
     '/dashboard/:path*',
+    '/avi/:path*',
     '/listas/:path*',
     '/salud/:path*',
     '/comparar/:path*',

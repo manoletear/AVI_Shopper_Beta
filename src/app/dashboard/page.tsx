@@ -5,7 +5,7 @@ import { useSession, signOut } from 'next-auth/react'
 import {
   ShoppingCart, ListChecks, DollarSign, Heart, Store,
   ArrowRight, LogOut, Settings, AlertCircle, TrendingUp,
-  Wallet, Package, User,
+  Wallet, Package, User, Bot,
 } from 'lucide-react'
 
 interface DashboardData {
@@ -162,6 +162,7 @@ export default function DashboardPage() {
         {/* Quick Actions Grid */}
         <div className="grid sm:grid-cols-2 gap-4 mb-8">
           {[
+            { href: '/avi', label: 'Hablar con AVI', description: 'Asistente conversacional — dile que necesitas', icon: Bot, color: 'bg-blue-100 text-blue-600' },
             { href: '/listas', label: 'Mis Listas', description: 'Crea y gestiona listas de compras familiares', icon: ListChecks, color: 'bg-purple-100 text-purple-600' },
             { href: '/comparar', label: 'Comparar Precios', description: 'Busca lo mas barato en 4 supermercados', icon: DollarSign, color: 'bg-green-100 text-green-600' },
             { href: '/reposicion', label: 'Reposicion', description: 'Predice que se va a acabar y sugiere comprar', icon: Package, color: 'bg-violet-100 text-violet-600' },
