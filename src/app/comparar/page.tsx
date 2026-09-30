@@ -170,6 +170,9 @@ export default function CompararPage() {
           const allResults: ProductResult[] = []
           const byStore = data.data.byStore || {}
 
+          // Palabras clave de la busqueda para filtrar relevancia
+          const queryWords = query.toLowerCase().split(/\s+/).filter(w => w.length > 2)
+
           for (const [store, products] of Object.entries(byStore)) {
             for (const p of (products as any[])) {
               const result = checkProduct({
@@ -181,7 +184,28 @@ export default function CompararPage() {
                 url: p.url,
                 imageUrl: p.imageUrl,
               })
-              allResults.push(result)
+
+              // Filtro de relevancia: el producto debe contener al menos
+              // una palabra clave de la busqueda (>2 chars) en su nombre
+              const productNameLower = result.name.toLowerCase()
+              const isRelevant = queryWords.some(w => productNameLower.includes(w))
+              if (isRelevant) {
+                allResults.push(result)
+              }
+            }
+          }
+
+          // Si el filtro elimino todo, mostrar todos sin filtro
+          if (allResults.length === 0) {
+            for (const [store, products] of Object.entries(byStore)) {
+              for (const p of (products as any[])) {
+                allResults.push(checkProduct({
+                  name: p.name, brand: p.brand || '', price: p.price,
+                  listPrice: p.listPrice,
+                  store: store.charAt(0).toUpperCase() + store.slice(1),
+                  url: p.url, imageUrl: p.imageUrl,
+                }))
+              }
             }
           }
 
