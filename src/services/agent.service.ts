@@ -238,7 +238,7 @@ async function executeTool(
       // Buscar precios en cache primero
       const cached = await prisma.priceObservation.findMany({
         where: {
-          searchTerm: { equals: input.product, mode: 'insensitive' },
+          searchTerm: { equals: input.product },
           observedAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) },
         },
         orderBy: { observedAt: 'desc' },

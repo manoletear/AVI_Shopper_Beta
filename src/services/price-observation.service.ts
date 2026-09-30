@@ -78,7 +78,7 @@ export async function getLatestPrices(
 
   const observations = await prisma.priceObservation.findMany({
     where: {
-      searchTerm: { equals: searchTerm, mode: 'insensitive' },
+      searchTerm: { equals: searchTerm },
       observedAt: { gte: cutoff },
     },
     orderBy: { observedAt: 'desc' },
@@ -130,7 +130,7 @@ export async function getPriceHistory(
 
   return prisma.priceObservation.findMany({
     where: {
-      productName: { contains: productName, mode: 'insensitive' },
+      productName: { contains: productName },
       storeSlug,
       observedAt: { gte: cutoff },
     },
