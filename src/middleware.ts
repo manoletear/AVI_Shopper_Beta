@@ -6,7 +6,6 @@ export default withAuth({
   },
 });
 
-// Rutas que requieren autenticacion
 export const config = {
   matcher: [
     '/dashboard/:path*',
@@ -16,7 +15,6 @@ export const config = {
     '/comparar/:path*',
     '/reposicion/:path*',
     '/perfil/:path*',
-    '/presupuesto/:path*',
     '/presupuesto/:path*',
     '/configuracion/:path*',
   ],
