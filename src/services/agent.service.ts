@@ -462,7 +462,7 @@ export async function processAgentMessage(
 
   // Primera llamada: Claude decide que tools usar
   let response = await client.messages.create({
-    model: 'claude-haiku-4-5-20251001',
+    model: 'claude-sonnet-4-20250514',
     max_tokens: 1024,
     system: systemPrompt,
     tools: TOOLS,
@@ -493,7 +493,7 @@ export async function processAgentMessage(
     messages.push({ role: 'user', content: toolResults });
 
     response = await client.messages.create({
-      model: 'claude-haiku-4-5-20251001',
+      model: 'claude-sonnet-4-20250514',
       max_tokens: 1024,
       system: systemPrompt,
       tools: TOOLS,

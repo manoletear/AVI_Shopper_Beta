@@ -29,6 +29,10 @@ export async function POST(request: NextRequest) {
       return errorResponse(error.message, error.statusCode, error.code);
     }
     console.error('Agent error:', error);
-    return errorResponse('Error del agente', 500);
+    const msg = error.message || 'Error del agente';
+    if (msg.includes('authentication') || msg.includes('api_key') || msg.includes('401')) {
+      return errorResponse('ANTHROPIC_API_KEY invalida o expirada. Revisa la configuracion en Vercel.', 503);
+    }
+    return errorResponse(msg, 500);
   }
 }
