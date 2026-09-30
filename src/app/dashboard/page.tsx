@@ -164,6 +164,7 @@ export default function DashboardPage() {
           {[
             { href: '/listas', label: 'Mis Listas', description: 'Crea y gestiona listas de compras familiares', icon: ListChecks, color: 'bg-purple-100 text-purple-600' },
             { href: '/comparar', label: 'Comparar Precios', description: 'Busca lo mas barato en 4 supermercados', icon: DollarSign, color: 'bg-green-100 text-green-600' },
+            { href: '/reposicion', label: 'Reposicion', description: 'Predice que se va a acabar y sugiere comprar', icon: Package, color: 'bg-violet-100 text-violet-600' },
             { href: '/salud', label: 'Mi Salud', description: 'Analisis nutricional y recomendaciones', icon: Heart, color: 'bg-red-100 text-red-600' },
             { href: '/perfil', label: 'Perfil Nutricional', description: 'Configura dieta, alergias y objetivos de salud', icon: User, color: 'bg-indigo-100 text-indigo-600' },
             { href: '/presupuesto', label: 'Presupuesto', description: 'Controla tus gastos semanales o mensuales', icon: Wallet, color: 'bg-emerald-100 text-emerald-600' },

@@ -13,6 +13,7 @@ export const config = {
     '/listas/:path*',
     '/salud/:path*',
     '/comparar/:path*',
+    '/reposicion/:path*',
     '/perfil/:path*',
     '/presupuesto/:path*',
     '/presupuesto/:path*',
