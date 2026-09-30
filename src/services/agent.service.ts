@@ -438,7 +438,12 @@ export async function processAgentMessage(
     };
   }
 
-  const client = new Anthropic({ apiKey });
+  const client = new Anthropic({
+    apiKey,
+    defaultHeaders: {
+      'anthropic-workspace-id': process.env.ANTHROPIC_WORKSPACE_ID || '',
+    },
+  });
 
   // Cargar perfil de la familia para contexto
   let familyContext = '';
