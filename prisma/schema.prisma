@@ -33,6 +33,7 @@ model User {
   alerts        Alert[]
   nutritionData NutritionData[]
   storeAccounts StoreAccount[]
+  purchaseHistory PurchaseHistory[]
 
   @@map("users")
 }
@@ -329,4 +330,28 @@ model PriceObservation {
   @@index([storeSlug, observedAt(sort: Desc)])
   @@index([searchTerm, observedAt(sort: Desc)])
   @@map("price_observations")
+}
+
+model PurchaseHistory {
+  id          String   @id @default(cuid())
+
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  productName String
+  brand       String?
+  category    String?
+  storeSlug   String?
+  storeName   String?
+  price       Int?
+  quantity    Int      @default(1)
+  unit        String?
+  source      String   @default("manual")
+
+  purchasedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  @@index([userId, purchasedAt(sort: Desc)])
+  @@index([userId, productName])
+  @@map("purchase_history")
 }

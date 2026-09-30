@@ -10,6 +10,10 @@
  * - check_budget: ver estado del presupuesto
  * - get_replenishment: ver que se esta acabando
  * - record_purchase: registrar compra ("compré X en Y")
+ * - get_favorites: ver productos favoritos de la familia
+ * - suggest_products: sugerir que comprar basado en historial
+ * - get_replenishment: ver que se esta acabando
+ * - record_purchase: registrar compra ("compré X en Y")
  *
  * Usa Claude API con tool_use para interpretar la intencion
  * y ejecutar la accion correcta.
@@ -17,6 +21,7 @@
 
 import Anthropic from '@anthropic-ai/sdk';
 import { prisma } from '@/lib/prisma';
+import { recordPurchase, getProductProfiles, getSuggestions, getFamilyProfileSummary } from './purchase-learning.service';
 
 const TOOLS: Anthropic.Tool[] = [
   {
@@ -91,15 +96,34 @@ const TOOLS: Anthropic.Tool[] = [
   },
   {
     name: 'record_purchase',
-    description: 'Registra una compra ya realizada. Usa cuando dice "compré X en Y", "gasté X en Y".',
+    description: 'Registra una compra ya realizada. Usa cuando dice "compré X en Y", "gasté X en Y". IMPORTANTE: siempre pregunta marca, tienda y precio si no los menciona.',
     input_schema: {
       type: 'object' as const,
       properties: {
-        product: { type: 'string', description: 'Qué compró' },
-        store: { type: 'string', description: 'Dónde compró' },
+        product: { type: 'string', description: 'Qué compró (nombre del producto)' },
+        brand: { type: 'string', description: 'Marca del producto' },
+        store: { type: 'string', description: 'Dónde compró (Jumbo, Lider, Santa Isabel, Unimarc)' },
         amount: { type: 'number', description: 'Cuánto gastó en CLP' },
+        quantity: { type: 'number', description: 'Cantidad (default 1)' },
+        category: { type: 'string', description: 'Categoría (lacteos, carnes, frutas, despensa, bebidas, limpieza)' },
       },
       required: ['product'],
+    },
+  },
+  {
+    name: 'get_favorites',
+    description: 'Muestra los productos favoritos de la familia con marcas y tiendas preferidas. Usa cuando dice "qué compro siempre", "mis favoritos", "productos frecuentes".',
+    input_schema: {
+      type: 'object' as const,
+      properties: {},
+    },
+  },
+  {
+    name: 'suggest_products',
+    description: 'Sugiere productos que la familia debería comprar basado en su historial. Usa cuando dice "qué me falta", "qué debería comprar", "arma mi lista", "sugerencias".',
+    input_schema: {
+      type: 'object' as const,
+      properties: {},
     },
   },
 ];
@@ -114,7 +138,14 @@ Reglas:
 - Si el usuario pide algo que no puedes hacer, dilo honestamente
 - Precios en CLP (pesos chilenos)
 - Supermercados: Jumbo, Lider, Santa Isabel, Unimarc
-- Si no entiendes, pregunta. No adivines.`;
+
+IMPORTANTE sobre compras:
+- Cuando el usuario registra una compra, SIEMPRE pregunta: marca, tienda, precio y cantidad si no los da
+- Aprende de cada compra: recuerda marcas preferidas, tiendas favoritas
+- Cuando sugiere productos, usa la marca y tienda que la familia prefiere
+- Si la familia siempre compra "Leche Colun en Jumbo", sugiere eso, no "leche" genérica
+
+Si no entiendes, pregunta. No adivines.`;
 
 interface ToolResult {
   success: boolean;
@@ -310,10 +341,76 @@ async function executeTool(
     }
 
     case 'record_purchase': {
+      const storeMap: Record<string, string> = { jumbo: 'jumbo', lider: 'lider', 'santa isabel': 'santa-isabel', unimarc: 'unimarc' };
+      const storeSlug = input.store ? storeMap[input.store.toLowerCase()] || input.store.toLowerCase() : undefined;
+
+      await recordPurchase(userId, {
+        productName: input.product,
+        brand: input.brand,
+        category: input.category,
+        storeSlug,
+        storeName: input.store,
+        price: input.amount,
+        quantity: input.quantity || 1,
+        source: 'agent',
+      });
+
+      let msg = `Registrado: ${input.product}`;
+      if (input.brand) msg += ` (${input.brand})`;
+      if (input.store) msg += ` en ${input.store}`;
+      if (input.amount) msg += ` por $${input.amount.toLocaleString('es-CL')}`;
+      msg += '. AVI ya aprendió esta compra.';
+
+      const missing = [];
+      if (!input.brand) missing.push('marca');
+      if (!input.store) missing.push('tienda');
+      if (!input.amount) missing.push('precio');
+      if (missing.length > 0) msg += ` Para aprender mejor, dime también: ${missing.join(', ')}.`;
+
+      return { success: true, data: { product: input.product, brand: input.brand, store: input.store, amount: input.amount }, message: msg };
+    }
+
+    case 'get_favorites': {
+      const profiles = await getProductProfiles(userId, 10);
+      if (profiles.length === 0) {
+        return { success: true, data: { favorites: [] }, message: 'Aún no conozco tus compras. Dime "compré X en Y" para que empiece a aprender.' };
+      }
+
+      const favList = profiles.map((p) => {
+        let desc = `${p.productName}`;
+        if (p.preferredBrand) desc += ` (${p.preferredBrand})`;
+        if (p.preferredStore) desc += ` — ${p.preferredStore}`;
+        if (p.avgPrice > 0) desc += ` ~$${p.avgPrice.toLocaleString('es-CL')}`;
+        desc += ` · ${p.totalPurchases} compras`;
+        return desc;
+      });
+
       return {
         success: true,
-        data: { product: input.product, store: input.store, amount: input.amount },
-        message: `Registrado: ${input.product}${input.store ? ` en ${input.store}` : ''}${input.amount ? ` por $${input.amount.toLocaleString('es-CL')}` : ''}. Esto ayuda a AVI a predecir tu próxima compra.`,
+        data: { favorites: profiles.map((p) => ({ name: p.productName, brand: p.preferredBrand, store: p.preferredStore, purchases: p.totalPurchases })) },
+        message: `Tus ${profiles.length} productos más frecuentes:\n${favList.join('\n')}`,
+      };
+    }
+
+    case 'suggest_products': {
+      const suggestions = await getSuggestions(userId);
+      if (suggestions.length === 0) {
+        return { success: true, data: { suggestions: [] }, message: 'Necesito más historial para sugerir. Registra compras con "compré X en Y" y AVI aprenderá.' };
+      }
+
+      const urgencyEmoji = { high: '🔴', medium: '🟡', low: '🔵' };
+      const lines = suggestions.map((s) => {
+        let line = `${urgencyEmoji[s.urgency]} ${s.productName}`;
+        if (s.brand) line += ` (${s.brand})`;
+        if (s.store) line += ` — ${s.store}`;
+        line += ` x${s.suggestedQuantity}`;
+        return line;
+      });
+
+      return {
+        success: true,
+        data: { suggestions },
+        message: `Te sugiero agregar ${suggestions.length} productos:\n${lines.join('\n')}`,
       };
     }
 
@@ -343,6 +440,16 @@ export async function processAgentMessage(
 
   const client = new Anthropic({ apiKey });
 
+  // Cargar perfil de la familia para contexto
+  let familyContext = '';
+  try {
+    familyContext = await getFamilyProfileSummary(userId);
+  } catch {}
+
+  const systemPrompt = familyContext
+    ? `${SYSTEM_PROMPT}\n\nPERFIL DE COMPRAS DE ESTA FAMILIA:\n${familyContext}`
+    : SYSTEM_PROMPT;
+
   const messages: Anthropic.MessageParam[] = [
     ...conversationHistory.map((m) => ({
       role: m.role as 'user' | 'assistant',
@@ -357,7 +464,7 @@ export async function processAgentMessage(
   let response = await client.messages.create({
     model: 'claude-haiku-4-5-20251001',
     max_tokens: 1024,
-    system: SYSTEM_PROMPT,
+    system: systemPrompt,
     tools: TOOLS,
     messages,
   });
@@ -388,7 +495,7 @@ export async function processAgentMessage(
     response = await client.messages.create({
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 1024,
-      system: SYSTEM_PROMPT,
+      system: systemPrompt,
       tools: TOOLS,
       messages,
     });
