@@ -21,6 +21,9 @@ interface ProductResult {
   isUltraProcessed?: boolean
   allergenWarnings?: string[]
   dietWarning?: string
+  nutriscoreGrade?: string
+  novaGroup?: number
+  nutritionWarnings?: string[]
 }
 
 interface ComparisonItem {
@@ -197,6 +200,24 @@ export default function CompararPage() {
           const cheapest = allResults.length > 0
             ? allResults.reduce((min, p) => (p.price < min.price ? p : min))
             : null
+
+          // Enriquecer con datos nutricionales de Open Food Facts
+          if (allResults.length > 0) {
+            try {
+              const nutritionRes = await fetch('/api/nutrition/lookup?q=' + encodeURIComponent(query))
+              const nutritionData = await nutritionRes.json()
+              if (nutritionData.success && nutritionData.data.found) {
+                const n = nutritionData.data.nutrition
+                const badge = nutritionData.data.badge
+                for (const r of allResults) {
+                  r.nutriscoreGrade = n.nutriscoreGrade
+                  r.novaGroup = n.novaGroup
+                  r.isUltraProcessed = n.isUltraProcessed
+                  r.nutritionWarnings = n.healthWarnings
+                }
+              }
+            } catch {}
+          }
 
           setComparisons((prev) => {
             const next = new Map(prev)
@@ -483,7 +504,25 @@ export default function CompararPage() {
                                       <span>{r.healthScore}/100</span>
                                     </span>
                                   )}
-                                  {r.isUltraProcessed && (
+                                  {r.nutriscoreGrade && (
+                                    <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${
+                                      r.nutriscoreGrade === 'a' ? 'bg-green-100 text-green-700' :
+                                      r.nutriscoreGrade === 'b' ? 'bg-lime-100 text-lime-700' :
+                                      r.nutriscoreGrade === 'c' ? 'bg-amber-100 text-amber-700' :
+                                      r.nutriscoreGrade === 'd' ? 'bg-orange-100 text-orange-700' :
+                                      'bg-red-100 text-red-700'
+                                    }`}>
+                                      NS:{r.nutriscoreGrade.toUpperCase()}
+                                    </span>
+                                  )}
+                                  {r.novaGroup && r.novaGroup >= 3 && (
+                                    <span className={`text-xs px-1.5 py-0.5 rounded ${
+                                      r.novaGroup === 4 ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-600'
+                                    }`}>
+                                      NOVA {r.novaGroup}
+                                    </span>
+                                  )}
+                                  {r.isUltraProcessed && !r.novaGroup && (
                                     <span className="text-xs bg-red-100 text-red-600 px-1.5 py-0.5 rounded">Ultra-proc</span>
                                   )}
                                   {r.dietWarning && (
@@ -496,6 +535,15 @@ export default function CompararPage() {
                                     <span className="text-xs text-red-600 font-medium">
                                       Alergeno: {r.allergenWarnings.join(', ')}
                                     </span>
+                                  </div>
+                                )}
+                                {r.nutritionWarnings && r.nutritionWarnings.length > 0 && (
+                                  <div className="flex flex-wrap gap-1 mt-1">
+                                    {r.nutritionWarnings.map((w, wi) => (
+                                      <span key={wi} className="text-xs bg-orange-50 text-orange-600 px-1.5 py-0.5 rounded">
+                                        {w}
+                                      </span>
+                                    ))}
                                   </div>
                                 )}
                               </div>
