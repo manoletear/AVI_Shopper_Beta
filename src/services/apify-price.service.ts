@@ -134,6 +134,37 @@ export async function searchUnimarc(
   }));
 }
 
+/**
+ * Calcula la relevancia de un producto respecto a la busqueda.
+ * Retorna un score de 0 a 1.
+ *
+ * Logica:
+ * - Extrae palabras clave de la busqueda (>2 chars)
+ * - Cuenta cuantas aparecen en el nombre del producto
+ * - Score = palabras encontradas / total palabras clave
+ * - Bonus si el nombre empieza con la primera palabra clave
+ */
+function calculateRelevance(productName: string, query: string): number {
+  const queryWords = query.toLowerCase().split(/\s+/).filter(w => w.length > 2);
+  if (queryWords.length === 0) return 1;
+
+  const nameLower = productName.toLowerCase();
+  let matches = 0;
+
+  for (const word of queryWords) {
+    if (nameLower.includes(word)) matches++;
+  }
+
+  let score = matches / queryWords.length;
+
+  // Bonus si la primera palabra clave esta en el nombre
+  if (queryWords[0] && nameLower.includes(queryWords[0])) {
+    score = Math.min(1, score + 0.2);
+  }
+
+  return score;
+}
+
 export async function comparePrices(
   query: string,
   apiToken: string
@@ -144,9 +175,20 @@ export async function comparePrices(
     searchUnimarc(query, apiToken).catch(() => [] as ApifyProduct[]),
   ]);
 
-  const allResults = [...jumboResults, ...liderResults, ...unimarcResults].filter(
+  const allRaw = [...jumboResults, ...liderResults, ...unimarcResults].filter(
     (p) => p.inStock && p.price > 0
   );
+
+  // Filtrar por relevancia: solo productos con score >= 0.4
+  // Esto elimina resultados como "papas fritas americano" cuando
+  // buscas "lomo vetado americano"
+  const RELEVANCE_THRESHOLD = 0.4;
+  let allResults = allRaw.filter(
+    (p) => calculateRelevance(p.name, query) >= RELEVANCE_THRESHOLD
+  );
+
+  // Si el filtro elimino todo, usar todos (mejor algo que nada)
+  if (allResults.length === 0) allResults = allRaw;
 
   const cheapest = allResults.length > 0
     ? allResults.reduce((min, p) => (p.price < min.price ? p : min))

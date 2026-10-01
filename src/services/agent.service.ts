@@ -242,12 +242,21 @@ async function executeTool(
           observedAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) },
         },
         orderBy: { observedAt: 'desc' },
-        take: 12,
+        take: 20,
       });
 
       if (cached.length > 0) {
+        // Filtrar por relevancia
+        const queryWords = (input.product as string).toLowerCase().split(/\s+/).filter((w: string) => w.length > 2);
+        const relevant = cached.filter((c) => {
+          const nameLower = c.productName.toLowerCase();
+          const matches = queryWords.filter((w: string) => nameLower.includes(w)).length;
+          return queryWords.length === 0 || matches / queryWords.length >= 0.4;
+        });
+        const filtered = relevant.length > 0 ? relevant : cached;
+
         const seen = new Set<string>();
-        const prices = cached.filter((c) => {
+        const prices = filtered.filter((c) => {
           const key = `${c.productName}|${c.storeSlug}`;
           if (seen.has(key)) return false;
           seen.add(key);
