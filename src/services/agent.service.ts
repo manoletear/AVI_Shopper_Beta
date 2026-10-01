@@ -22,6 +22,11 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { prisma } from '@/lib/prisma';
 import { recordPurchase, getProductProfiles, getSuggestions, getFamilyProfileSummary } from './purchase-learning.service';
+import { generateCheckoutPlan, formatCheckoutMessage } from './checkout.service';
+
+const STORE_NAMES: Record<string, string> = {
+  jumbo: 'Jumbo', lider: 'Lider', unimarc: 'Unimarc', 'santa-isabel': 'Santa Isabel',
+};
 
 const TOOLS: Anthropic.Tool[] = [
   {
@@ -124,6 +129,16 @@ const TOOLS: Anthropic.Tool[] = [
     input_schema: {
       type: 'object' as const,
       properties: {},
+    },
+  },
+  {
+    name: 'checkout',
+    description: 'Genera links de compra directos al supermercado. Usa cuando el usuario dice "comprar", "hacer la compra", "pedir", "checkout", "ir a pagar", "arma el carrito". Genera links para que el usuario abra cada producto en el super y lo agregue al carrito.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        store: { type: 'string', description: 'Supermercado preferido (jumbo, lider, unimarc, santa-isabel). Si no dice, usa el que tenga mejores precios.' },
+      },
     },
   },
 ];
@@ -420,6 +435,56 @@ async function executeTool(
         success: true,
         data: { suggestions },
         message: `Te sugiero agregar ${suggestions.length} productos:\n${lines.join('\n')}`,
+      };
+    }
+
+    case 'checkout': {
+      // Obtener lista de compras activa
+      const list = await prisma.shoppingList.findFirst({
+        where: { userId },
+        orderBy: { updatedAt: 'desc' },
+        include: { items: { where: { checked: false } } },
+      });
+
+      if (!list || list.items.length === 0) {
+        return { success: false, data: null, message: 'Tu lista esta vacia. Agrega productos primero.' };
+      }
+
+      // Buscar precios recientes para cada item
+      const checkoutItems = [];
+      const preferredStore = input.store?.toLowerCase();
+
+      for (const item of list.items) {
+        // Buscar precio en cache
+        const priceObs = await prisma.priceObservation.findFirst({
+          where: {
+            searchTerm: { equals: item.name.split(' ')[0] },
+            ...(preferredStore ? { storeSlug: preferredStore } : {}),
+            observedAt: { gte: new Date(Date.now() - 48 * 60 * 60 * 1000) },
+          },
+          orderBy: { price: 'asc' },
+        });
+
+        const storeSlug = priceObs?.storeSlug || preferredStore || 'jumbo';
+        const storeName = priceObs?.storeName || (STORE_NAMES as any)[storeSlug] || 'Jumbo';
+
+        checkoutItems.push({
+          productName: item.name,
+          store: storeName,
+          storeSlug,
+          price: priceObs?.price || 0,
+          quantity: item.quantity,
+          productUrl: priceObs?.url || undefined,
+        });
+      }
+
+      const plan = generateCheckoutPlan(checkoutItems);
+      const message = formatCheckoutMessage(plan);
+
+      return {
+        success: true,
+        data: { plan },
+        message,
       };
     }
 
