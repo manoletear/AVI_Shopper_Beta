@@ -16,7 +16,7 @@
  * - WHATSAPP_VERIFY_TOKEN (token de verificacion del webhook)
  */
 
-const GRAPH_API = 'https://graph.facebook.com/v23.0';
+const GRAPH_API = 'https://graph.facebook.com/v25.0';
 
 interface WhatsAppMessage {
   from: string;
