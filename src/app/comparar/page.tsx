@@ -267,44 +267,105 @@ export default function CompararPage() {
     setIsComparing(false)
   }
 
-  // Calcular split optimo
-  const getSplitRecommendation = (): { splits: SplitRecommendation[]; totalSplit: number; totalSingleBest: number } => {
-    const storeItems: Record<string, SplitRecommendation['items']> = {}
-    let totalSingleBest = Infinity
-    const storeTotals: Record<string, number> = {}
+  const DELIVERY_FEES: Record<string, number> = {
+    Jumbo: 2990, Lider: 2490, Unimarc: 2790, 'Santa Isabel': 3490, 'Santa-isabel': 3490,
+  }
 
-    for (const [, comp] of comparisons) {
-      if (!comp.cheapest || comp.loading) continue
+  interface BuyOption {
+    id: string
+    label: string
+    description: string
+    stores: Array<{ store: string; items: Array<{ name: string; price: number }>; subtotal: number; delivery: number }>
+    totalProducts: number
+    totalDelivery: number
+    grandTotal: number
+    isCheapest: boolean
+  }
 
-      const store = comp.cheapest.store
-      if (!storeItems[store]) storeItems[store] = []
-      storeItems[store].push({
-        query: comp.query,
-        name: comp.cheapest.name,
-        price: comp.cheapest.price,
-      })
+  // Calcular opciones de compra con despacho
+  const getBuyOptions = (): BuyOption[] => {
+    if (isComparing) return []
 
-      // Acumular por tienda para encontrar mejor single store
+    const completed = Array.from(comparisons.values()).filter((c) => !c.loading && c.results.length > 0)
+    if (completed.length === 0) return []
+
+    // Opcion A: mejor tienda unica (todos los productos en 1 tienda)
+    const storeTotals: Record<string, { items: Array<{ name: string; price: number }>; total: number }> = {}
+    for (const comp of completed) {
       for (const r of comp.results) {
-        if (!storeTotals[r.store]) storeTotals[r.store] = 0
-        // Solo contar el mas barato de esa tienda para este query
-        const storeMin = comp.results
-          .filter((x) => x.store === r.store)
-          .reduce((min, x) => (x.price < min ? x.price : min), Infinity)
-        storeTotals[r.store] = (storeTotals[r.store] || 0)
-        // Esto es aproximado — tomamos el primer resultado por tienda
+        if (!storeTotals[r.store]) storeTotals[r.store] = { items: [], total: 0 }
+        // Solo el mas barato de esta tienda para este query
+        const existing = storeTotals[r.store].items.find((i) => i.name === comp.query)
+        if (!existing) {
+          const cheapestInStore = comp.results.filter((x) => x.store === r.store).reduce((min, x) => x.price < min.price ? x : min)
+          storeTotals[r.store].items.push({ name: comp.query, price: cheapestInStore.price })
+          storeTotals[r.store].total += cheapestInStore.price
+        }
       }
     }
 
-    const splits: SplitRecommendation[] = Object.entries(storeItems).map(([store, items]) => ({
+    // Solo tiendas que tienen TODOS los productos
+    const fullStores = Object.entries(storeTotals)
+      .filter(([, d]) => d.items.length === completed.length)
+      .map(([store, d]) => ({
+        store,
+        items: d.items,
+        subtotal: d.total,
+        delivery: DELIVERY_FEES[store] || 2990,
+        grandTotal: d.total + (DELIVERY_FEES[store] || 2990),
+      }))
+      .sort((a, b) => a.grandTotal - b.grandTotal)
+
+    const singleBestOptions: BuyOption[] = fullStores.slice(0, 2).map((s, i) => ({
+      id: `single-${i}`,
+      label: `Todo en ${s.store}`,
+      description: `${completed.length} productos + 1 despacho`,
+      stores: [{ store: s.store, items: s.items, subtotal: s.subtotal, delivery: s.delivery }],
+      totalProducts: s.subtotal,
+      totalDelivery: s.delivery,
+      grandTotal: s.grandTotal,
+      isCheapest: false,
+    }))
+
+    // Opcion B: split optimo (cada producto donde es mas barato)
+    const splitStores: Record<string, Array<{ name: string; price: number }>> = {}
+    for (const comp of completed) {
+      if (!comp.cheapest) continue
+      const store = comp.cheapest.store
+      if (!splitStores[store]) splitStores[store] = []
+      splitStores[store].push({ name: comp.query, price: comp.cheapest.price })
+    }
+
+    const splitStoreList = Object.entries(splitStores).map(([store, items]) => ({
       store,
       items,
       subtotal: items.reduce((s, i) => s + i.price, 0),
+      delivery: DELIVERY_FEES[store] || 2990,
     }))
+    const splitTotalProducts = splitStoreList.reduce((s, st) => s + st.subtotal, 0)
+    const splitTotalDelivery = splitStoreList.reduce((s, st) => s + st.delivery, 0)
+    const splitGrandTotal = splitTotalProducts + splitTotalDelivery
 
-    const totalSplit = splits.reduce((s, sp) => s + sp.subtotal, 0)
+    const splitOption: BuyOption = {
+      id: 'split',
+      label: `Split en ${splitStoreList.length} tiendas`,
+      description: `Cada producto donde es mas barato + ${splitStoreList.length} despacho${splitStoreList.length > 1 ? 's' : ''}`,
+      stores: splitStoreList,
+      totalProducts: splitTotalProducts,
+      totalDelivery: splitTotalDelivery,
+      grandTotal: splitGrandTotal,
+      isCheapest: false,
+    }
 
-    return { splits, totalSplit, totalSingleBest }
+    // Juntar todas las opciones y marcar la mas barata
+    const allOptions = [...singleBestOptions, splitOption].filter((o) => o.stores.length > 0)
+    const cheapestTotal = Math.min(...allOptions.map((o) => o.grandTotal))
+    for (const opt of allOptions) {
+      opt.isCheapest = opt.grandTotal === cheapestTotal
+    }
+
+    // Ordenar: mas barata primero
+    return allOptions.sort((a, b) => a.grandTotal - b.grandTotal)
   }
 
   const formatCLP = (n: number) =>
@@ -318,7 +379,6 @@ export default function CompararPage() {
   }
 
   const completedCount = Array.from(comparisons.values()).filter((c) => !c.loading).length
-  const { splits, totalSplit } = showResults ? getSplitRecommendation() : { splits: [], totalSplit: 0 }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -440,40 +500,94 @@ export default function CompararPage() {
                 </p>
               </div>
             )}
-            {/* Split Recommendation */}
-            {splits.length > 0 && !isComparing && (
-              <div className="bg-green-50 border border-green-200 rounded-xl p-5 mb-6">
-                <div className="flex items-center space-x-2 mb-3">
-                  <TrendingDown className="h-5 w-5 text-green-600" />
-                  <h3 className="font-semibold text-green-900">Recomendacion AVI — Compra optima</h3>
+            {/* Buy Options */}
+            {!isComparing && getBuyOptions().length > 0 && (
+              <div className="space-y-3 mb-6">
+                <div className="flex items-center space-x-2">
+                  <Store className="h-5 w-5 text-blue-600" />
+                  <h3 className="font-semibold text-gray-900">Opciones de compra</h3>
                 </div>
 
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
-                  {splits.map((split) => (
-                    <div key={split.store} className="bg-white rounded-lg border border-green-200 p-3">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <Store className="h-4 w-4 text-green-600" />
-                        <span className="font-medium text-sm text-gray-900">{split.store}</span>
-                        <span className="text-xs text-gray-400">({split.items.length} items)</span>
-                      </div>
-                      {split.items.map((item) => (
-                        <div key={item.query} className="flex justify-between text-xs text-gray-600 py-0.5">
-                          <span className="truncate mr-2">{item.name}</span>
-                          <span className="font-medium text-gray-900 flex-shrink-0">{formatCLP(item.price)}</span>
+                {getBuyOptions().map((opt) => (
+                  <div key={opt.id} className={`rounded-2xl border-2 p-4 transition-all ${
+                    opt.isCheapest
+                      ? 'border-emerald-400 bg-emerald-50/50 shadow-sm'
+                      : 'border-gray-200 bg-white'
+                  }`}>
+                    <div className="flex items-start justify-between mb-3">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-gray-900">{opt.label}</span>
+                          {opt.isCheapest && (
+                            <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-semibold">Mas barato</span>
+                          )}
                         </div>
-                      ))}
-                      <div className="border-t mt-2 pt-1 flex justify-between text-sm font-semibold text-green-700">
-                        <span>Subtotal</span>
-                        <span>{formatCLP(split.subtotal)}</span>
+                        <p className="text-xs text-gray-500 mt-0.5">{opt.description}</p>
+                      </div>
+                      <div className="text-right">
+                        <div className={`text-xl font-bold ${opt.isCheapest ? 'text-emerald-700' : 'text-gray-900'}`}>
+                          {formatCLP(opt.grandTotal)}
+                        </div>
                       </div>
                     </div>
-                  ))}
-                </div>
 
-                <div className="flex items-center justify-between bg-green-100 rounded-lg px-4 py-2">
-                  <span className="font-semibold text-green-900">Total optimizado</span>
-                  <span className="text-xl font-bold text-green-700">{formatCLP(totalSplit)}</span>
-                </div>
+                    {/* Store breakdown */}
+                    <div className="space-y-2 mb-3">
+                      {opt.stores.map((st) => (
+                        <div key={st.store} className="bg-white/70 rounded-lg p-2.5 border border-gray-100">
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="text-sm font-medium text-gray-800">{st.store}</span>
+                            <span className="text-xs text-gray-400">{st.items.length} producto{st.items.length > 1 ? 's' : ''}</span>
+                          </div>
+                          {st.items.map((item, ii) => (
+                            <div key={ii} className="flex justify-between text-xs text-gray-600 py-0.5">
+                              <span className="truncate mr-2">{item.name}</span>
+                              <span className="font-medium text-gray-800 flex-shrink-0">{formatCLP(item.price)}</span>
+                            </div>
+                          ))}
+                          <div className="flex justify-between text-xs text-gray-400 mt-1 pt-1 border-t border-gray-100">
+                            <span>Despacho</span>
+                            <span>{formatCLP(st.delivery)}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Total breakdown */}
+                    <div className="flex justify-between text-xs text-gray-500 mb-3">
+                      <span>Productos: {formatCLP(opt.totalProducts)} + Despacho{opt.stores.length > 1 ? 's' : ''}: {formatCLP(opt.totalDelivery)}</span>
+                    </div>
+
+                    {/* BUY BUTTON */}
+                    <button
+                      onClick={() => {
+                        // Generar deep links y abrir en nueva pestaña
+                        for (const st of opt.stores) {
+                          const storeSearchUrls: Record<string, (q: string) => string> = {
+                            Jumbo: (q) => `https://www.jumbo.cl/buscar?ft=${encodeURIComponent(q)}`,
+                            Lider: (q) => `https://super.lider.cl/search?q=${encodeURIComponent(q)}`,
+                            Unimarc: (q) => `https://www.unimarc.cl/buscar?q=${encodeURIComponent(q)}`,
+                            'Santa Isabel': (q) => `https://www.santaisabel.cl/buscar?ft=${encodeURIComponent(q)}`,
+                          }
+                          const urlFn = storeSearchUrls[st.store]
+                          if (urlFn) {
+                            for (const item of st.items) {
+                              window.open(urlFn(item.name), '_blank')
+                            }
+                          }
+                        }
+                      }}
+                      className={`w-full py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all ${
+                        opt.isCheapest
+                          ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:shadow-lg'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      <ShoppingCart className="h-4 w-4" />
+                      Comprar en {opt.stores.map((s) => s.store).join(' + ')}
+                    </button>
+                  </div>
+                ))}
               </div>
             )}
 
