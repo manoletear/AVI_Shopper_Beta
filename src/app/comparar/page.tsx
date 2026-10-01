@@ -590,7 +590,7 @@ export default function CompararPage() {
                             } else {
                               // Fallback manual
                               const searchUrls: Record<string, (q: string) => string> = {
-                                jumbo: (q) => `https://www.jumbo.cl/buscar?ft=${encodeURIComponent(q)}`,
+                                jumbo: (q) => `https://www.jumbo.cl/search?ft=${encodeURIComponent(q)}`,
                                 lider: (q) => `https://super.lider.cl/search?q=${encodeURIComponent(q)}`,
                                 unimarc: (q) => `https://www.unimarc.cl/buscar?q=${encodeURIComponent(q)}`,
                                 'santa-isabel': (q) => `https://www.santaisabel.cl/buscar?ft=${encodeURIComponent(q)}`,
@@ -605,7 +605,7 @@ export default function CompararPage() {
                           } catch {
                             // Error: fallback a links directos
                             const searchUrls: Record<string, (q: string) => string> = {
-                              Jumbo: (q) => `https://www.jumbo.cl/buscar?ft=${encodeURIComponent(q)}`,
+                              Jumbo: (q) => `https://www.jumbo.cl/search?ft=${encodeURIComponent(q)}`,
                               Lider: (q) => `https://super.lider.cl/search?q=${encodeURIComponent(q)}`,
                               Unimarc: (q) => `https://www.unimarc.cl/buscar?q=${encodeURIComponent(q)}`,
                               'Santa Isabel': (q) => `https://www.santaisabel.cl/buscar?ft=${encodeURIComponent(q)}`,
