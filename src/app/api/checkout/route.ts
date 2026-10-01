@@ -4,6 +4,20 @@ import { prisma } from '@/lib/prisma';
 import { successResponse, errorResponse } from '@/lib/responses';
 import { buildCart } from '@/services/store-cart.service';
 
+const STORE_SEARCH_URLS: Record<string, (q: string) => string> = {
+  jumbo: (q) => `https://www.jumbo.cl/search?ft=${encodeURIComponent(q)}`,
+  lider: (q) => `https://super.lider.cl/search?q=${encodeURIComponent(q)}`,
+  unimarc: (q) => `https://www.unimarc.cl/buscar?q=${encodeURIComponent(q)}`,
+  'santa-isabel': (q) => `https://www.santaisabel.cl/search?ft=${encodeURIComponent(q)}`,
+};
+
+const STORE_CART_URLS: Record<string, string> = {
+  jumbo: 'https://www.jumbo.cl/checkout',
+  lider: 'https://super.lider.cl/cart',
+  unimarc: 'https://www.unimarc.cl/checkout',
+  'santa-isabel': 'https://www.santaisabel.cl/checkout',
+};
+
 // POST /api/checkout — Armar carrito en el supermercado
 export async function POST(request: NextRequest) {
   try {
@@ -33,63 +47,56 @@ export async function POST(request: NextRequest) {
       return errorResponse('No hay productos para agregar al carrito', 400);
     }
 
-    // Obtener credenciales del supermercado del usuario
+    // Intentar carrito automatico si tiene cuenta vinculada
     const storeAccount = await prisma.storeAccount.findFirst({
-      where: {
-        userId,
-        store: { slug: storeSlug },
-      },
+      where: { userId, store: { slug: storeSlug } },
       include: { store: true },
     });
 
-    if (!storeAccount) {
-      return errorResponse(
-        `No tienes cuenta vinculada en ${storeSlug}. Ve a /configuracion/cuentas para vincularla.`,
-        400,
-        'NO_STORE_ACCOUNT'
-      );
+    if (storeAccount) {
+      const result = await buildCart(storeSlug, cartItems, {
+        email: storeAccount.accountEmail,
+        password: '',
+      });
+
+      if (result.success) {
+        return successResponse({
+          mode: 'auto',
+          cartUrl: result.cartUrl,
+          itemsAdded: result.itemsAdded,
+          itemsFailed: result.itemsFailed,
+          totalEstimated: result.totalEstimated,
+          store: result.store,
+          message: `Carrito armado en ${result.store} con ${result.itemsAdded} productos. Click para pagar.`,
+        });
+      }
     }
 
-    // Armar el carrito
-    const result = await buildCart(storeSlug, cartItems, {
-      email: storeAccount.accountEmail,
-      password: '', // Las credenciales de login del super se manejan aparte
+    // Modo visitante: generar links directos por producto
+    const urlFn = STORE_SEARCH_URLS[storeSlug];
+    if (!urlFn) {
+      return errorResponse(`Supermercado "${storeSlug}" no soportado`, 400);
+    }
+
+    const links = cartItems.map((item: any) => ({
+      product: item.productName,
+      quantity: item.quantity || 1,
+      url: urlFn(item.productName),
+    }));
+
+    return successResponse({
+      mode: 'guest',
+      cartUrl: STORE_CART_URLS[storeSlug] || null,
+      links,
+      store: storeSlug,
+      hasAccount: !!storeAccount,
+      message: storeAccount
+        ? `No se pudo armar el carrito automaticamente. Abre cada link, agrega al carrito y paga.`
+        : `Abre cada producto en el super, agrégalo al carrito y completa la compra como visitante.`,
+      tip: !storeAccount
+        ? 'Vincula tu cuenta en /configuracion/cuentas para que AVI arme el carrito automaticamente la proxima vez.'
+        : null,
     });
-
-    if (result.success) {
-      return successResponse({
-        cartUrl: result.cartUrl,
-        itemsAdded: result.itemsAdded,
-        itemsFailed: result.itemsFailed,
-        totalEstimated: result.totalEstimated,
-        store: result.store,
-        message: `Carrito armado en ${result.store} con ${result.itemsAdded} productos. Haz click para pagar.`,
-      });
-    } else {
-      // Fallback: generar deep links
-      const searchUrls: Record<string, (q: string) => string> = {
-        jumbo: (q) => `https://www.jumbo.cl/search?ft=${encodeURIComponent(q)}`,
-        lider: (q) => `https://super.lider.cl/search?q=${encodeURIComponent(q)}`,
-        unimarc: (q) => `https://www.unimarc.cl/buscar?q=${encodeURIComponent(q)}`,
-        'santa-isabel': (q) => `https://www.santaisabel.cl/buscar?ft=${encodeURIComponent(q)}`,
-      };
-      const urlFn = searchUrls[storeSlug] || searchUrls.jumbo;
-
-      const links = cartItems.map((item: any) => ({
-        product: item.productName,
-        url: urlFn(item.productName),
-        quantity: item.quantity,
-      }));
-
-      return successResponse({
-        cartUrl: null,
-        fallback: true,
-        links,
-        store: storeSlug,
-        message: `No se pudo armar el carrito automaticamente. Usa estos links para agregar cada producto manualmente.`,
-        error: result.error,
-      });
-    }
   } catch (error: any) {
     if (error.statusCode) {
       return errorResponse(error.message, error.statusCode, error.code);
