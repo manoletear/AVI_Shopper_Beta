@@ -1,0 +1,267 @@
+/**
+ * Store Cart Service — Agrega productos al carrito del supermercado
+ *
+ * AVI actua como capa entre el usuario y el supermercado:
+ * 1. Login con credenciales del usuario (almacenadas encriptadas)
+ * 2. Busca cada producto por nombre/SKU
+ * 3. Agrega al carrito con la cantidad correcta
+ * 4. Retorna URL del carrito listo para pagar
+ *
+ * El usuario solo ve: "Tu carrito en Jumbo esta listo → [Ir a pagar]"
+ *
+ * Supermercados soportados:
+ * - Jumbo (Cencosud BFF API)
+ * - Lider Super (Walmart platform)
+ * - Unimarc (plataforma propia)
+ */
+
+// ============================================
+// TIPOS
+// ============================================
+
+export interface CartItem {
+  productName: string;
+  sku?: string;
+  quantity: number;
+  price?: number;
+}
+
+export interface CartResult {
+  success: boolean;
+  store: string;
+  cartUrl: string;
+  itemsAdded: number;
+  itemsFailed: string[];
+  totalEstimated: number;
+  error?: string;
+}
+
+interface StoreSession {
+  cookies: string;
+  token?: string;
+  cartId?: string;
+}
+
+// ============================================
+// JUMBO (Cencosud)
+// ============================================
+
+const JUMBO_BFF = 'https://bff.jumbo.cl';
+const JUMBO_API_KEY = 'be-reg-groceries-jumbo-catalog-w54byfvkmju5';
+
+async function jumboLogin(email: string, password: string): Promise<StoreSession | null> {
+  try {
+    const res = await fetch(`${JUMBO_BFF}/auth/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': JUMBO_API_KEY,
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        'Referer': 'https://www.jumbo.cl/',
+      },
+      body: JSON.stringify({ email, password }),
+    });
+
+    if (!res.ok) return null;
+
+    const data = await res.json();
+    const cookies = res.headers.get('set-cookie') || '';
+
+    return {
+      cookies,
+      token: data.token || data.accessToken,
+      cartId: data.cartId,
+    };
+  } catch {
+    return null;
+  }
+}
+
+async function jumboSearchProduct(
+  query: string,
+  session: StoreSession
+): Promise<{ sku: string; name: string; price: number } | null> {
+  try {
+    const res = await fetch(`${JUMBO_BFF}/catalog/plp`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': JUMBO_API_KEY,
+        'User-Agent': 'Mozilla/5.0',
+        'Referer': 'https://www.jumbo.cl/',
+        ...(session.token ? { 'Authorization': `Bearer ${session.token}` } : {}),
+        ...(session.cookies ? { 'Cookie': session.cookies } : {}),
+      },
+      body: JSON.stringify({ terms: query, page: 1, itemsPerPage: 1 }),
+    });
+
+    if (!res.ok) return null;
+    const data = await res.json();
+
+    if (data.products && data.products.length > 0) {
+      const p = data.products[0];
+      return {
+        sku: p.sku || p.productId,
+        name: p.displayName || p.name,
+        price: p.prices?.offerPrice || p.prices?.normalPrice || 0,
+      };
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+async function jumboAddToCart(
+  sku: string,
+  quantity: number,
+  session: StoreSession
+): Promise<boolean> {
+  try {
+    const res = await fetch(`${JUMBO_BFF}/cart/items`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': JUMBO_API_KEY,
+        'User-Agent': 'Mozilla/5.0',
+        'Referer': 'https://www.jumbo.cl/',
+        ...(session.token ? { 'Authorization': `Bearer ${session.token}` } : {}),
+        ...(session.cookies ? { 'Cookie': session.cookies } : {}),
+      },
+      body: JSON.stringify({
+        items: [{ id: sku, quantity, seller: '1' }],
+      }),
+    });
+
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+export async function buildJumboCart(
+  items: CartItem[],
+  email: string,
+  password: string
+): Promise<CartResult> {
+  const session = await jumboLogin(email, password);
+
+  if (!session) {
+    return {
+      success: false,
+      store: 'Jumbo',
+      cartUrl: 'https://www.jumbo.cl/checkout',
+      itemsAdded: 0,
+      itemsFailed: items.map((i) => i.productName),
+      totalEstimated: 0,
+      error: 'No se pudo iniciar sesion en Jumbo. Verifica tus credenciales.',
+    };
+  }
+
+  let added = 0;
+  let total = 0;
+  const failed: string[] = [];
+
+  for (const item of items) {
+    // Buscar el producto por nombre
+    const product = item.sku
+      ? { sku: item.sku, name: item.productName, price: item.price || 0 }
+      : await jumboSearchProduct(item.productName, session);
+
+    if (!product) {
+      failed.push(item.productName);
+      continue;
+    }
+
+    const success = await jumboAddToCart(product.sku, item.quantity, session);
+    if (success) {
+      added++;
+      total += product.price * item.quantity;
+    } else {
+      failed.push(item.productName);
+    }
+
+    // Pausa entre productos
+    await new Promise((r) => setTimeout(r, 500));
+  }
+
+  return {
+    success: added > 0,
+    store: 'Jumbo',
+    cartUrl: 'https://www.jumbo.cl/checkout',
+    itemsAdded: added,
+    itemsFailed: failed,
+    totalEstimated: total,
+  };
+}
+
+// ============================================
+// LIDER SUPER (Walmart)
+// ============================================
+
+export async function buildLiderCart(
+  items: CartItem[],
+  email: string,
+  password: string
+): Promise<CartResult> {
+  // Lider Super usa la plataforma Walmart con auth via cookies
+  // Por ahora retornamos deep link al carrito
+  return {
+    success: false,
+    store: 'Lider',
+    cartUrl: 'https://super.lider.cl',
+    itemsAdded: 0,
+    itemsFailed: items.map((i) => i.productName),
+    totalEstimated: 0,
+    error: 'Lider Super aun no soporta carrito automatico. Usa los links directos.',
+  };
+}
+
+// ============================================
+// UNIMARC
+// ============================================
+
+export async function buildUnimarcCart(
+  items: CartItem[],
+  email: string,
+  password: string
+): Promise<CartResult> {
+  return {
+    success: false,
+    store: 'Unimarc',
+    cartUrl: 'https://www.unimarc.cl',
+    itemsAdded: 0,
+    itemsFailed: items.map((i) => i.productName),
+    totalEstimated: 0,
+    error: 'Unimarc aun no soporta carrito automatico. Usa los links directos.',
+  };
+}
+
+// ============================================
+// ORQUESTADOR
+// ============================================
+
+export async function buildCart(
+  storeSlug: string,
+  items: CartItem[],
+  credentials: { email: string; password: string }
+): Promise<CartResult> {
+  switch (storeSlug) {
+    case 'jumbo':
+      return buildJumboCart(items, credentials.email, credentials.password);
+    case 'lider':
+      return buildLiderCart(items, credentials.email, credentials.password);
+    case 'unimarc':
+      return buildUnimarcCart(items, credentials.email, credentials.password);
+    default:
+      return {
+        success: false,
+        store: storeSlug,
+        cartUrl: '',
+        itemsAdded: 0,
+        itemsFailed: items.map((i) => i.productName),
+        totalEstimated: 0,
+        error: `Supermercado "${storeSlug}" no soportado`,
+      };
+  }
+}

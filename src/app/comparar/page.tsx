@@ -560,19 +560,61 @@ export default function CompararPage() {
 
                     {/* BUY BUTTON */}
                     <button
-                      onClick={() => {
-                        // Generar deep links y abrir en nueva pestaña
+                      onClick={async () => {
+                        // Intentar armar carrito automatico por cada tienda
                         for (const st of opt.stores) {
-                          const storeSearchUrls: Record<string, (q: string) => string> = {
-                            Jumbo: (q) => `https://www.jumbo.cl/buscar?ft=${encodeURIComponent(q)}`,
-                            Lider: (q) => `https://super.lider.cl/search?q=${encodeURIComponent(q)}`,
-                            Unimarc: (q) => `https://www.unimarc.cl/buscar?q=${encodeURIComponent(q)}`,
-                            'Santa Isabel': (q) => `https://www.santaisabel.cl/buscar?ft=${encodeURIComponent(q)}`,
+                          const storeSlugMap: Record<string, string> = {
+                            Jumbo: 'jumbo', Lider: 'lider', Unimarc: 'unimarc', 'Santa Isabel': 'santa-isabel',
                           }
-                          const urlFn = storeSearchUrls[st.store]
-                          if (urlFn) {
-                            for (const item of st.items) {
-                              window.open(urlFn(item.name), '_blank')
+                          const slug = storeSlugMap[st.store] || st.store.toLowerCase()
+
+                          try {
+                            const res = await fetch('/api/checkout', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({
+                                storeSlug: slug,
+                                items: st.items.map((i) => ({ productName: i.name, quantity: 1 })),
+                              }),
+                            })
+                            const data = await res.json()
+
+                            if (data.success && data.data.cartUrl && !data.data.fallback) {
+                              // Carrito armado automaticamente
+                              window.open(data.data.cartUrl, '_blank')
+                            } else if (data.data?.links) {
+                              // Fallback: abrir links de busqueda
+                              for (const link of data.data.links) {
+                                window.open(link.url, '_blank')
+                              }
+                            } else {
+                              // Fallback manual
+                              const searchUrls: Record<string, (q: string) => string> = {
+                                jumbo: (q) => `https://www.jumbo.cl/buscar?ft=${encodeURIComponent(q)}`,
+                                lider: (q) => `https://super.lider.cl/search?q=${encodeURIComponent(q)}`,
+                                unimarc: (q) => `https://www.unimarc.cl/buscar?q=${encodeURIComponent(q)}`,
+                                'santa-isabel': (q) => `https://www.santaisabel.cl/buscar?ft=${encodeURIComponent(q)}`,
+                              }
+                              const urlFn = searchUrls[slug]
+                              if (urlFn) {
+                                for (const item of st.items) {
+                                  window.open(urlFn(item.name), '_blank')
+                                }
+                              }
+                            }
+                          } catch {
+                            // Error: fallback a links directos
+                            const searchUrls: Record<string, (q: string) => string> = {
+                              Jumbo: (q) => `https://www.jumbo.cl/buscar?ft=${encodeURIComponent(q)}`,
+                              Lider: (q) => `https://super.lider.cl/search?q=${encodeURIComponent(q)}`,
+                              Unimarc: (q) => `https://www.unimarc.cl/buscar?q=${encodeURIComponent(q)}`,
+                              'Santa Isabel': (q) => `https://www.santaisabel.cl/buscar?ft=${encodeURIComponent(q)}`,
+                            }
+                            const urlFn = searchUrls[st.store]
+                            if (urlFn) {
+                              for (const item of st.items) {
+                                window.open(urlFn(item.name), '_blank')
+                              }
                             }
                           }
                         }
