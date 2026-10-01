@@ -7,6 +7,7 @@ import {
   ArrowRight, LogOut, Settings, AlertCircle,
   Wallet, Package, User, Bot, Bell, TrendingUp,
 } from 'lucide-react'
+import SmartAlerts from '@/components/SmartAlerts'
 
 interface DashboardData {
   listsCount: number
@@ -112,6 +113,9 @@ export default function DashboardPage() {
           </h1>
           <p className="text-gray-500 mt-0.5">¿Que quieres hacer hoy?</p>
         </div>
+
+        {/* Smart Alerts — onboarding + time-based */}
+        <SmartAlerts />
 
         {/* Stats */}
         {data && (
