@@ -14,6 +14,9 @@ export async function GET() {
         family: {
           include: {
             members: {
+              include: {
+                user: { select: { email: true, name: true } },
+              },
               orderBy: { createdAt: 'asc' },
             },
           },
