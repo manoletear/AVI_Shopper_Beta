@@ -34,6 +34,7 @@ model User {
   nutritionData NutritionData[]
   storeAccounts StoreAccount[]
   purchaseHistory PurchaseHistory[]
+  familyMembers FamilyMember[]
 
   @@map("users")
 }
@@ -354,4 +355,45 @@ model PurchaseHistory {
   @@index([userId, purchasedAt(sort: Desc)])
   @@index([userId, productName])
   @@map("purchase_history")
+}
+
+model Family {
+  id         String   @id @default(cuid())
+  name       String   @default("Mi Familia")
+  inviteCode String   @unique @default(cuid())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  members    FamilyMember[]
+
+  @@map("families")
+}
+
+model FamilyMember {
+  id          String   @id @default(cuid())
+
+  familyId    String
+  family      Family   @relation(fields: [familyId], references: [id], onDelete: Cascade)
+
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  name        String
+  role        String   @default("adult")   // master, adult, child, elder
+  type        String   @default("person")  // person, pet
+  avatar      String?
+  allergies   String?  // JSON array
+  dietType    String?
+  dateOfBirth String?
+  species     String?  // para mascotas: perro, gato, etc
+  breed       String?  // raza
+  notes       String?
+  isActive    Boolean  @default(true)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([familyId])
+  @@index([userId])
+  @@map("family_members")
 }
