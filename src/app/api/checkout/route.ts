@@ -9,6 +9,7 @@ const STORE_SEARCH_URLS: Record<string, (q: string) => string> = {
   lider: (q) => `https://super.lider.cl/search?q=${encodeURIComponent(q)}`,
   unimarc: (q) => `https://www.unimarc.cl/buscar?q=${encodeURIComponent(q)}`,
   'santa-isabel': (q) => `https://www.santaisabel.cl/search?ft=${encodeURIComponent(q)}`,
+  tottus: (q) => `https://www.tottus.cl/search?Ntt=${encodeURIComponent(q)}`,
 };
 
 const STORE_CART_URLS: Record<string, string> = {
@@ -16,6 +17,7 @@ const STORE_CART_URLS: Record<string, string> = {
   lider: 'https://super.lider.cl/cart',
   unimarc: 'https://www.unimarc.cl/checkout',
   'santa-isabel': 'https://www.santaisabel.cl/checkout',
+  tottus: 'https://www.tottus.cl/checkout',
 };
 
 // POST /api/checkout — Armar carrito en el supermercado
@@ -81,7 +83,7 @@ export async function POST(request: NextRequest) {
     const links = cartItems.map((item: any) => ({
       product: item.productName,
       quantity: item.quantity || 1,
-      url: urlFn(item.productName),
+      url: item.productUrl || urlFn(item.productName),
     }));
 
     return successResponse({

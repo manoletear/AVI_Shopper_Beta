@@ -6,7 +6,7 @@ import { useSearchParams } from 'next/navigation'
 import {
   ArrowLeft, Search, ShoppingCart, Plus, X, Loader2,
   DollarSign, TrendingDown, Heart, AlertTriangle,
-  Check, Store, Zap, Trash2, Settings, Shield,
+  Check, Store, Zap, Trash2, Settings, Shield, ExternalLink,
 } from 'lucide-react'
 
 interface ProductResult {
@@ -289,15 +289,58 @@ function CompararInner() {
     Jumbo: 2990, Lider: 2490, Unimarc: 2790, 'Santa Isabel': 3490, 'Santa-isabel': 3490, Tottus: 2990,
   }
 
+  interface BuyItem { name: string; price: number; url?: string }
   interface BuyOption {
     id: string
     label: string
     description: string
-    stores: Array<{ store: string; items: Array<{ name: string; price: number }>; subtotal: number; delivery: number }>
+    stores: Array<{ store: string; items: BuyItem[]; subtotal: number; delivery: number }>
     totalProducts: number
     totalDelivery: number
     grandTotal: number
     isCheapest: boolean
+  }
+
+  const [checkoutItems, setCheckoutItems] = useState<BuyItem[] | null>(null)
+  const [checkoutStore, setCheckoutStore] = useState('')
+  const [cartBuilding, setCartBuilding] = useState(false)
+  const [cartProgress, setCartProgress] = useState<Array<{ name: string; status: 'pending' | 'adding' | 'done' | 'failed'; url?: string }>>([])
+  const [cartResult, setCartResult] = useState<{ success: boolean; cartUrl?: string; added: number; failed: string[] } | null>(null)
+
+  const buildCartAuto = async (items: BuyItem[], storeName: string) => {
+    setCartBuilding(true)
+    setCartResult(null)
+    const storeSlugMap: Record<string, string> = {
+      Jumbo: 'jumbo', Lider: 'lider', Unimarc: 'unimarc', 'Santa Isabel': 'santa-isabel', Tottus: 'tottus',
+    }
+    const slug = storeSlugMap[storeName] || storeName.toLowerCase().split(' + ')[0]
+
+    setCartProgress(items.map((i) => ({ name: i.name, status: 'pending', url: i.url })))
+
+    try {
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          storeSlug: slug,
+          items: items.map((i) => ({ productName: i.name, quantity: 1, productUrl: i.url })),
+        }),
+      })
+      const data = await res.json()
+
+      if (data.success && data.data.mode === 'auto') {
+        setCartProgress(items.map((i) => ({ name: i.name, status: 'done', url: i.url })))
+        setCartResult({ success: true, cartUrl: data.data.cartUrl, added: data.data.itemsAdded, failed: data.data.itemsFailed || [] })
+      } else {
+        setCartProgress(items.map((i) => ({ name: i.name, status: 'pending', url: i.url })))
+        setCartResult({ success: false, added: 0, failed: [] })
+      }
+    } catch {
+      setCartProgress(items.map((i) => ({ name: i.name, status: 'pending', url: i.url })))
+      setCartResult({ success: false, added: 0, failed: [] })
+    }
+
+    setCartBuilding(false)
   }
 
   // Calcular opciones de compra con despacho
@@ -307,16 +350,14 @@ function CompararInner() {
     const completed = Array.from(comparisons.values()).filter((c) => !c.loading && c.results.length > 0)
     if (completed.length === 0) return []
 
-    // Opcion A: mejor tienda unica (todos los productos en 1 tienda)
-    const storeTotals: Record<string, { items: Array<{ name: string; price: number }>; total: number }> = {}
+    const storeTotals: Record<string, { items: BuyItem[]; total: number }> = {}
     for (const comp of completed) {
       for (const r of comp.results) {
         if (!storeTotals[r.store]) storeTotals[r.store] = { items: [], total: 0 }
-        // Solo el mas barato de esta tienda para este query
         const existing = storeTotals[r.store].items.find((i) => i.name === comp.query)
         if (!existing) {
           const cheapestInStore = comp.results.filter((x) => x.store === r.store).reduce((min, x) => x.price < min.price ? x : min)
-          storeTotals[r.store].items.push({ name: comp.query, price: cheapestInStore.price })
+          storeTotals[r.store].items.push({ name: comp.query, price: cheapestInStore.price, url: cheapestInStore.url })
           storeTotals[r.store].total += cheapestInStore.price
         }
       }
@@ -345,13 +386,12 @@ function CompararInner() {
       isCheapest: false,
     }))
 
-    // Opcion B: split optimo (cada producto donde es mas barato)
-    const splitStores: Record<string, Array<{ name: string; price: number }>> = {}
+    const splitStores: Record<string, BuyItem[]> = {}
     for (const comp of completed) {
       if (!comp.cheapest) continue
       const store = comp.cheapest.store
       if (!splitStores[store]) splitStores[store] = []
-      splitStores[store].push({ name: comp.query, price: comp.cheapest.price })
+      splitStores[store].push({ name: comp.query, price: comp.cheapest.price, url: comp.cheapest.url })
     }
 
     const splitStoreList = Object.entries(splitStores).map(([store, items]) => ({
@@ -578,63 +618,17 @@ function CompararInner() {
 
                     {/* BUY BUTTON */}
                     <button
-                      onClick={async () => {
-                        // Intentar armar carrito automatico por cada tienda
+                      onClick={() => {
+                        const allItems: BuyItem[] = []
                         for (const st of opt.stores) {
-                          const storeSlugMap: Record<string, string> = {
-                            Jumbo: 'jumbo', Lider: 'lider', Unimarc: 'unimarc', 'Santa Isabel': 'santa-isabel', Tottus: 'tottus',
-                          }
-                          const slug = storeSlugMap[st.store] || st.store.toLowerCase()
-
-                          try {
-                            const res = await fetch('/api/checkout', {
-                              method: 'POST',
-                              headers: { 'Content-Type': 'application/json' },
-                              body: JSON.stringify({
-                                storeSlug: slug,
-                                items: st.items.map((i) => ({ productName: i.name, quantity: 1 })),
-                              }),
-                            })
-                            const data = await res.json()
-
-                            if (data.success && data.data.mode === 'auto' && data.data.cartUrl) {
-                              window.open(data.data.cartUrl, '_blank')
-                            } else if (data.success && data.data?.links) {
-                              for (const link of data.data.links) {
-                                window.open(link.url, '_blank')
-                              }
-                            } else {
-                              // Fallback manual
-                              const searchUrls: Record<string, (q: string) => string> = {
-                                jumbo: (q) => `https://www.jumbo.cl/search?ft=${encodeURIComponent(q)}`,
-                                lider: (q) => `https://super.lider.cl/search?q=${encodeURIComponent(q)}`,
-                                unimarc: (q) => `https://www.unimarc.cl/buscar?q=${encodeURIComponent(q)}`,
-                                'santa-isabel': (q) => `https://www.santaisabel.cl/buscar?ft=${encodeURIComponent(q)}`,
-                              }
-                              const urlFn = searchUrls[slug]
-                              if (urlFn) {
-                                for (const item of st.items) {
-                                  window.open(urlFn(item.name), '_blank')
-                                }
-                              }
-                            }
-                          } catch {
-                            // Error: fallback a links directos
-                            const searchUrls: Record<string, (q: string) => string> = {
-                              Jumbo: (q) => `https://www.jumbo.cl/search?ft=${encodeURIComponent(q)}`,
-                              Lider: (q) => `https://super.lider.cl/search?q=${encodeURIComponent(q)}`,
-                              Unimarc: (q) => `https://www.unimarc.cl/buscar?q=${encodeURIComponent(q)}`,
-                              'Santa Isabel': (q) => `https://www.santaisabel.cl/buscar?ft=${encodeURIComponent(q)}`,
-                              Tottus: (q) => `https://www.tottus.cl/search?Ntt=${encodeURIComponent(q)}`,
-                            }
-                            const urlFn = searchUrls[st.store]
-                            if (urlFn) {
-                              for (const item of st.items) {
-                                window.open(urlFn(item.name), '_blank')
-                              }
-                            }
+                          for (const item of st.items) {
+                            allItems.push(item)
                           }
                         }
+                        const storeName = opt.stores.map((s) => s.store).join(' + ')
+                        setCheckoutItems(allItems)
+                        setCheckoutStore(storeName)
+                        buildCartAuto(allItems, opt.stores[0].store)
                       }}
                       className={`w-full py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all ${
                         opt.isCheapest
@@ -782,6 +776,136 @@ function CompararInner() {
           </div>
         )}
       </main>
+
+      {/* Checkout panel — AVI arma el carrito */}
+      {checkoutItems && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center">
+          <div className="bg-white w-full max-w-lg rounded-t-2xl sm:rounded-2xl max-h-[85vh] flex flex-col">
+            <div className="p-4 border-b flex items-center justify-between flex-shrink-0">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-full flex items-center justify-center overflow-hidden">
+                  <img src="/avi-icon.svg" alt="" className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900 text-sm">AVI armando tu carrito</h3>
+                  <p className="text-xs text-gray-500">{checkoutStore} · {checkoutItems.length} productos</p>
+                </div>
+              </div>
+              <button onClick={() => { setCheckoutItems(null); setCartResult(null); setCartProgress([]) }} className="p-2 text-gray-400 hover:text-gray-600">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Progress */}
+            {cartBuilding && (
+              <div className="p-4 bg-blue-50 border-b flex-shrink-0">
+                <div className="flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 text-blue-600 animate-spin" />
+                  <p className="text-sm text-blue-800 font-medium">
+                    AVI esta agregando productos al carrito de {checkoutStore}...
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Result: carrito armado */}
+            {cartResult?.success && (
+              <div className="p-4 bg-green-50 border-b flex-shrink-0">
+                <div className="flex items-center gap-2 mb-2">
+                  <Check className="h-5 w-5 text-green-600" />
+                  <p className="text-sm text-green-800 font-medium">
+                    Carrito listo — {cartResult.added} productos agregados
+                  </p>
+                </div>
+                {cartResult.cartUrl && (
+                  <a
+                    href={cartResult.cartUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full flex items-center justify-center gap-2 bg-green-600 text-white py-3 rounded-xl font-semibold text-sm hover:bg-green-700 transition-colors"
+                  >
+                    <ShoppingCart className="h-4 w-4" />
+                    Ir a pagar en {checkoutStore}
+                  </a>
+                )}
+              </div>
+            )}
+
+            {/* Result: no se pudo armar automaticamente */}
+            {cartResult && !cartResult.success && !cartBuilding && (
+              <div className="p-4 bg-amber-50 border-b flex-shrink-0">
+                <p className="text-sm text-amber-800 font-medium mb-1">
+                  No se pudo armar el carrito automaticamente
+                </p>
+                <p className="text-xs text-amber-600">
+                  Abre cada producto, agregalo al carrito del super y vuelve por el siguiente
+                </p>
+              </div>
+            )}
+
+            {/* Items list */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-2">
+              {(cartProgress.length > 0 ? cartProgress : checkoutItems.map((i) => ({ name: i.name, status: 'pending' as const, url: i.url }))).map((item, idx) => {
+                const SEARCH_URLS: Record<string, (q: string) => string> = {
+                  Jumbo: (q) => `https://www.jumbo.cl/search?ft=${encodeURIComponent(q)}`,
+                  Lider: (q) => `https://super.lider.cl/search?q=${encodeURIComponent(q)}`,
+                  Unimarc: (q) => `https://www.unimarc.cl/buscar?q=${encodeURIComponent(q)}`,
+                  'Santa Isabel': (q) => `https://www.santaisabel.cl/buscar?ft=${encodeURIComponent(q)}`,
+                  Tottus: (q) => `https://www.tottus.cl/search?Ntt=${encodeURIComponent(q)}`,
+                }
+                const storePrimary = checkoutStore.split(' + ')[0]
+                const productUrl = item.url || SEARCH_URLS[storePrimary]?.(item.name) || `https://www.jumbo.cl/search?ft=${encodeURIComponent(item.name)}`
+
+                return (
+                  <div key={idx} className={`flex items-center gap-3 p-3 rounded-xl border ${
+                    item.status === 'done' ? 'bg-green-50 border-green-200' :
+                    item.status === 'adding' ? 'bg-blue-50 border-blue-200' :
+                    item.status === 'failed' ? 'bg-red-50 border-red-200' :
+                    'bg-white border-gray-200'
+                  }`}>
+                    <div className="w-6 h-6 flex items-center justify-center flex-shrink-0">
+                      {item.status === 'done' ? (
+                        <Check className="h-4 w-4 text-green-600" />
+                      ) : item.status === 'adding' ? (
+                        <Loader2 className="h-4 w-4 text-blue-600 animate-spin" />
+                      ) : item.status === 'failed' ? (
+                        <X className="h-4 w-4 text-red-500" />
+                      ) : (
+                        <span className="w-5 h-5 bg-gray-100 rounded-full flex items-center justify-center text-[10px] font-bold text-gray-400">
+                          {idx + 1}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-sm font-medium truncate ${item.status === 'done' ? 'text-green-700' : 'text-gray-900'}`}>
+                        {item.name}
+                      </p>
+                    </div>
+                    {/* Show link for manual fallback */}
+                    {(cartResult && !cartResult.success && item.status !== 'done') && (
+                      <a
+                        href={productUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors flex-shrink-0"
+                      >
+                        Abrir
+                        <ExternalLink className="h-3 w-3" />
+                      </a>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+
+            <div className="p-4 border-t flex-shrink-0">
+              <p className="text-center text-xs text-gray-400">
+                Total estimado: {formatCLP(checkoutItems.reduce((s, i) => s + i.price, 0))}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
