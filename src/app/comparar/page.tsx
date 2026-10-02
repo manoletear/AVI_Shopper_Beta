@@ -7,6 +7,7 @@ import {
   ArrowLeft, Search, ShoppingCart, Plus, X, Loader2,
   DollarSign, TrendingDown, Heart, AlertTriangle,
   Check, Store, Zap, Trash2, Settings, Shield, ExternalLink,
+  Camera,
 } from 'lucide-react'
 
 interface ProductResult {
@@ -148,11 +149,38 @@ function CompararInner() {
 
   const [pasteNotice, setPasteNotice] = useState('')
 
+  const [importingImage, setImportingImage] = useState(false)
+  const imageInputRef = useRef<HTMLInputElement>(null)
+
+  const importFromImage = async (file: File) => {
+    setImportingImage(true)
+    try {
+      const formData = new FormData()
+      formData.append('image', file)
+      const res = await fetch('/api/import-list', { method: 'POST', body: formData })
+      const data = await res.json()
+      if (data.success && data.data.products.length > 0) {
+        const names = data.data.products.map((p: any) => p.name)
+        const unique = names.filter((n: string) => !queries.includes(n))
+        setQueries((prev) => [...prev, ...unique])
+        setPasteNotice(`${unique.length} productos detectados en la imagen`)
+        setTimeout(() => setPasteNotice(''), 4000)
+      } else {
+        setPasteNotice('No se encontraron productos en la imagen')
+        setTimeout(() => setPasteNotice(''), 3000)
+      }
+    } catch {
+      setPasteNotice('Error al procesar la imagen')
+      setTimeout(() => setPasteNotice(''), 3000)
+    }
+    setImportingImage(false)
+  }
+
   const addProducts = (text: string) => {
     const trimmed = text.trim()
     if (!trimmed) return
 
-    const items = trimmed.split(/[,\n]+/).map((s) => s.trim()).filter(Boolean)
+    const items = trimmed.split(/[\r\n,]+/).map((s) => s.trim()).filter(Boolean)
 
     if (items.length > 1) {
       const unique = items.filter((i) => !queries.includes(i))
@@ -482,7 +510,7 @@ function CompararInner() {
                 }}
                 onPaste={(e) => {
                   const pasted = e.clipboardData.getData('text')
-                  if (pasted.includes('\n') || pasted.includes(',')) {
+                  if (pasted.includes('\n') || pasted.includes('\r') || pasted.includes(',')) {
                     e.preventDefault()
                     addProducts(pasted)
                   }
@@ -500,9 +528,31 @@ function CompararInner() {
             </button>
           </div>
 
-          <p className="text-xs text-gray-400 mb-3">
-            Pega una lista completa — AVI detecta automaticamente cada producto
-          </p>
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-xs text-gray-400">
+              Pega una lista o sube una foto — AVI detecta cada producto
+            </p>
+            <button
+              onClick={() => imageInputRef.current?.click()}
+              disabled={importingImage}
+              className="flex items-center gap-1 text-xs font-medium text-purple-600 hover:text-purple-700 px-2 py-1 rounded-lg hover:bg-purple-50 transition-colors disabled:opacity-50"
+            >
+              {importingImage ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Camera className="h-3.5 w-3.5" />}
+              Desde foto
+            </button>
+            <input
+              ref={imageInputRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0]
+                if (file) importFromImage(file)
+                e.target.value = ''
+              }}
+            />
+          </div>
 
           {pasteNotice && (
             <div className="flex items-center gap-2 mb-3 text-sm text-green-700 bg-green-50 rounded-lg px-3 py-2">

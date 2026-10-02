@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation'
 import {
   ArrowLeft, ShoppingCart, Send, Loader2, Minus, Plus,
   Pencil, Trash2, ExternalLink, AlertTriangle, Heart,
+  Camera,
 } from 'lucide-react'
 
 interface CartProduct {
@@ -32,7 +33,9 @@ function CartAssistantInner() {
   const [chatMessages, setChatMessages] = useState<Array<{ role: string; text: string }>>([])
   const [phase, setPhase] = useState<'chat' | 'cart'>('chat')
   const inputRef = useRef<HTMLInputElement>(null)
+  const imageInputRef = useRef<HTMLInputElement>(null)
   const autoSentRef = useRef(false)
+  const [importingImage, setImportingImage] = useState(false)
 
   const formatCLP = (n: number) =>
     new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', minimumFractionDigits: 0 }).format(n)
@@ -122,6 +125,25 @@ function CartAssistantInner() {
       sendMessage(products)
     }
   }, [searchParams])
+
+  const importFromImage = async (file: File) => {
+    setImportingImage(true)
+    try {
+      const formData = new FormData()
+      formData.append('image', file)
+      const res = await fetch('/api/import-list', { method: 'POST', body: formData })
+      const data = await res.json()
+      if (data.success && data.data.products.length > 0) {
+        const products = data.data.products.map((p: any) => p.name).join(', ')
+        sendMessage(products)
+      } else {
+        setChatMessages((prev) => [...prev, { role: 'avi', text: 'No encontre productos en la imagen. Intenta con otra foto o escribe tu lista.' }])
+      }
+    } catch {
+      setChatMessages((prev) => [...prev, { role: 'avi', text: 'Error al procesar la imagen.' }])
+    }
+    setImportingImage(false)
+  }
 
   const updateQuantity = (idx: number, delta: number) => {
     setCartItems((prev) => prev.map((item, i) => {
@@ -312,6 +334,26 @@ function CartAssistantInner() {
           )}
 
           <form onSubmit={(e) => { e.preventDefault(); sendMessage(input) }} className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => imageInputRef.current?.click()}
+              disabled={loading || importingImage}
+              className="w-11 h-11 bg-gray-100 text-gray-500 rounded-full flex items-center justify-center hover:bg-purple-50 hover:text-purple-600 disabled:opacity-40 flex-shrink-0 transition-colors"
+            >
+              {importingImage ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}
+            </button>
+            <input
+              ref={imageInputRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0]
+                if (file) importFromImage(file)
+                e.target.value = ''
+              }}
+            />
             <input
               ref={inputRef}
               type="text"
@@ -319,13 +361,13 @@ function CartAssistantInner() {
               onChange={(e) => setInput(e.target.value)}
               onPaste={(e) => {
                 const pasted = e.clipboardData.getData('text')
-                if (pasted.includes('\n')) {
+                if (pasted.includes('\n') || pasted.includes('\r')) {
                   e.preventDefault()
-                  const products = pasted.split(/\n+/).map((s) => s.trim()).filter(Boolean).join(', ')
+                  const products = pasted.split(/[\r\n]+/).map((s) => s.trim()).filter(Boolean).join(', ')
                   sendMessage(products)
                 }
               }}
-              placeholder="Agrega productos o pega tu lista..."
+              placeholder="Escribe, pega o sube foto..."
               className="flex-1 px-4 py-3 bg-gray-100 rounded-2xl text-sm border-0 focus:ring-2 focus:ring-blue-500/20 focus:bg-white focus:border focus:border-blue-200 placeholder:text-gray-400"
               disabled={loading}
             />
