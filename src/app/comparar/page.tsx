@@ -146,10 +146,25 @@ function CompararInner() {
     return { ...product, allergenWarnings: warnings, dietWarning }
   }
 
-  const addProduct = () => {
-    const trimmed = inputValue.trim()
-    if (!trimmed || queries.includes(trimmed)) return
-    setQueries((prev) => [...prev, trimmed])
+  const [pasteNotice, setPasteNotice] = useState('')
+
+  const addProducts = (text: string) => {
+    const trimmed = text.trim()
+    if (!trimmed) return
+
+    const items = trimmed.split(/[,\n]+/).map((s) => s.trim()).filter(Boolean)
+
+    if (items.length > 1) {
+      const unique = items.filter((i) => !queries.includes(i))
+      if (unique.length > 0) {
+        setQueries((prev) => [...prev, ...unique])
+        setPasteNotice(`${unique.length} producto${unique.length > 1 ? 's' : ''} agregado${unique.length > 1 ? 's' : ''}`)
+        setTimeout(() => setPasteNotice(''), 3000)
+      }
+    } else if (items.length === 1 && !queries.includes(items[0])) {
+      setQueries((prev) => [...prev, items[0]])
+    }
+
     setInputValue('')
   }
 
@@ -160,12 +175,6 @@ function CompararInner() {
       next.delete(query)
       return next
     })
-  }
-
-  const addMultiple = (text: string) => {
-    const items = text.split(/[,\n]/).map((s) => s.trim()).filter(Boolean)
-    const unique = items.filter((i) => !queries.includes(i))
-    setQueries((prev) => [...prev, ...unique])
   }
 
   const compareAll = async () => {
@@ -461,7 +470,7 @@ function CompararInner() {
         <div className="bg-white rounded-xl border p-5 mb-6">
           <h2 className="font-semibold text-gray-900 mb-3">¿Que necesitas comprar?</h2>
 
-          <div className="flex space-x-2 mb-3">
+          <div className="flex space-x-2 mb-2">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
               <input
@@ -469,14 +478,21 @@ function CompararInner() {
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter') addProduct()
+                  if (e.key === 'Enter') addProducts(inputValue)
                 }}
-                placeholder="Escribe un producto (ej: leche, huevos, cafe)"
+                onPaste={(e) => {
+                  const pasted = e.clipboardData.getData('text')
+                  if (pasted.includes('\n') || pasted.includes(',')) {
+                    e.preventDefault()
+                    addProducts(pasted)
+                  }
+                }}
+                placeholder="Escribe o pega tu lista de productos"
                 className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
             <button
-              onClick={addProduct}
+              onClick={() => addProducts(inputValue)}
               disabled={!inputValue.trim()}
               className="bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 disabled:opacity-50 text-sm font-medium"
             >
@@ -485,23 +501,15 @@ function CompararInner() {
           </div>
 
           <p className="text-xs text-gray-400 mb-3">
-            Tambien puedes pegar una lista separada por comas: huevos, queso, jamon, cafe
+            Pega una lista completa — AVI detecta automaticamente cada producto
           </p>
 
-          {/* Quick paste */}
-          <div className="flex space-x-2 mb-4">
-            <input
-              type="text"
-              placeholder="Pegar lista completa separada por comas..."
-              className="flex-1 px-3 py-2 border border-dashed border-gray-300 rounded-lg text-sm text-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  addMultiple((e.target as HTMLInputElement).value)
-                  ;(e.target as HTMLInputElement).value = ''
-                }
-              }}
-            />
-          </div>
+          {pasteNotice && (
+            <div className="flex items-center gap-2 mb-3 text-sm text-green-700 bg-green-50 rounded-lg px-3 py-2">
+              <Check className="h-4 w-4" />
+              {pasteNotice}
+            </div>
+          )}
 
           {/* Product chips */}
           {queries.length > 0 && (

@@ -317,7 +317,15 @@ function CartAssistantInner() {
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Agrega productos o responde..."
+              onPaste={(e) => {
+                const pasted = e.clipboardData.getData('text')
+                if (pasted.includes('\n')) {
+                  e.preventDefault()
+                  const products = pasted.split(/\n+/).map((s) => s.trim()).filter(Boolean).join(', ')
+                  sendMessage(products)
+                }
+              }}
+              placeholder="Agrega productos o pega tu lista..."
               className="flex-1 px-4 py-3 bg-gray-100 rounded-2xl text-sm border-0 focus:ring-2 focus:ring-blue-500/20 focus:bg-white focus:border focus:border-blue-200 placeholder:text-gray-400"
               disabled={loading}
             />
