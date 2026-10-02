@@ -3,6 +3,7 @@ import { requireAuth } from '@/lib/session';
 import { prisma } from '@/lib/prisma';
 import { successResponse, errorResponse } from '@/lib/responses';
 import { buildCart } from '@/services/store-cart.service';
+import { decrypt } from '@/lib/encryption';
 
 const STORE_SEARCH_URLS: Record<string, (q: string) => string> = {
   jumbo: (q) => `https://www.jumbo.cl/search?ft=${encodeURIComponent(q)}`,
@@ -55,10 +56,15 @@ export async function POST(request: NextRequest) {
       include: { store: true },
     });
 
-    if (storeAccount) {
+    if (storeAccount && storeAccount.accountPassword) {
+      let password = '';
+      try {
+        password = decrypt(storeAccount.accountPassword);
+      } catch {}
+
       const result = await buildCart(storeSlug, cartItems, {
         email: storeAccount.accountEmail,
-        password: '',
+        password,
       });
 
       if (result.success) {

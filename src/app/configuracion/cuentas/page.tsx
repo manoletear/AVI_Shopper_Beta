@@ -24,6 +24,7 @@ interface StoreAccount {
   accountName: string | null
   accountPhone: string | null
   loyaltyNumber: string | null
+  hasPassword: boolean
   isVerified: boolean
   isAutoCreated: boolean
   status: 'active' | 'pending' | 'suspended'
@@ -51,6 +52,7 @@ export default function CuentasSupermercadoPage() {
             accountName: a.accountName,
             accountPhone: a.accountPhone,
             loyaltyNumber: a.loyaltyNumber,
+            hasPassword: a.hasPassword || false,
             isVerified: a.isVerified,
             isAutoCreated: a.isAutoCreated,
             status: a.status || 'active',
@@ -66,6 +68,7 @@ export default function CuentasSupermercadoPage() {
   const [editingAccount, setEditingAccount] = useState<string | null>(null)
 
   const [formEmail, setFormEmail] = useState('')
+  const [formPassword, setFormPassword] = useState('')
   const [formName, setFormName] = useState('')
   const [formPhone, setFormPhone] = useState('')
   const [formLoyalty, setFormLoyalty] = useState('')
@@ -88,6 +91,7 @@ export default function CuentasSupermercadoPage() {
         body: JSON.stringify({
           storeId: selectedStore,
           accountEmail: formEmail,
+          accountPassword: formPassword || undefined,
           accountName: formName || undefined,
           accountPhone: formPhone || undefined,
           loyaltyNumber: formLoyalty || undefined,
@@ -177,6 +181,7 @@ export default function CuentasSupermercadoPage() {
     setSelectedStore(null)
     setEditingAccount(null)
     setFormEmail('')
+    setFormPassword('')
     setFormName('')
     setFormPhone('')
     setFormLoyalty('')
@@ -249,13 +254,13 @@ export default function CuentasSupermercadoPage() {
                       <div className="flex items-center space-x-2">
                         <span className="text-lg">{store.logo}</span>
                         <h3 className={`font-semibold text-sm ${store.textColor}`}>{store.name}</h3>
-                        {account.isVerified ? (
+                        {account.hasPassword ? (
                           <span className="flex items-center text-[10px] text-green-600 bg-green-100 px-1.5 py-0.5 rounded-full">
-                            <Check className="h-2.5 w-2.5 mr-0.5" /> Verificada
+                            <Zap className="h-2.5 w-2.5 mr-0.5" /> Carrito auto
                           </span>
                         ) : (
                           <span className="flex items-center text-[10px] text-amber-600 bg-amber-100 px-1.5 py-0.5 rounded-full">
-                            Pendiente
+                            Solo links
                           </span>
                         )}
                       </div>
@@ -331,6 +336,12 @@ export default function CuentasSupermercadoPage() {
                       <input type="email" placeholder="Email de tu cuenta" value={formEmail}
                         onChange={(e) => setFormEmail(e.target.value)}
                         className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500" />
+                      <input type="password" placeholder="Contrasena del supermercado" value={formPassword}
+                        onChange={(e) => setFormPassword(e.target.value)}
+                        className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500" />
+                      <p className="text-[10px] text-gray-400 flex items-center gap-1">
+                        <Shield className="h-3 w-3" /> Se almacena encriptada (AES-256). AVI la usa para armar tu carrito.
+                      </p>
                       <input type="text" placeholder="Nombre (opcional)" value={formName}
                         onChange={(e) => setFormName(e.target.value)}
                         className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500" />

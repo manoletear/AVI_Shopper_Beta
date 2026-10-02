@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/session';
 import { createStoreAccountSchema, autoCreateStoreAccountSchema } from '@/lib/validations';
 import { successResponse, createdResponse, errorResponse } from '@/lib/responses';
+import { encrypt } from '@/lib/encryption';
 
 // GET /api/users/store-accounts - Listar cuentas vinculadas
 export async function GET() {
@@ -29,6 +30,7 @@ export async function GET() {
       accountName: a.accountName,
       accountPhone: a.accountPhone,
       loyaltyNumber: a.loyaltyNumber,
+      hasPassword: !!a.accountPassword,
       isVerified: a.isVerified,
       isAutoCreated: a.isAutoCreated,
       status: a.status,
@@ -77,11 +79,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    let encryptedPassword: string | undefined;
+    if (body.accountPassword) {
+      encryptedPassword = encrypt(body.accountPassword);
+    }
+
     const account = await prisma.storeAccount.create({
       data: {
         userId,
         storeId: validatedData.storeId,
         accountEmail: validatedData.accountEmail,
+        accountPassword: encryptedPassword,
         accountName: validatedData.accountName,
         accountPhone: validatedData.accountPhone,
         loyaltyNumber: validatedData.loyaltyNumber,

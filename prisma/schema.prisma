@@ -293,11 +293,11 @@ model StoreAccount {
   storeId   String
   store     Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
 
-  // Credenciales de la cuenta del supermercado
-  accountEmail    String   // Email de la cuenta en el supermercado
-  accountName     String?  // Nombre en la cuenta del supermercado
-  accountPhone    String?  // Teléfono asociado
-  loyaltyNumber   String?  // Número de tarjeta de fidelidad/puntos
+  accountEmail       String
+  accountPassword    String?  // AES-256-GCM encrypted
+  accountName        String?
+  accountPhone       String?
+  loyaltyNumber      String?
   isVerified      Boolean  @default(false)
   isAutoCreated   Boolean  @default(false) // true si AVI creó la cuenta automáticamente
 
