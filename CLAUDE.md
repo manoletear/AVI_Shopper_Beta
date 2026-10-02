@@ -2,18 +2,19 @@
 
 Asistente inteligente de compras familiares para Chile.
 Compara precios en 4 supermercados (Jumbo, Lider, Santa Isabel, Unimarc),
-analiza nutricion, predice reposicion, y controla presupuesto.
+analiza nutricion, predice reposicion, controla presupuesto, y compra por ti.
 
 ## Stack
 
 - Next.js 14 (App Router) + TypeScript + Tailwind CSS
-- Prisma ORM + PostgreSQL (Supabase, schema public)
+- Prisma ORM + PostgreSQL (Supabase soc-chile, schema public)
 - NextAuth (credentials, JWT)
-- Apify (scraping de precios reales)
-- TypeSafe (decisiones inteligentes)
-- Open Food Facts (datos nutricionales)
+- Apify (scraping de precios reales en 4 supermercados)
+- TypeSafe (decisiones inteligentes: matching, salud, alergenos)
+- Open Food Facts (NutriScore, NOVA, datos nutricionales)
+- Claude API + tool_use (agente conversacional con 12 tools)
+- WhatsApp Cloud API (Meta)
 - Flow.cl (pasarela de pagos)
-- Claude API + tool_use (agente conversacional)
 
 ## Comandos
 
@@ -28,11 +29,12 @@ npx tsx prisma/seed.ts   # poblar con datos demo
 
 ## Estructura
 
-- `src/app/` — paginas y API routes (Next.js App Router)
-- `src/services/` — logica de negocio (12 servicios)
-- `src/lib/` — auth, prisma, validaciones, respuestas
-- `prisma/` — schema y seed
-- `agents/` — equipo agentico (7 agentes + runner)
+- `src/app/` — 16 paginas + 32 API routes
+- `src/services/` — 16 servicios de negocio
+- `src/components/` — BottomNav, SmartAlerts
+- `src/lib/` — auth, prisma, validaciones, family resolver
+- `prisma/` — schema (18 modelos) y seed
+- `public/` — avi-icon.svg (Warm Assistant)
 - `tests/` — tests E2E con Playwright
 
 ## Convenciones
@@ -42,13 +44,16 @@ npx tsx prisma/seed.ts   # poblar con datos demo
 - Validacion con Zod (usar error.issues, no error.errors)
 - API responses via successResponse/errorResponse
 - Auth: requireAuth() retorna userId
+- Multi-familia: usar familyWhere(userId) en queries compartidas
 - No commitear .env — solo .env.example
 - Prisma en postgresql para produccion, sqlite para dev local
+- CI cambia provider a sqlite con sed en el workflow
 
-## Servicios clave
+## Servicios
 
 | Servicio | Que hace |
 |----------|---------|
+| agent | Agente conversacional con 12 tool_use |
 | apify-price | Precios reales via Apify actors |
 | super-lider | Scraper de super.lider.cl |
 | openfoodfacts | NutriScore, NOVA, nutrientes |
@@ -56,14 +61,21 @@ npx tsx prisma/seed.ts   # poblar con datos demo
 | health-intelligence | Alertas, alternativas, prediccion |
 | replenishment | Prediccion de reposicion |
 | price-observation | Historico de precios con timestamp |
-| agent | Agente conversacional con tool_use |
+| purchase-learning | Aprende marcas, tiendas, patrones |
+| checkout | Deep links + carrito automatico |
+| store-cart | Login y carrito en supermercados |
+| whatsapp | WhatsApp Cloud API |
 | flow-payment | Pasarela de pagos Flow.cl |
+| cart | Comparacion y split cart |
+| nutrition | Score nutricional |
+| analytics | Metricas de uso |
 
 ## Deploy
 
 - Produccion: Vercel (avi-shopper-beta.vercel.app)
-- DB: Supabase soc-chile (sa-east-1, schema public)
+- DB: Supabase soc-chile (sa-east-1, schema public, RLS activo)
 - CI: GitHub Actions (typecheck + build + tests)
+- WhatsApp: webhook en /api/whatsapp
 
 ## Credenciales demo
 
