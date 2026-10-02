@@ -10,6 +10,7 @@ export const config = {
   matcher: [
     '/dashboard/:path*',
     '/avi/:path*',
+    '/cart-assistant/:path*',
     '/listas/:path*',
     '/salud/:path*',
     '/comparar/:path*',
