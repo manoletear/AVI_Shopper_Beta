@@ -211,26 +211,47 @@ export default function FamiliaPage() {
           <>
             {/* Family header */}
             <div className="avi-card p-5">
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-bold text-gray-900">{family.name}</h2>
                 <span className="text-xs bg-purple-100 text-purple-700 px-2.5 py-1 rounded-full font-medium">
                   {family.members.length} miembro{family.members.length !== 1 ? 's' : ''}
                 </span>
               </div>
 
-              <div className="flex items-center gap-2 bg-gray-50 rounded-xl p-3">
-                <Share2 className="h-4 w-4 text-gray-400" />
-                <div className="flex-1">
-                  <p className="text-xs text-gray-500">Codigo de invitacion</p>
-                  <p className="text-sm font-mono font-semibold text-gray-800">{family.inviteCode}</p>
-                </div>
-                <button onClick={copyCode} className="p-2 rounded-lg hover:bg-gray-200">
-                  {copied ? <Check className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4 text-gray-400" />}
+              <p className="text-sm text-gray-600 mb-3">Invita a tu familia a unirse:</p>
+
+              <div className="grid grid-cols-2 gap-2">
+                <a
+                  href={`https://wa.me/?text=${encodeURIComponent(`Unete a nuestra familia en AVI Shopper 🛒\n\nAVI compara precios, cuida la nutricion y hace las compras por ti.\n\n👉 https://avi-shopper-beta.vercel.app/invitar/${family.inviteCode}`)}`}
+                  target="_blank"
+                  className="flex items-center justify-center gap-2 py-2.5 bg-green-500 text-white rounded-xl text-sm font-medium hover:bg-green-600 transition-colors"
+                >
+                  💬 WhatsApp
+                </a>
+                <button
+                  onClick={() => {
+                    const url = `https://avi-shopper-beta.vercel.app/invitar/${family.inviteCode}`
+                    navigator.clipboard.writeText(url).catch(() => {})
+                    setCopied(true)
+                    setTimeout(() => setCopied(false), 2000)
+                  }}
+                  className="flex items-center justify-center gap-2 py-2.5 bg-gray-100 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-200 transition-colors"
+                >
+                  {copied ? <><Check className="h-4 w-4 text-green-600" /> Copiado</> : <><Copy className="h-4 w-4" /> Copiar link</>}
                 </button>
+                <a
+                  href={`mailto:?subject=${encodeURIComponent('Unete a nuestra familia en AVI Shopper')}&body=${encodeURIComponent(`Te invito a unirte a "${family.name}" en AVI Shopper.\n\nAVI compara precios en supermercados, cuida la nutricion y hace las compras por ti.\n\nUnete aqui: https://avi-shopper-beta.vercel.app/invitar/${family.inviteCode}`)}`}
+                  className="flex items-center justify-center gap-2 py-2.5 bg-blue-50 text-blue-700 rounded-xl text-sm font-medium hover:bg-blue-100 transition-colors"
+                >
+                  ✉️ Email
+                </a>
+                <a
+                  href={`sms:?body=${encodeURIComponent(`Unete a AVI Shopper 🛒 https://avi-shopper-beta.vercel.app/invitar/${family.inviteCode}`)}`}
+                  className="flex items-center justify-center gap-2 py-2.5 bg-purple-50 text-purple-700 rounded-xl text-sm font-medium hover:bg-purple-100 transition-colors"
+                >
+                  📱 SMS
+                </a>
               </div>
-              <p className="text-xs text-gray-400 mt-2">
-                Comparte este codigo para que otros miembros se unan a tu familia en AVI
-              </p>
             </div>
 
             {/* Members */}
