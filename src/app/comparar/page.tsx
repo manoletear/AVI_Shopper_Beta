@@ -107,6 +107,12 @@ function CompararInner() {
     }
   }, [searchParams])
 
+  useEffect(() => {
+    if (autoLoadedRef.current && queries.length > 0 && !isComparing && comparisons.size === 0) {
+      compareAll()
+    }
+  }, [queries])
+
   // Verificar alergenos y restricciones de dieta en un producto
   const checkProduct = (product: ProductResult): ProductResult => {
     const warnings: string[] = []
