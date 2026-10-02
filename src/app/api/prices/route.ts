@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server';
+import { requireAuth } from '@/lib/session';
 import { successResponse, errorResponse } from '@/lib/responses';
 import { comparePrices } from '@/services/apify-price.service';
 import { scoreProductHealth, matchProducts } from '@/services/typesafe-decision.service';
@@ -7,6 +8,7 @@ import { savePriceObservations, getLatestPrices } from '@/services/price-observa
 // GET /api/prices?q=leche+colun&analyze=true&cached=true
 export async function GET(request: NextRequest) {
   try {
+    await requireAuth();
     const { searchParams } = new URL(request.url);
     const query = searchParams.get('q');
     const analyze = searchParams.get('analyze') === 'true';

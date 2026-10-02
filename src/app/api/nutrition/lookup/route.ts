@@ -1,10 +1,12 @@
 import { NextRequest } from 'next/server';
+import { requireAuth } from '@/lib/session';
 import { successResponse, errorResponse } from '@/lib/responses';
 import { lookupNutrition, enrichProductsNutrition, getNutritionBadge } from '@/services/openfoodfacts.service';
 
 // GET /api/nutrition/lookup?q=leche+colun
 export async function GET(request: NextRequest) {
   try {
+    await requireAuth();
     const { searchParams } = new URL(request.url);
     const query = searchParams.get('q');
 
