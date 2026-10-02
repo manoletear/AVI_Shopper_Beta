@@ -23,6 +23,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { prisma } from '@/lib/prisma';
 import { recordPurchase, getProductProfiles, getSuggestions, getFamilyProfileSummary } from './purchase-learning.service';
 import { generateCheckoutPlan, formatCheckoutMessage } from './checkout.service';
+import { generateMonthlyReport } from './monthly-nutrition.service';
 
 const STORE_NAMES: Record<string, string> = {
   jumbo: 'Jumbo', lider: 'Lider', unimarc: 'Unimarc', 'santa-isabel': 'Santa Isabel',
@@ -134,6 +135,14 @@ const TOOLS: Anthropic.Tool[] = [
   {
     name: 'get_family',
     description: 'Muestra los miembros de la familia con sus alergias y restricciones. Usa cuando dice "mi familia", "quienes somos", "alergias de la familia", "miembros".',
+    input_schema: {
+      type: 'object' as const,
+      properties: {},
+    },
+  },
+  {
+    name: 'monthly_nutrition',
+    description: 'Analiza el consumo nutricional del mes: calorias, azucar, sodio, ultra-procesados. Usa cuando dice "como vamos de nutricion", "calorias del mes", "comemos sano", "analisis mensual", "habitos".',
     input_schema: {
       type: 'object' as const,
       properties: {},
@@ -450,6 +459,35 @@ async function executeTool(
         data: { suggestions },
         message: `Te sugiero agregar ${suggestions.length} productos:\n${lines.join('\n')}`,
       };
+    }
+
+    case 'monthly_nutrition': {
+      try {
+        const report = await generateMonthlyReport(userId);
+        const lines = [`📊 Reporte nutricional — ${report.month}`];
+        lines.push(`Familia: ${report.familySize} persona${report.familySize > 1 ? 's' : ''}, ${report.totalProducts} productos`);
+        lines.push('');
+        if (report.estimatedCalories > 0) lines.push(`🔥 Calorias: ~${report.estimatedCalories.toLocaleString('es-CL')} kcal`);
+        if (report.estimatedSugar > 0) lines.push(`🍬 Azucar: ~${report.estimatedSugar}g`);
+        if (report.estimatedSodium > 0) lines.push(`🧂 Sodio: ~${report.estimatedSodium}g`);
+        if (report.ultraProcessedPercent > 0) lines.push(`🏭 Ultra-procesados: ${report.ultraProcessedPercent}%`);
+
+        if (report.alerts.length > 0) {
+          lines.push('');
+          lines.push('⚠️ Alertas:');
+          report.alerts.forEach((a) => lines.push(`  ${a.severity === 'critical' ? '🔴' : '🟡'} ${a.title}`));
+        }
+
+        if (report.habits.length > 0) {
+          lines.push('');
+          lines.push('💡 Sugerencias:');
+          report.habits.forEach((h) => lines.push(`  • ${h.title}: ${h.impact}`));
+        }
+
+        return { success: true, data: report, message: lines.join('\n') };
+      } catch {
+        return { success: false, data: null, message: 'Necesito mas historial de compras para generar el reporte. Registra compras con "compre X en Y".' };
+      }
     }
 
     case 'get_family': {
