@@ -1,7 +1,7 @@
 # AVI Shopper
 
 Asistente inteligente de compras familiares para Chile.
-Compara precios en 4 supermercados (Jumbo, Lider, Santa Isabel, Unimarc),
+Compara precios en 5 supermercados (Jumbo, Lider, Santa Isabel, Unimarc, Tottus),
 analiza nutricion, predice reposicion, controla presupuesto, y compra por ti.
 
 ## Stack
@@ -9,7 +9,7 @@ analiza nutricion, predice reposicion, controla presupuesto, y compra por ti.
 - Next.js 14 (App Router) + TypeScript + Tailwind CSS
 - Prisma ORM + PostgreSQL (Supabase soc-chile, schema public)
 - NextAuth (credentials, JWT)
-- Apify (scraping de precios reales en 4 supermercados)
+- Apify (scraping de precios reales en 5 supermercados)
 - TypeSafe (decisiones inteligentes: matching, salud, alergenos)
 - Open Food Facts (NutriScore, NOVA, datos nutricionales)
 - Claude API + tool_use (agente conversacional con 12 tools)
@@ -53,7 +53,7 @@ npx tsx prisma/seed.ts   # poblar con datos demo
 
 | Servicio | Que hace |
 |----------|---------|
-| agent | Agente conversacional con 12 tool_use |
+| agent | Agente conversacional con 15 tool_use |
 | apify-price | Precios reales via Apify actors |
 | super-lider | Scraper de super.lider.cl |
 | openfoodfacts | NutriScore, NOVA, nutrientes |

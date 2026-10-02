@@ -19,7 +19,8 @@ interface DashboardData {
 }
 
 const NAV_ITEMS = [
-  { href: '/avi', label: 'Hablar con AVI', description: 'Dile que necesitas', icon: Bot, gradient: 'from-blue-500 to-indigo-600', iconBg: 'bg-blue-500' },
+  { href: '/cart-assistant', label: 'Cart Assistant', description: 'Dime que necesitas y armo tu carrito', icon: ShoppingCart, gradient: 'from-gray-800 to-gray-900', iconBg: 'bg-gray-900' },
+  { href: '/avi', label: 'Hablar con AVI', description: 'Asistente conversacional', icon: Bot, gradient: 'from-blue-500 to-indigo-600', iconBg: 'bg-blue-500' },
   { href: '/comparar', label: 'Comparar Precios', description: '4 supermercados en vivo', icon: DollarSign, gradient: 'from-emerald-500 to-teal-600', iconBg: 'bg-emerald-500' },
   { href: '/listas', label: 'Mis Listas', description: 'Listas familiares', icon: ListChecks, gradient: 'from-purple-500 to-violet-600', iconBg: 'bg-purple-500' },
   { href: '/reposicion', label: 'Reposicion', description: 'Que se esta acabando', icon: Package, gradient: 'from-orange-500 to-red-500', iconBg: 'bg-orange-500' },

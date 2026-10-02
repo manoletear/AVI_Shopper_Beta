@@ -141,6 +141,14 @@ const TOOLS: Anthropic.Tool[] = [
     },
   },
   {
+    name: 'invite_family',
+    description: 'Genera un link de invitacion para que alguien se una a la familia. Usa cuando dice "invitar", "agregar a mi familia", "compartir con".',
+    input_schema: {
+      type: 'object' as const,
+      properties: {},
+    },
+  },
+  {
     name: 'monthly_nutrition',
     description: 'Analiza el consumo nutricional del mes: calorias, azucar, sodio, ultra-procesados. Usa cuando dice "como vamos de nutricion", "calorias del mes", "comemos sano", "analisis mensual", "habitos".',
     input_schema: {
@@ -608,6 +616,24 @@ async function executeTool(
         success: true,
         data: { familyName: membership.family.name, members: membership.family.members },
         message: `Familia "${membership.family.name}" (${membership.family.members.length} miembros):\n${members.join('\n')}`,
+      };
+    }
+
+    case 'invite_family': {
+      const membership = await prisma.familyMember.findFirst({
+        where: { userId },
+        include: { family: true },
+      });
+
+      if (!membership) {
+        return { success: false, data: null, message: 'Primero crea tu familia en /familia' };
+      }
+
+      const inviteUrl = `https://avi-shopper-beta.vercel.app/invitar/${membership.family.inviteCode}`;
+      return {
+        success: true,
+        data: { inviteUrl, familyName: membership.family.name },
+        message: `Comparte este link para invitar a tu familia "${membership.family.name}":\n\n${inviteUrl}\n\nCualquiera con el link puede unirse y compartir listas, presupuesto y compras.`,
       };
     }
 

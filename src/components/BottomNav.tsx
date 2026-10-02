@@ -2,13 +2,13 @@
 
 import { usePathname } from 'next/navigation'
 import {
-  Home, ListChecks, DollarSign, Bot, User,
+  Home, ListChecks, ShoppingCart, Bot, User,
 } from 'lucide-react'
 
 const NAV_ITEMS = [
   { href: '/dashboard', label: 'Inicio', icon: Home },
   { href: '/listas', label: 'Listas', icon: ListChecks },
-  { href: '/comparar', label: 'Precios', icon: DollarSign },
+  { href: '/cart-assistant', label: 'Comprar', icon: ShoppingCart },
   { href: '/avi', label: 'AVI', icon: Bot },
   { href: '/perfil', label: 'Perfil', icon: User },
 ]
@@ -23,7 +23,7 @@ export default function BottomNav() {
         {NAV_ITEMS.map((item) => {
           const Icon = item.icon
           const isActive = pathname === item.href || pathname?.startsWith(item.href + '/')
-          const isAvi = item.href === '/avi'
+          const isAvi = item.href === '/cart-assistant'
 
           return (
             <a

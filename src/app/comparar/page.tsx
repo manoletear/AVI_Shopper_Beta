@@ -268,7 +268,7 @@ export default function CompararPage() {
   }
 
   const DELIVERY_FEES: Record<string, number> = {
-    Jumbo: 2990, Lider: 2490, Unimarc: 2790, 'Santa Isabel': 3490, 'Santa-isabel': 3490,
+    Jumbo: 2990, Lider: 2490, Unimarc: 2790, 'Santa Isabel': 3490, 'Santa-isabel': 3490, Tottus: 2990,
   }
 
   interface BuyOption {
@@ -472,7 +472,7 @@ export default function CompararPage() {
             {isComparing ? (
               <>
                 <Loader2 className="h-5 w-5 animate-spin" />
-                <span>Buscando en Jumbo, Lider, Santa Isabel y Unimarc... ({completedCount}/{queries.length})</span>
+                <span>Buscando en Jumbo, Lider, Santa Isabel, Unimarc y Tottus... ({completedCount}/{queries.length})</span>
               </>
             ) : (
               <>
@@ -564,7 +564,7 @@ export default function CompararPage() {
                         // Intentar armar carrito automatico por cada tienda
                         for (const st of opt.stores) {
                           const storeSlugMap: Record<string, string> = {
-                            Jumbo: 'jumbo', Lider: 'lider', Unimarc: 'unimarc', 'Santa Isabel': 'santa-isabel',
+                            Jumbo: 'jumbo', Lider: 'lider', Unimarc: 'unimarc', 'Santa Isabel': 'santa-isabel', Tottus: 'tottus',
                           }
                           const slug = storeSlugMap[st.store] || st.store.toLowerCase()
 
@@ -609,6 +609,7 @@ export default function CompararPage() {
                               Lider: (q) => `https://super.lider.cl/search?q=${encodeURIComponent(q)}`,
                               Unimarc: (q) => `https://www.unimarc.cl/buscar?q=${encodeURIComponent(q)}`,
                               'Santa Isabel': (q) => `https://www.santaisabel.cl/buscar?ft=${encodeURIComponent(q)}`,
+                              Tottus: (q) => `https://www.tottus.cl/search?Ntt=${encodeURIComponent(q)}`,
                             }
                             const urlFn = searchUrls[st.store]
                             if (urlFn) {
@@ -760,7 +761,7 @@ export default function CompararPage() {
             <ShoppingCart className="h-12 w-12 text-gray-300 mx-auto mb-3" />
             <p className="text-gray-500 font-medium">Agrega productos para comparar</p>
             <p className="text-sm text-gray-400 mt-1">
-              AVI busca en Jumbo, Lider, Santa Isabel y Unimarc para encontrar los mejores precios
+              AVI busca en Jumbo, Lider, Santa Isabel, Unimarc y Tottus para encontrar los mejores precios
             </p>
           </div>
         )}

@@ -62,6 +62,12 @@ const STORE_CONFIG: Record<string, {
     deliveryFee: 3490,
     color: '#2563eb',
   },
+  tottus: {
+    name: 'Tottus',
+    searchUrlTemplate: (q) => `https://www.tottus.cl/search?Ntt=${encodeURIComponent(q)}`,
+    deliveryFee: 2990,
+    color: '#0d9488',
+  },
 };
 
 /**

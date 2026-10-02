@@ -1,11 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import { signIn } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Mail, Lock, User, ArrowRight, AlertCircle, Check } from 'lucide-react'
 
-export default function RegistroPage() {
+function RegistroForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const inviteCode = searchParams.get('invite')
@@ -32,7 +32,6 @@ export default function RegistroPage() {
       const result = await signIn('credentials', { email, password, redirect: false })
       if (result?.error) { setError(result.error); setLoading(false); return }
 
-      // Auto-join familia si viene con invite code
       if (inviteCode) {
         await fetch('/api/family', {
           method: 'POST',
@@ -122,5 +121,13 @@ export default function RegistroPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function RegistroPage() {
+  return (
+    <Suspense>
+      <RegistroForm />
+    </Suspense>
   )
 }

@@ -140,6 +140,7 @@ export default function CartAssistantPage() {
       lider: (q) => `https://super.lider.cl/search?q=${encodeURIComponent(q)}`,
       unimarc: (q) => `https://www.unimarc.cl/buscar?q=${encodeURIComponent(q)}`,
       'santa isabel': (q) => `https://www.santaisabel.cl/search?ft=${encodeURIComponent(q)}`,
+      tottus: (q) => `https://www.tottus.cl/search?Ntt=${encodeURIComponent(q)}`,
     }
 
     for (const [slug, items] of byStore) {
@@ -155,6 +156,7 @@ export default function CartAssistantPage() {
     Lider: 'bg-red-100 text-red-700',
     Unimarc: 'bg-orange-100 text-orange-700',
     'Santa Isabel': 'bg-blue-100 text-blue-700',
+    Tottus: 'bg-teal-100 text-teal-700',
     'Por buscar': 'bg-gray-100 text-gray-500',
   }
 

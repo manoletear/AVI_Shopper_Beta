@@ -4,6 +4,7 @@
  * Obtiene precios reales de supermercados chilenos via Apify actors:
  * - scraperschile/jumbo (Jumbo)
  * - scraperschile/unimarc (Unimarc)
+ * - scraperschile/tottus (Tottus)
  * - super.lider.cl via RAG Web Browser (Lider Supermercado)
  * - automation-lab/chile-supermarket-price-comparison (Jumbo + Santa Isabel)
  */
@@ -110,6 +111,30 @@ export async function searchLider(
   }));
 }
 
+export async function searchTottus(
+  query: string,
+  apiToken: string,
+  maxPages = 1
+): Promise<ApifyProduct[]> {
+  const items = await callApifyActor(
+    'scraperschile~tottus',
+    { term: query, maxPages, pageSize: 20 },
+    apiToken
+  );
+
+  return items.map((item: any) => ({
+    name: item.name,
+    brand: item.brand || '',
+    price: item.price,
+    listPrice: item.list_price,
+    inStock: (item.available_quantity ?? 1) > 0,
+    store: 'Tottus',
+    url: item.url,
+    imageUrl: item.image,
+    categories: item.categories,
+  }));
+}
+
 export async function searchUnimarc(
   query: string,
   apiToken: string,
@@ -169,13 +194,14 @@ export async function comparePrices(
   query: string,
   apiToken: string
 ): Promise<PriceComparison> {
-  const [jumboResults, liderResults, unimarcResults] = await Promise.all([
+  const [jumboResults, liderResults, unimarcResults, tottusResults] = await Promise.all([
     searchJumbo(query, apiToken).catch(() => [] as ApifyProduct[]),
     searchLider(query, apiToken).catch(() => [] as ApifyProduct[]),
     searchUnimarc(query, apiToken).catch(() => [] as ApifyProduct[]),
+    searchTottus(query, apiToken).catch(() => [] as ApifyProduct[]),
   ]);
 
-  const allRaw = [...jumboResults, ...liderResults, ...unimarcResults].filter(
+  const allRaw = [...jumboResults, ...liderResults, ...unimarcResults, ...tottusResults].filter(
     (p) => p.inStock && p.price > 0
   );
 
