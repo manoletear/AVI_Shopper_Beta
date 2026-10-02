@@ -5,6 +5,8 @@ import { useSession } from 'next-auth/react'
 import {
   ShoppingCart, Plus, Trash2, Check, X, ArrowLeft,
   ListChecks, AlertCircle, Package, Settings,
+  DollarSign, ArrowRight, Sparkles, Users, Flame,
+  PartyPopper, Sun, Baby, PawPrint, Briefcase,
 } from 'lucide-react'
 
 interface ShoppingItem {
@@ -23,6 +25,62 @@ interface ShoppingList {
   updatedAt: string
 }
 
+interface ListTemplate {
+  name: string
+  icon: any
+  color: string
+  description: string
+  askPeople?: boolean
+  items: string[]
+}
+
+const LIST_TEMPLATES: ListTemplate[] = [
+  {
+    name: 'Asado',
+    icon: Flame,
+    color: 'bg-orange-500',
+    description: 'Todo para un asado chileno',
+    askPeople: true,
+    items: ['Carbon', 'Carne de vacuno', 'Longanizas', 'Choricillos', 'Pan de completo', 'Tomate', 'Lechuga', 'Cebolla', 'Palta', 'Limon', 'Sal', 'Pebre', 'Bebidas', 'Hielo', 'Servilletas', 'Platos desechables'],
+  },
+  {
+    name: 'Cumpleanos',
+    icon: PartyPopper,
+    color: 'bg-pink-500',
+    description: 'Fiesta de cumpleanos',
+    askPeople: true,
+    items: ['Torta', 'Velitas', 'Bebidas', 'Jugos', 'Papas fritas', 'Ramitas', 'Galletas', 'Sandwich de miga', 'Servilletas', 'Vasos', 'Platos', 'Globos', 'Dulces para pinata'],
+  },
+  {
+    name: 'Desayuno semanal',
+    icon: Sun,
+    color: 'bg-amber-500',
+    description: 'Desayuno para la semana',
+    items: ['Leche', 'Pan', 'Huevos', 'Queso', 'Jamon', 'Mantequilla', 'Mermelada', 'Cafe', 'Te', 'Cereal', 'Yogurt', 'Fruta'],
+  },
+  {
+    name: 'Bebe / Guagua',
+    icon: Baby,
+    color: 'bg-blue-400',
+    description: 'Esenciales para bebe',
+    items: ['Panales', 'Toallitas humedas', 'Formula o leche', 'Compotas', 'Crema para coceduras', 'Shampoo bebe', 'Jabon bebe', 'Mamadera'],
+  },
+  {
+    name: 'Mascotas',
+    icon: PawPrint,
+    color: 'bg-emerald-500',
+    description: 'Comida y cuidado de mascotas',
+    items: ['Alimento perro/gato', 'Snacks mascotas', 'Arena sanitaria', 'Bolsas para desechos', 'Shampoo mascota'],
+  },
+  {
+    name: 'Limpieza',
+    icon: Sparkles,
+    color: 'bg-cyan-500',
+    description: 'Productos de limpieza del hogar',
+    items: ['Lavalozas', 'Detergente ropa', 'Suavizante', 'Cloro', 'Limpia pisos', 'Esponja', 'Bolsas de basura', 'Papel higienico', 'Toalla de papel', 'Desinfectante'],
+  },
+]
+
 export default function ListasPage() {
   const { data: session } = useSession()
   const [lists, setLists] = useState<ShoppingList[]>([])
@@ -32,6 +90,8 @@ export default function ListasPage() {
   const [newListName, setNewListName] = useState('')
   const [newItemName, setNewItemName] = useState('')
   const [creatingList, setCreatingList] = useState(false)
+  const [showTemplates, setShowTemplates] = useState(false)
+  const [templatePeople, setTemplatePeople] = useState<{ template: ListTemplate; count: string } | null>(null)
 
   const fetchLists = useCallback(async () => {
     try {
@@ -70,6 +130,51 @@ export default function ListasPage() {
         setActiveList(newList)
         setNewListName('')
       }
+    } catch {
+      setError('Error al crear lista')
+    } finally {
+      setCreatingList(false)
+    }
+  }
+
+  const createFromTemplate = async (template: ListTemplate, peopleCount?: number) => {
+    setCreatingList(true)
+    try {
+      const name = peopleCount
+        ? `${template.name} (${peopleCount} personas)`
+        : template.name
+
+      const res = await fetch('/api/shopping-lists', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name }),
+      })
+      const data = await res.json()
+      if (!data.success) return
+
+      const listId = data.data.id
+      const items: ShoppingItem[] = []
+
+      for (const itemName of template.items) {
+        const qty = peopleCount && peopleCount > 4
+          ? Math.ceil(peopleCount / 4)
+          : 1
+        try {
+          const itemRes = await fetch(`/api/shopping-lists/${listId}/items`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: itemName, quantity: qty }),
+          })
+          const itemData = await itemRes.json()
+          if (itemData.success) items.push(itemData.data)
+        } catch {}
+      }
+
+      const newList = { ...data.data, items }
+      setLists((prev) => [newList, ...prev])
+      setActiveList(newList)
+      setShowTemplates(false)
+      setTemplatePeople(null)
     } catch {
       setError('Error al crear lista')
     } finally {
@@ -148,6 +253,20 @@ export default function ListasPage() {
     }
   }
 
+  const buyList = (list: ShoppingList) => {
+    const unchecked = list.items.filter((i) => !i.checked)
+    if (unchecked.length === 0) return
+    const products = unchecked.map((i) => i.name).join(', ')
+    window.location.href = `/cart-assistant?products=${encodeURIComponent(products)}`
+  }
+
+  const compareList = (list: ShoppingList) => {
+    const unchecked = list.items.filter((i) => !i.checked)
+    if (unchecked.length === 0) return
+    const products = unchecked.map((i) => i.name).join(', ')
+    window.location.href = `/comparar?q=${encodeURIComponent(products)}`
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -211,41 +330,141 @@ export default function ListasPage() {
                   <Plus className="h-4 w-4" />
                 </button>
               </div>
+              <button
+                onClick={() => setShowTemplates(!showTemplates)}
+                className="mt-2 w-full text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center justify-center gap-1 py-1.5 rounded-lg hover:bg-blue-50 transition-colors"
+              >
+                <Sparkles className="h-3.5 w-3.5" />
+                {showTemplates ? 'Ocultar plantillas' : 'Usar plantilla'}
+              </button>
             </div>
+
+            {/* Plantillas */}
+            {showTemplates && (
+              <div className="avi-card p-4">
+                <h3 className="text-sm font-medium text-gray-700 mb-3">Plantillas</h3>
+                <div className="space-y-2">
+                  {LIST_TEMPLATES.map((tpl) => {
+                    const Icon = tpl.icon
+                    return (
+                      <button
+                        key={tpl.name}
+                        onClick={() => {
+                          if (tpl.askPeople) {
+                            setTemplatePeople({ template: tpl, count: '' })
+                          } else {
+                            createFromTemplate(tpl)
+                          }
+                        }}
+                        disabled={creatingList}
+                        className="w-full flex items-center gap-3 p-2.5 rounded-xl hover:bg-gray-50 transition-colors text-left disabled:opacity-50"
+                      >
+                        <div className={`w-8 h-8 ${tpl.color} rounded-lg flex items-center justify-center flex-shrink-0`}>
+                          <Icon className="h-4 w-4 text-white" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">{tpl.name}</p>
+                          <p className="text-xs text-gray-400">{tpl.description}</p>
+                        </div>
+                      </button>
+                    )
+                  })}
+                </div>
+
+                {templatePeople && (
+                  <div className="mt-3 p-3 bg-blue-50 rounded-xl border border-blue-100">
+                    <p className="text-sm font-medium text-blue-900 mb-2">
+                      ¿Cuantas personas van al {templatePeople.template.name.toLowerCase()}?
+                    </p>
+                    <div className="flex gap-2">
+                      <input
+                        type="number"
+                        min="1"
+                        max="50"
+                        value={templatePeople.count}
+                        onChange={(e) => setTemplatePeople({ ...templatePeople, count: e.target.value })}
+                        placeholder="Ej: 8"
+                        className="flex-1 px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+                      />
+                      <button
+                        onClick={() => createFromTemplate(templatePeople.template, parseInt(templatePeople.count) || undefined)}
+                        disabled={creatingList}
+                        className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
+                      >
+                        Crear
+                      </button>
+                      <button
+                        onClick={() => setTemplatePeople(null)}
+                        className="p-2 text-gray-400 hover:text-gray-600"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Listas existentes */}
             {lists.length === 0 ? (
               <div className="avi-card p-6 text-center">
                 <Package className="h-8 w-8 text-gray-300 mx-auto mb-2" />
                 <p className="text-sm text-gray-500">No tienes listas aun</p>
+                <p className="text-xs text-gray-400 mt-1">Crea una o usa una plantilla</p>
               </div>
             ) : (
-              lists.map((list) => (
-                <div
-                  key={list.id}
-                  onClick={() => setActiveList(list)}
-                  className={`avi-card p-4 cursor-pointer transition-all ${
-                    activeList?.id === list.id
-                      ? 'border-blue-500 ring-2 ring-blue-100'
-                      : 'hover:border-gray-300'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="font-medium text-gray-900 text-sm">{list.name}</h4>
-                      <p className="text-xs text-gray-400 mt-0.5">
-                        {list.items?.length || 0} items
-                      </p>
+              lists.map((list) => {
+                const isActive = activeList?.id === list.id
+                const uncheckedCount = list.items?.filter((i) => !i.checked).length || 0
+                const totalCount = list.items?.length || 0
+
+                return (
+                  <div
+                    key={list.id}
+                    onClick={() => setActiveList(list)}
+                    className={`avi-card p-4 cursor-pointer transition-all ${
+                      isActive
+                        ? 'border-blue-500 ring-2 ring-blue-100'
+                        : 'hover:border-gray-300'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <div>
+                        <h4 className="font-medium text-gray-900 text-sm">{list.name}</h4>
+                        <p className="text-xs text-gray-400 mt-0.5">
+                          {uncheckedCount} pendiente{uncheckedCount !== 1 ? 's' : ''} de {totalCount}
+                        </p>
+                      </div>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); deleteList(list.id) }}
+                        className="p-1 text-gray-300 hover:text-red-500"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
                     </div>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); deleteList(list.id) }}
-                      className="p-1 text-gray-300 hover:text-red-500"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
+
+                    {/* Action buttons */}
+                    {totalCount > 0 && (
+                      <div className="flex gap-2 mt-2">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); compareList(list) }}
+                          className="flex-1 flex items-center justify-center gap-1 text-xs font-medium py-1.5 px-2 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors"
+                        >
+                          <DollarSign className="h-3 w-3" />
+                          Comparar
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); buyList(list) }}
+                          className="flex-1 flex items-center justify-center gap-1 text-xs font-medium py-1.5 px-2 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors"
+                        >
+                          <ShoppingCart className="h-3 w-3" />
+                          Comprar
+                        </button>
+                      </div>
+                    )}
                   </div>
-                </div>
-              ))
+                )
+              })
             )}
           </div>
 
@@ -254,10 +473,32 @@ export default function ListasPage() {
             {activeList ? (
               <div className="bg-white rounded-xl border">
                 <div className="p-4 border-b">
-                  <h2 className="font-semibold text-gray-900">{activeList.name}</h2>
-                  <p className="text-xs text-gray-400">
-                    {activeList.items.filter((i) => i.checked).length}/{activeList.items.length} completados
-                  </p>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="font-semibold text-gray-900">{activeList.name}</h2>
+                      <p className="text-xs text-gray-400">
+                        {activeList.items.filter((i) => i.checked).length}/{activeList.items.length} completados
+                      </p>
+                    </div>
+                    {activeList.items.length > 0 && (
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => compareList(activeList)}
+                          className="flex items-center gap-1.5 text-sm font-medium py-2 px-3 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors"
+                        >
+                          <DollarSign className="h-4 w-4" />
+                          Comparar precios
+                        </button>
+                        <button
+                          onClick={() => buyList(activeList)}
+                          className="flex items-center gap-1.5 text-sm font-medium py-2 px-3 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+                        >
+                          <ShoppingCart className="h-4 w-4" />
+                          Comprar
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Agregar item */}

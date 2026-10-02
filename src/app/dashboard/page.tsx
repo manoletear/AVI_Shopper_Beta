@@ -122,7 +122,7 @@ export default function DashboardPage() {
         {/* Stats */}
         {data && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-            <div className="avi-card p-4">
+            <a href="/listas" className="avi-card-interactive p-4 block">
               <div className="flex items-center space-x-2 mb-1">
                 <div className="w-6 h-6 bg-purple-100 rounded-lg flex items-center justify-center">
                   <Package className="h-3.5 w-3.5 text-purple-600" />
@@ -131,9 +131,9 @@ export default function DashboardPage() {
               </div>
               <p className="text-2xl font-bold text-gray-900">{data.listsCount}</p>
               <p className="text-xs text-gray-400">{data.itemsCount} productos</p>
-            </div>
+            </a>
 
-            <div className="avi-card p-4">
+            <a href="/salud" className="avi-card-interactive p-4 block">
               <div className="flex items-center space-x-2 mb-1">
                 <div className="w-6 h-6 bg-rose-100 rounded-lg flex items-center justify-center">
                   <Heart className="h-3.5 w-3.5 text-rose-600" />
@@ -148,9 +148,9 @@ export default function DashboardPage() {
                 {data.healthScore ?? '—'}
               </p>
               <p className="text-xs text-gray-400">score /100</p>
-            </div>
+            </a>
 
-            <div className="avi-card p-4">
+            <a href="/presupuesto" className="avi-card-interactive p-4 block">
               <div className="flex items-center space-x-2 mb-1">
                 <div className="w-6 h-6 bg-teal-100 rounded-lg flex items-center justify-center">
                   <Wallet className="h-3.5 w-3.5 text-teal-600" />
@@ -167,9 +167,9 @@ export default function DashboardPage() {
               ) : (
                 <p className="text-2xl font-bold text-gray-300">—</p>
               )}
-            </div>
+            </a>
 
-            <div className="avi-card p-4">
+            <a href="/salud" className="avi-card-interactive p-4 block">
               <div className="flex items-center space-x-2 mb-1">
                 <div className="w-6 h-6 bg-amber-100 rounded-lg flex items-center justify-center">
                   <AlertCircle className="h-3.5 w-3.5 text-amber-600" />
@@ -180,7 +180,7 @@ export default function DashboardPage() {
                 {data.alertsCount}
               </p>
               <p className="text-xs text-gray-400">sin leer</p>
-            </div>
+            </a>
           </div>
         )}
 

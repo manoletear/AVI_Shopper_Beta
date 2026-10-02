@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, Suspense } from 'react'
 import { useSession } from 'next-auth/react'
+import { useSearchParams } from 'next/navigation'
 import {
   ArrowLeft, Search, ShoppingCart, Plus, X, Loader2,
   DollarSign, TrendingDown, Heart, AlertTriangle,
@@ -40,8 +41,10 @@ interface SplitRecommendation {
   subtotal: number
 }
 
-export default function CompararPage() {
+function CompararInner() {
   const { data: session } = useSession()
+  const searchParams = useSearchParams()
+  const autoLoadedRef = useRef(false)
   const [inputValue, setInputValue] = useState('')
   const [queries, setQueries] = useState<string[]>([])
   const [comparisons, setComparisons] = useState<Map<string, ComparisonItem>>(new Map())
@@ -94,6 +97,15 @@ export default function CompararPage() {
       })
       .catch(() => {})
   }, [session])
+
+  useEffect(() => {
+    const q = searchParams.get('q')
+    if (q && !autoLoadedRef.current) {
+      autoLoadedRef.current = true
+      const items = q.split(/[,\n]/).map((s) => s.trim()).filter(Boolean)
+      setQueries(items)
+    }
+  }, [searchParams])
 
   // Verificar alergenos y restricciones de dieta en un producto
   const checkProduct = (product: ProductResult): ProductResult => {
@@ -767,5 +779,13 @@ export default function CompararPage() {
         )}
       </main>
     </div>
+  )
+}
+
+export default function CompararPage() {
+  return (
+    <Suspense>
+      <CompararInner />
+    </Suspense>
   )
 }

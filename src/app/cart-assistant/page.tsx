@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, Suspense } from 'react'
 import { useSession } from 'next-auth/react'
+import { useSearchParams } from 'next/navigation'
 import {
   ArrowLeft, ShoppingCart, Send, Loader2, Minus, Plus,
   Pencil, Trash2, ExternalLink, AlertTriangle, Heart,
@@ -21,8 +22,9 @@ interface CartProduct {
   allergenWarning?: string
 }
 
-export default function CartAssistantPage() {
+function CartAssistantInner() {
   const { data: session } = useSession()
+  const searchParams = useSearchParams()
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [buildingCart, setBuildingCart] = useState(false)
@@ -30,6 +32,7 @@ export default function CartAssistantPage() {
   const [chatMessages, setChatMessages] = useState<Array<{ role: string; text: string }>>([])
   const [phase, setPhase] = useState<'chat' | 'cart'>('chat')
   const inputRef = useRef<HTMLInputElement>(null)
+  const autoSentRef = useRef(false)
 
   const formatCLP = (n: number) =>
     new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', minimumFractionDigits: 0 }).format(n)
@@ -111,6 +114,14 @@ export default function CartAssistantPage() {
     setLoading(false)
     inputRef.current?.focus()
   }
+
+  useEffect(() => {
+    const products = searchParams.get('products')
+    if (products && !autoSentRef.current) {
+      autoSentRef.current = true
+      sendMessage(products)
+    }
+  }, [searchParams])
 
   const updateQuantity = (idx: number, delta: number) => {
     setCartItems((prev) => prev.map((item, i) => {
@@ -318,5 +329,13 @@ export default function CartAssistantPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function CartAssistantPage() {
+  return (
+    <Suspense>
+      <CartAssistantInner />
+    </Suspense>
   )
 }
