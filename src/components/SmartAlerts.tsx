@@ -75,8 +75,8 @@ export default function SmartAlerts() {
         id: 'time-familia',
         type: 'onboarding',
         title: 'Configura tu familia',
-        message: 'Dile a AVI cuantos son en casa, alergias y preferencias para que las compras sean perfectas.',
-        action: { label: 'Configurar familia', href: '/perfil' },
+        message: 'Agrega a los miembros de tu hogar (incluye mascotas) para que AVI cuide la nutricion y alergias de cada uno.',
+        action: { label: 'Configurar familia', href: '/familia' },
         dismissable: true,
         color: 'indigo',
       })
@@ -124,6 +124,25 @@ export default function SmartAlerts() {
               color: 'rose',
             })
           }
+        }
+      }
+    } catch {}
+
+    // Check familia
+    try {
+      const res = await fetch('/api/family')
+      const data = await res.json()
+      if (data.success && !data.data.family) {
+        if (!dismissed.has('onboard-familia')) {
+          newAlerts.push({
+            id: 'onboard-familia',
+            type: 'onboarding',
+            title: '¡Configura tu grupo familiar!',
+            message: 'Agrega a tu familia y mascotas para que AVI proteja a cada uno de alergenos y cuide su nutricion.',
+            action: { label: 'Configurar familia', href: '/familia' },
+            dismissable: true,
+            color: 'indigo',
+          })
         }
       }
     } catch {}

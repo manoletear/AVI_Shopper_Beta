@@ -2,11 +2,13 @@
 
 import { useState } from 'react'
 import { signIn } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Mail, Lock, User, ArrowRight, AlertCircle, Check } from 'lucide-react'
 
 export default function RegistroPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const inviteCode = searchParams.get('invite')
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -28,8 +30,18 @@ export default function RegistroPage() {
       if (!data.success) { setError(data.error?.message || 'Error'); setLoading(false); return }
 
       const result = await signIn('credentials', { email, password, redirect: false })
-      if (result?.error) { setError(result.error); setLoading(false) }
-      else router.push('/dashboard')
+      if (result?.error) { setError(result.error); setLoading(false); return }
+
+      // Auto-join familia si viene con invite code
+      if (inviteCode) {
+        await fetch('/api/family', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'join', inviteCode }),
+        }).catch(() => {})
+      }
+
+      router.push(inviteCode ? '/familia' : '/dashboard')
     } catch { setError('Error de conexion'); setLoading(false) }
   }
 

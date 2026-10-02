@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import {
-  ShoppingCart, ListChecks, DollarSign, Heart, Store,
+  ShoppingCart, ListChecks, DollarSign, Heart, Store, Users,
   ArrowRight, LogOut, Settings, AlertCircle,
   Wallet, Package, User, Bot, Bell, TrendingUp,
 } from 'lucide-react'
@@ -25,6 +25,7 @@ const NAV_ITEMS = [
   { href: '/reposicion', label: 'Reposicion', description: 'Que se esta acabando', icon: Package, gradient: 'from-orange-500 to-red-500', iconBg: 'bg-orange-500' },
   { href: '/salud', label: 'Mi Salud', description: 'Nutricion y alertas', icon: Heart, gradient: 'from-rose-500 to-pink-600', iconBg: 'bg-rose-500' },
   { href: '/perfil', label: 'Perfil Nutricional', description: 'Dieta y alergias', icon: User, gradient: 'from-indigo-500 to-purple-600', iconBg: 'bg-indigo-500' },
+  { href: '/familia', label: 'Mi Familia', description: 'Miembros, alergias, mascotas', icon: Users, gradient: 'from-fuchsia-500 to-pink-600', iconBg: 'bg-fuchsia-500' },
   { href: '/presupuesto', label: 'Presupuesto', description: 'Control de gastos', icon: Wallet, gradient: 'from-teal-500 to-cyan-600', iconBg: 'bg-teal-500' },
   { href: '/configuracion/cuentas', label: 'Supermercados', description: 'Vincular cuentas', icon: Store, gradient: 'from-amber-500 to-orange-600', iconBg: 'bg-amber-500' },
 ]

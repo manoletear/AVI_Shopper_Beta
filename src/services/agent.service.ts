@@ -132,6 +132,14 @@ const TOOLS: Anthropic.Tool[] = [
     },
   },
   {
+    name: 'get_family',
+    description: 'Muestra los miembros de la familia con sus alergias y restricciones. Usa cuando dice "mi familia", "quienes somos", "alergias de la familia", "miembros".',
+    input_schema: {
+      type: 'object' as const,
+      properties: {},
+    },
+  },
+  {
     name: 'checkout',
     description: 'Genera links de compra directos al supermercado. Usa cuando el usuario dice "comprar", "hacer la compra", "pedir", "checkout", "ir a pagar", "arma el carrito". Genera links para que el usuario abra cada producto en el super y lo agregue al carrito.',
     input_schema: {
@@ -438,6 +446,32 @@ async function executeTool(
       };
     }
 
+    case 'get_family': {
+      const membership = await prisma.familyMember.findFirst({
+        where: { userId },
+        include: {
+          family: {
+            include: { members: { where: { isActive: true } } },
+          },
+        },
+      });
+
+      if (!membership) {
+        return { success: true, data: null, message: 'No tienes familia configurada. Ve a /familia para crear tu grupo familiar.' };
+      }
+
+      const members = membership.family.members.map((m) => {
+        const allergies = m.allergies ? JSON.parse(m.allergies) : [];
+        return `${m.type === 'pet' ? '🐾' : '👤'} ${m.name} (${m.role})${m.dietType ? ` · ${m.dietType}` : ''}${allergies.length > 0 ? ` · ⚠️ ${allergies.join(', ')}` : ''}${m.species ? ` · ${m.species}${m.breed ? ` ${m.breed}` : ''}` : ''}`;
+      });
+
+      return {
+        success: true,
+        data: { familyName: membership.family.name, members: membership.family.members },
+        message: `Familia "${membership.family.name}" (${membership.family.members.length} miembros):\n${members.join('\n')}`,
+      };
+    }
+
     case 'checkout': {
       // Obtener lista de compras activa
       const list = await prisma.shoppingList.findFirst({
@@ -525,9 +559,27 @@ export async function processAgentMessage(
     familyContext = await getFamilyProfileSummary(userId);
   } catch {}
 
-  const systemPrompt = familyContext
-    ? `${SYSTEM_PROMPT}\n\nPERFIL DE COMPRAS DE ESTA FAMILIA:\n${familyContext}`
-    : SYSTEM_PROMPT;
+  // Cargar alergias de la familia
+  let familyAllergiesContext = '';
+  try {
+    const membership = await prisma.familyMember.findFirst({
+      where: { userId },
+      include: { family: { include: { members: { where: { isActive: true } } } } },
+    });
+    if (membership?.family?.members) {
+      const allergyLines = membership.family.members
+        .filter((m) => m.allergies || m.dietType)
+        .map((m) => {
+          const allergies = m.allergies ? JSON.parse(m.allergies) : [];
+          return `- ${m.name}: ${m.dietType ? m.dietType + '. ' : ''}${allergies.length > 0 ? 'ALERGICO a: ' + allergies.join(', ') : ''}`;
+        });
+      if (allergyLines.length > 0) {
+        familyAllergiesContext = `\n\nALERGIAS Y DIETAS DE LA FAMILIA (VERIFICAR SIEMPRE):\n${allergyLines.join('\n')}\nCuando el usuario agrega un producto, VERIFICA si contiene alergenos de algun miembro.`;
+      }
+    }
+  } catch {}
+
+  const systemPrompt = `${SYSTEM_PROMPT}${familyContext ? `\n\nPERFIL DE COMPRAS DE ESTA FAMILIA:\n${familyContext}` : ''}${familyAllergiesContext}`;
 
   const messages: Anthropic.MessageParam[] = [
     ...conversationHistory.map((m) => ({
