@@ -1,6 +1,7 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import {
   Home, ListChecks, ShoppingCart, Bot, User,
 } from 'lucide-react'
@@ -15,6 +16,9 @@ const NAV_ITEMS = [
 
 export default function BottomNav() {
   const pathname = usePathname()
+  const { data: session } = useSession()
+
+  if (!session) return null
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md border-t border-gray-100 sm:hidden"

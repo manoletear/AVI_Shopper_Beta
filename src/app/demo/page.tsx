@@ -242,7 +242,7 @@ export default function DemoPage() {
   const categories = ['all', ...new Set(PRODUCT_DATABASE.map(p => p.category))]
 
   const goHome = () => {
-    setCurrentStep(1)
+    window.location.href = '/registro'
   }
 
   return (

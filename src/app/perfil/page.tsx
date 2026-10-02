@@ -319,6 +319,24 @@ export default function PerfilNutricionalPage() {
             </button>
           </div>
         </div>
+
+        {/* Next steps */}
+        {saved && (
+          <div className="bg-green-50 border border-green-200 rounded-xl p-4">
+            <p className="text-sm text-green-800 font-medium mb-2">Perfil guardado</p>
+            <div className="flex flex-col gap-2">
+              <a href="/familia" className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1">
+                → Configurar tu familia (alergias, hijos, mascotas)
+              </a>
+              <a href="/presupuesto" className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1">
+                → Definir tu presupuesto mensual
+              </a>
+              <a href="/listas" className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1">
+                → Crear tu primera lista de compras
+              </a>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   )

@@ -314,12 +314,20 @@ export default function SaludPage() {
 
             {/* Empty state */}
             {report.alerts.length === 0 && report.predictions.length === 0 && (
-              <div className="bg-green-50 border border-green-200 rounded-xl p-6 text-center">
-                <ShieldCheck className="h-10 w-10 text-green-500 mx-auto mb-2" />
-                <p className="font-medium text-green-800">Todo bien por ahora</p>
-                <p className="text-sm text-green-600 mt-1">
-                  Agrega productos a tus listas para obtener analisis nutricional y predicciones.
+              <div className="avi-card p-6 text-center">
+                <ShieldCheck className="h-10 w-10 text-gray-300 mx-auto mb-3" />
+                <p className="font-medium text-gray-700">AVI necesita datos para analizar tu salud</p>
+                <p className="text-sm text-gray-500 mt-1 mb-4">
+                  Registra compras con AVI para que analice la nutricion de tu familia.
                 </p>
+                <div className="flex flex-col gap-2 max-w-xs mx-auto">
+                  <a href="/avi" className="avi-btn-primary text-sm flex items-center justify-center gap-2">
+                    <Heart className="h-4 w-4" /> Hablar con AVI
+                  </a>
+                  <a href="/perfil" className="text-sm text-blue-600 hover:text-blue-700 font-medium">
+                    Configurar perfil nutricional
+                  </a>
+                </div>
               </div>
             )}
           </div>

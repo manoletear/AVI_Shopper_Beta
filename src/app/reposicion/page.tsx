@@ -239,13 +239,21 @@ export default function ReposicionPage() {
                 })}
               </div>
             ) : (
-              <div className="bg-green-50 border border-green-200 rounded-xl p-8 text-center">
-                <Check className="h-10 w-10 text-green-500 mx-auto mb-2" />
-                <p className="text-green-800 font-medium">Todo abastecido</p>
-                <p className="text-sm text-green-600 mt-1">
-                  No hay productos que necesiten reposicion este mes.
-                  A medida que compres, AVI aprendera tus patrones.
+              <div className="avi-card p-8 text-center">
+                <Package className="h-10 w-10 text-gray-300 mx-auto mb-3" />
+                <p className="text-gray-700 font-medium">AVI esta aprendiendo tus patrones</p>
+                <p className="text-sm text-gray-500 mt-1 mb-4">
+                  Registra compras para que AVI prediga cuando se acaban tus productos.
+                  Dile a AVI: "compre leche en Jumbo por $1.200"
                 </p>
+                <div className="flex flex-col gap-2 max-w-xs mx-auto">
+                  <a href="/avi" className="avi-btn-primary text-sm flex items-center justify-center gap-2">
+                    Hablar con AVI
+                  </a>
+                  <a href="/listas" className="text-sm text-blue-600 hover:text-blue-700 font-medium">
+                    Crear una lista de compras
+                  </a>
+                </div>
               </div>
             )}
           </>
