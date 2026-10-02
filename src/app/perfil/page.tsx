@@ -124,8 +124,8 @@ export default function PerfilNutricionalPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b sticky top-0 z-10">
+    <div className="avi-page min-h-screen pb-20">
+      <header className="avi-header">
         <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <a href="/dashboard" className="text-gray-400 hover:text-gray-600">
@@ -169,7 +169,7 @@ export default function PerfilNutricionalPage() {
         </div>
 
         {/* Tipo de Dieta */}
-        <div className="bg-white rounded-xl border p-5">
+        <div className="avi-card p-5">
           <div className="flex items-center space-x-2 mb-4">
             <Apple className="h-5 w-5 text-green-600" />
             <h2 className="font-semibold text-gray-900">Tipo de Dieta</h2>
@@ -196,7 +196,7 @@ export default function PerfilNutricionalPage() {
         </div>
 
         {/* Alergias */}
-        <div className="bg-white rounded-xl border p-5">
+        <div className="avi-card p-5">
           <div className="flex items-center space-x-2 mb-1">
             <AlertTriangle className="h-5 w-5 text-amber-500" />
             <h2 className="font-semibold text-gray-900">Alergias e Intolerancias</h2>
@@ -265,7 +265,7 @@ export default function PerfilNutricionalPage() {
         </div>
 
         {/* Objetivos de Salud */}
-        <div className="bg-white rounded-xl border p-5">
+        <div className="avi-card p-5">
           <div className="flex items-center space-x-2 mb-1">
             <Settings className="h-5 w-5 text-blue-500" />
             <h2 className="font-semibold text-gray-900">Objetivos de Salud</h2>
@@ -297,7 +297,7 @@ export default function PerfilNutricionalPage() {
         </div>
 
         {/* Tamaño Familia */}
-        <div className="bg-white rounded-xl border p-5">
+        <div className="avi-card p-5">
           <h2 className="font-semibold text-gray-900 mb-3">Tamaño de la Familia</h2>
           <p className="text-xs text-gray-500 mb-3">AVI ajusta las cantidades y predicciones de consumo</p>
           <div className="flex items-center space-x-4">

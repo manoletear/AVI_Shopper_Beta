@@ -160,9 +160,9 @@ export default function ListasPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="avi-page min-h-screen pb-20">
       {/* Header */}
-      <header className="bg-white border-b sticky top-0 z-10">
+      <header className="avi-header">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <a href="/dashboard" className="text-gray-400 hover:text-gray-600">
@@ -192,7 +192,7 @@ export default function ListasPage() {
           {/* Sidebar: lista de listas */}
           <div className="md:col-span-1 space-y-3">
             {/* Crear nueva lista */}
-            <div className="bg-white rounded-xl border p-4">
+            <div className="avi-card p-4">
               <h3 className="text-sm font-medium text-gray-700 mb-2">Nueva Lista</h3>
               <div className="flex space-x-2">
                 <input
@@ -215,7 +215,7 @@ export default function ListasPage() {
 
             {/* Listas existentes */}
             {lists.length === 0 ? (
-              <div className="bg-white rounded-xl border p-6 text-center">
+              <div className="avi-card p-6 text-center">
                 <Package className="h-8 w-8 text-gray-300 mx-auto mb-2" />
                 <p className="text-sm text-gray-500">No tienes listas aun</p>
               </div>
@@ -224,7 +224,7 @@ export default function ListasPage() {
                 <div
                   key={list.id}
                   onClick={() => setActiveList(list)}
-                  className={`bg-white rounded-xl border p-4 cursor-pointer transition-all ${
+                  className={`avi-card p-4 cursor-pointer transition-all ${
                     activeList?.id === list.id
                       ? 'border-blue-500 ring-2 ring-blue-100'
                       : 'hover:border-gray-300'
@@ -330,7 +330,7 @@ export default function ListasPage() {
                 </div>
               </div>
             ) : (
-              <div className="bg-white rounded-xl border p-12 text-center">
+              <div className="avi-card p-12 text-center">
                 <ListChecks className="h-12 w-12 text-gray-300 mx-auto mb-3" />
                 <p className="text-gray-500 font-medium">Selecciona o crea una lista</p>
                 <p className="text-sm text-gray-400 mt-1">Tus listas de compras apareceran aqui</p>

@@ -92,9 +92,9 @@ export default function SaludPage() {
     : 'text-gray-500'
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="avi-page min-h-screen pb-20">
       {/* Header */}
-      <header className="bg-white border-b sticky top-0 z-10">
+      <header className="avi-header">
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <a href="/dashboard" className="text-gray-400 hover:text-gray-600">
@@ -130,7 +130,7 @@ export default function SaludPage() {
         ) : report ? (
           <div className="space-y-6">
             {/* Score Card */}
-            <div className="bg-white rounded-xl border p-6">
+            <div className="avi-card p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-500 font-medium">Score de Salud</p>
@@ -220,7 +220,7 @@ export default function SaludPage() {
 
             {/* Recommendations */}
             {report.recommendations.length > 0 && (
-              <div className="bg-white rounded-xl border p-5">
+              <div className="avi-card p-5">
                 <div className="flex items-center space-x-2 mb-3">
                   <ShieldCheck className="h-5 w-5 text-green-600" />
                   <h2 className="text-sm font-semibold text-gray-700">Recomendaciones</h2>
@@ -238,7 +238,7 @@ export default function SaludPage() {
 
             {/* Predictions */}
             {report.predictions.length > 0 && (
-              <div className="bg-white rounded-xl border p-5">
+              <div className="avi-card p-5">
                 <div className="flex items-center space-x-2 mb-3">
                   <Apple className="h-5 w-5 text-orange-500" />
                   <h2 className="text-sm font-semibold text-gray-700">Prediccion de Consumo</h2>

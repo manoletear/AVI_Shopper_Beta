@@ -103,8 +103,8 @@ export default function PresupuestoPage() {
   const dailyBudget = daysLeft > 0 ? Math.round(remaining / daysLeft) : 0
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b sticky top-0 z-10">
+    <div className="avi-page min-h-screen pb-20">
+      <header className="avi-header">
         <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <a href="/dashboard" className="text-gray-400 hover:text-gray-600">
@@ -122,7 +122,7 @@ export default function PresupuestoPage() {
       <main className="max-w-3xl mx-auto px-4 py-6 space-y-6">
         {/* Current Budget */}
         {currentBudget ? (
-          <div className="bg-white rounded-xl border p-6">
+          <div className="avi-card p-6">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <p className="text-sm text-gray-500">Presupuesto {currentBudget.period === 'monthly' ? 'mensual' : 'semanal'}</p>
@@ -190,7 +190,7 @@ export default function PresupuestoPage() {
             )}
           </div>
         ) : (
-          <div className="bg-white rounded-xl border p-8 text-center">
+          <div className="avi-card p-8 text-center">
             <Wallet className="h-10 w-10 text-gray-300 mx-auto mb-3" />
             <p className="text-gray-500 font-medium">No tienes presupuesto activo</p>
             <p className="text-sm text-gray-400 mt-1">Crea uno para controlar tus gastos</p>
@@ -199,7 +199,7 @@ export default function PresupuestoPage() {
 
         {/* Create Budget */}
         {showCreate ? (
-          <div className="bg-white rounded-xl border p-5">
+          <div className="avi-card p-5">
             <h3 className="font-semibold text-gray-900 mb-4">Nuevo Presupuesto</h3>
 
             <div className="space-y-4">
@@ -274,7 +274,7 @@ export default function PresupuestoPage() {
 
         {/* History */}
         {budgets.length > 0 && (
-          <div className="bg-white rounded-xl border p-5">
+          <div className="avi-card p-5">
             <h3 className="font-semibold text-gray-900 mb-3">Historial</h3>
             <div className="divide-y">
               {budgets.slice(0, 6).map((b) => {

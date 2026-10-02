@@ -73,8 +73,8 @@ export default function ReposicionPage() {
     new Date(dateStr).toLocaleDateString('es-CL', { day: 'numeric', month: 'short' })
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b sticky top-0 z-10">
+    <div className="avi-page min-h-screen pb-20">
+      <header className="avi-header">
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <a href="/dashboard" className="text-gray-400 hover:text-gray-600">
@@ -117,15 +117,15 @@ export default function ReposicionPage() {
           <>
             {/* Summary Cards */}
             <div className="grid grid-cols-3 gap-3">
-              <div className="bg-white rounded-xl border p-4 text-center">
+              <div className="avi-card p-4 text-center">
                 <p className="text-2xl font-bold text-red-600">{plan.summary.addNow}</p>
                 <p className="text-xs text-gray-500">Se acabaron</p>
               </div>
-              <div className="bg-white rounded-xl border p-4 text-center">
+              <div className="avi-card p-4 text-center">
                 <p className="text-2xl font-bold text-amber-600">{plan.summary.addSoon}</p>
                 <p className="text-xs text-gray-500">Por acabarse</p>
               </div>
-              <div className="bg-white rounded-xl border p-4 text-center">
+              <div className="avi-card p-4 text-center">
                 <p className="text-2xl font-bold text-blue-600">{plan.summary.monitoring}</p>
                 <p className="text-xs text-gray-500">Monitoreando</p>
               </div>
