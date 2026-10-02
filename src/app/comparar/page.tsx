@@ -597,11 +597,9 @@ function CompararInner() {
                             })
                             const data = await res.json()
 
-                            if (data.success && data.data.cartUrl && !data.data.fallback) {
-                              // Carrito armado automaticamente
+                            if (data.success && data.data.mode === 'auto' && data.data.cartUrl) {
                               window.open(data.data.cartUrl, '_blank')
-                            } else if (data.data?.links) {
-                              // Fallback: abrir links de busqueda
+                            } else if (data.success && data.data?.links) {
                               for (const link of data.data.links) {
                                 window.open(link.url, '_blank')
                               }
