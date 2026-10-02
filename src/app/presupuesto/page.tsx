@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react'
 import {
   ArrowLeft, Wallet, Plus, TrendingUp, TrendingDown,
   AlertCircle, Check, Settings, Loader2, Calendar,
+  Trash2, Pencil, DollarSign, ShoppingCart, X,
 } from 'lucide-react'
 
 interface Budget {
@@ -72,6 +73,36 @@ export default function PresupuestoPage() {
     setCreating(false)
   }
 
+  const [editing, setEditing] = useState(false)
+  const [editAmount, setEditAmount] = useState('')
+
+  const deleteBudget = async (id: string) => {
+    try {
+      await fetch(`/api/budgets/${id}`, { method: 'DELETE' })
+      setBudgets((prev) => prev.filter((b) => b.id !== id))
+      if (currentBudget?.id === id) setCurrentBudget(null)
+    } catch {}
+  }
+
+  const updateBudget = async () => {
+    if (!currentBudget || !editAmount) return
+    const amount = parseInt(editAmount)
+    if (!amount || amount <= 0) return
+    try {
+      const res = await fetch(`/api/budgets/${currentBudget.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        setCurrentBudget({ ...currentBudget, amount })
+        setBudgets((prev) => prev.map((b) => b.id === currentBudget.id ? { ...b, amount } : b))
+        setEditing(false)
+      }
+    } catch {}
+  }
+
   const formatCLP = (n: number) =>
     new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', minimumFractionDigits: 0 }).format(n)
 
@@ -126,11 +157,48 @@ export default function PresupuestoPage() {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <p className="text-sm text-gray-500">Presupuesto {currentBudget.period === 'monthly' ? 'mensual' : 'semanal'}</p>
-                <p className="text-3xl font-bold text-gray-900">{formatCLP(currentBudget.amount)}</p>
+                {editing ? (
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-lg text-gray-400">$</span>
+                    <input
+                      type="number"
+                      value={editAmount}
+                      onChange={(e) => setEditAmount(e.target.value)}
+                      className="w-32 text-2xl font-bold border-b-2 border-green-500 focus:outline-none bg-transparent"
+                      autoFocus
+                    />
+                    <button onClick={updateBudget} className="p-1.5 bg-green-100 text-green-700 rounded-lg hover:bg-green-200">
+                      <Check className="h-4 w-4" />
+                    </button>
+                    <button onClick={() => setEditing(false)} className="p-1.5 bg-gray-100 text-gray-500 rounded-lg hover:bg-gray-200">
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <p className="text-3xl font-bold text-gray-900">{formatCLP(currentBudget.amount)}</p>
+                    <button
+                      onClick={() => { setEditAmount(String(currentBudget.amount)); setEditing(true) }}
+                      className="p-1 text-gray-300 hover:text-gray-600"
+                      title="Editar monto"
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                )}
               </div>
-              <div className={`text-right ${getProgressTextColor(pct)}`}>
-                <p className="text-3xl font-bold">{pct}%</p>
-                <p className="text-xs">usado</p>
+              <div className="text-right">
+                <div className={`${getProgressTextColor(pct)}`}>
+                  <p className="text-3xl font-bold">{pct}%</p>
+                  <p className="text-xs">usado</p>
+                </div>
+                <button
+                  onClick={() => deleteBudget(currentBudget.id)}
+                  className="mt-2 text-xs text-gray-400 hover:text-red-500 flex items-center gap-1 ml-auto"
+                >
+                  <Trash2 className="h-3 w-3" />
+                  Eliminar
+                </button>
               </div>
             </div>
 
@@ -173,19 +241,37 @@ export default function PresupuestoPage() {
 
             {/* Warnings */}
             {pct >= 90 && (
-              <div className="mt-4 bg-red-50 border border-red-200 rounded-lg p-3 flex items-center space-x-2">
-                <AlertCircle className="h-4 w-4 text-red-500 flex-shrink-0" />
-                <p className="text-xs text-red-700">
-                  Estas al {pct}% de tu presupuesto. Considera ajustar tu proxima compra.
-                </p>
+              <div className="mt-4 bg-red-50 border border-red-200 rounded-lg p-3">
+                <div className="flex items-center space-x-2">
+                  <AlertCircle className="h-4 w-4 text-red-500 flex-shrink-0" />
+                  <p className="text-xs text-red-700">
+                    Estas al {pct}% de tu presupuesto. Compara precios para ahorrar.
+                  </p>
+                </div>
+                <a
+                  href="/comparar"
+                  className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-red-700 hover:text-red-800"
+                >
+                  <DollarSign className="h-3 w-3" />
+                  Comparar precios antes de comprar
+                </a>
               </div>
             )}
             {pct >= 70 && pct < 90 && (
-              <div className="mt-4 bg-amber-50 border border-amber-200 rounded-lg p-3 flex items-center space-x-2">
-                <AlertCircle className="h-4 w-4 text-amber-500 flex-shrink-0" />
-                <p className="text-xs text-amber-700">
-                  Llevas el {pct}% del presupuesto. Te quedan {formatCLP(remaining)} para {daysLeft} dias.
-                </p>
+              <div className="mt-4 bg-amber-50 border border-amber-200 rounded-lg p-3">
+                <div className="flex items-center space-x-2">
+                  <AlertCircle className="h-4 w-4 text-amber-500 flex-shrink-0" />
+                  <p className="text-xs text-amber-700">
+                    Llevas el {pct}% del presupuesto. Te quedan {formatCLP(remaining)} para {daysLeft} dias.
+                  </p>
+                </div>
+                <a
+                  href="/comparar"
+                  className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-amber-700 hover:text-amber-800"
+                >
+                  <DollarSign className="h-3 w-3" />
+                  Comparar precios para ahorrar
+                </a>
               </div>
             )}
           </div>

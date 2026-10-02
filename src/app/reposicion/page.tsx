@@ -5,7 +5,8 @@ import { useSession } from 'next-auth/react'
 import {
   ArrowLeft, Clock, AlertTriangle, Check, Plus,
   ShoppingCart, Package, Calendar, RefreshCw,
-  Settings, Loader2, TrendingUp,
+  Settings, Loader2, TrendingUp, DollarSign,
+  ListChecks, ArrowRight,
 } from 'lucide-react'
 
 interface Alert {
@@ -159,11 +160,30 @@ export default function ReposicionPage() {
 
             {/* Added confirmation */}
             {addedItems.length > 0 && (
-              <div className="bg-green-50 border border-green-200 rounded-xl p-3 flex items-center space-x-2">
-                <Check className="h-4 w-4 text-green-600" />
-                <p className="text-sm text-green-700">
-                  Agregados a tu lista: {addedItems.join(', ')}
-                </p>
+              <div className="bg-green-50 border border-green-200 rounded-xl p-4">
+                <div className="flex items-center space-x-2 mb-2">
+                  <Check className="h-4 w-4 text-green-600" />
+                  <p className="text-sm font-medium text-green-700">
+                    {addedItems.length} producto{addedItems.length > 1 ? 's' : ''} agregado{addedItems.length > 1 ? 's' : ''} a tu lista
+                  </p>
+                </div>
+                <p className="text-xs text-green-600 mb-3">{addedItems.join(', ')}</p>
+                <div className="flex gap-2">
+                  <a
+                    href="/listas"
+                    className="flex items-center gap-1.5 text-sm font-medium py-2 px-3 rounded-lg bg-green-600 text-white hover:bg-green-700 transition-colors"
+                  >
+                    <ListChecks className="h-4 w-4" />
+                    Ver mi lista
+                  </a>
+                  <a
+                    href={`/cart-assistant?products=${encodeURIComponent(addedItems.join(', '))}`}
+                    className="flex items-center gap-1.5 text-sm font-medium py-2 px-3 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors"
+                  >
+                    <ShoppingCart className="h-4 w-4" />
+                    Comprar ahora
+                  </a>
+                </div>
               </div>
             )}
 
@@ -194,6 +214,22 @@ export default function ReposicionPage() {
                                   ? 'Probablemente vacio'
                                   : `Se acaba ~${formatDate(alert.estimatedRunOutDate)}`}
                               </span>
+                            </div>
+                            <div className="flex gap-2 mt-3">
+                              <a
+                                href={`/cart-assistant?products=${encodeURIComponent(alert.productName)}`}
+                                className="flex items-center gap-1 text-xs font-medium py-1.5 px-2.5 rounded-lg bg-white/80 border border-gray-200 text-gray-700 hover:bg-white hover:border-blue-300 hover:text-blue-700 transition-colors"
+                              >
+                                <ShoppingCart className="h-3 w-3" />
+                                Comprar
+                              </a>
+                              <a
+                                href={`/comparar?q=${encodeURIComponent(alert.productName)}`}
+                                className="flex items-center gap-1 text-xs font-medium py-1.5 px-2.5 rounded-lg bg-white/80 border border-gray-200 text-gray-700 hover:bg-white hover:border-emerald-300 hover:text-emerald-700 transition-colors"
+                              >
+                                <DollarSign className="h-3 w-3" />
+                                Comparar
+                              </a>
                             </div>
                           </div>
                         </div>

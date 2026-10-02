@@ -5,7 +5,8 @@ import { useSession } from 'next-auth/react'
 import {
   ArrowLeft, Heart, AlertTriangle, AlertCircle, Info,
   TrendingUp, TrendingDown, Minus, ShieldCheck, Apple,
-  Settings, RefreshCw,
+  Settings, RefreshCw, ShoppingCart, DollarSign, Plus,
+  Check, User,
 } from 'lucide-react'
 
 interface HealthAlert {
@@ -48,6 +49,7 @@ export default function SaludPage() {
   const [report, setReport] = useState<HealthReport | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [addedToList, setAddedToList] = useState<Set<string>>(new Set())
 
   const fetchReport = async () => {
     setLoading(true)
@@ -70,6 +72,14 @@ export default function SaludPage() {
   useEffect(() => {
     if (session) fetchReport()
   }, [session])
+
+  const addToCart = (productName: string) => {
+    window.location.href = `/cart-assistant?products=${encodeURIComponent(productName)}`
+  }
+
+  const comparePrice = (productName: string) => {
+    window.location.href = `/comparar?q=${encodeURIComponent(productName)}`
+  }
 
   const getScoreColor = (score: number) => {
     if (score >= 75) return 'text-green-600'
@@ -198,7 +208,7 @@ export default function SaludPage() {
                             <div className="mt-3 space-y-2">
                               <p className="text-xs font-medium text-gray-500">Alternativas:</p>
                               {alert.alternatives.map((alt, i) => (
-                                <div key={i} className="bg-white/50 rounded-lg p-2 text-xs">
+                                <div key={i} className="bg-white/50 rounded-lg p-2.5 text-xs">
                                   <div className="flex items-center space-x-2">
                                     <span className="text-gray-500 line-through">{alt.currentProduct}</span>
                                     <span className="text-gray-400">→</span>
@@ -206,6 +216,22 @@ export default function SaludPage() {
                                     <span className="text-green-600 font-medium">{alt.nutritionBenefit}</span>
                                   </div>
                                   <p className="text-gray-500 mt-0.5">{alt.reason}</p>
+                                  <div className="flex gap-2 mt-2">
+                                    <button
+                                      onClick={() => addToCart(alt.suggestedProduct)}
+                                      className="flex items-center gap-1 px-2 py-1 rounded-md bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors font-medium"
+                                    >
+                                      <ShoppingCart className="h-3 w-3" />
+                                      Comprar alternativa
+                                    </button>
+                                    <button
+                                      onClick={() => comparePrice(alt.suggestedProduct)}
+                                      className="flex items-center gap-1 px-2 py-1 rounded-md bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors font-medium"
+                                    >
+                                      <DollarSign className="h-3 w-3" />
+                                      Ver precios
+                                    </button>
+                                  </div>
                                 </div>
                               ))}
                             </div>
@@ -233,6 +259,13 @@ export default function SaludPage() {
                     </li>
                   ))}
                 </ul>
+                <a
+                  href="/perfil"
+                  className="mt-4 flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 font-medium"
+                >
+                  <User className="h-4 w-4" />
+                  Ajustar perfil nutricional
+                </a>
               </div>
             )}
 
@@ -244,26 +277,37 @@ export default function SaludPage() {
                   <h2 className="text-sm font-semibold text-gray-700">Prediccion de Consumo</h2>
                 </div>
                 <div className="divide-y">
-                  {report.predictions.slice(0, 8).map((pred, i) => (
-                    <div key={i} className="py-2 flex items-center justify-between">
-                      <div>
-                        <p className="text-sm text-gray-800">{pred.product}</p>
-                        <p className="text-xs text-gray-400">
-                          ~{pred.avgQuantityPerWeek}/semana
-                        </p>
+                  {report.predictions.slice(0, 8).map((pred, i) => {
+                    const daysUntil = Math.ceil((new Date(pred.nextPurchaseDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+                    const isUrgent = daysUntil <= 3
+                    return (
+                      <div key={i} className="py-3 flex items-center justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm text-gray-800">{pred.product}</p>
+                          <p className="text-xs text-gray-400">
+                            ~{pred.avgQuantityPerWeek}/semana · {Math.round(pred.confidence * 100)}% confianza
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          <div className="text-right">
+                            <p className={`text-sm font-medium ${isUrgent ? 'text-red-600' : 'text-gray-700'}`}>
+                              {new Date(pred.nextPurchaseDate).toLocaleDateString('es-CL', {
+                                day: 'numeric', month: 'short',
+                              })}
+                            </p>
+                            {isUrgent && <p className="text-[10px] text-red-500 font-medium">Pronto</p>}
+                          </div>
+                          <button
+                            onClick={() => addToCart(pred.product)}
+                            className="p-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"
+                            title="Comprar"
+                          >
+                            <ShoppingCart className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <p className="text-sm font-medium text-gray-700">
-                          {new Date(pred.nextPurchaseDate).toLocaleDateString('es-CL', {
-                            day: 'numeric', month: 'short',
-                          })}
-                        </p>
-                        <p className="text-xs text-gray-400">
-                          {Math.round(pred.confidence * 100)}% confianza
-                        </p>
-                      </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               </div>
             )}
