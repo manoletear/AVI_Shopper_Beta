@@ -3,13 +3,15 @@ import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/session';
 import { createShoppingListSchema } from '@/lib/validations';
 import { successResponse, errorResponse, createdResponse } from '@/lib/responses';
+import { familyWhere } from '@/lib/family';
 
 export async function GET() {
   try {
     const userId = await requireAuth();
+    const where = await familyWhere(userId);
 
     const lists = await prisma.shoppingList.findMany({
-      where: { userId },
+      where,
       include: {
         items: {
           include: {

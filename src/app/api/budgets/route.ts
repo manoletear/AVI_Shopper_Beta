@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/session';
 import { createBudgetSchema, updateBudgetSchema } from '@/lib/validations';
 import { successResponse, errorResponse, createdResponse } from '@/lib/responses';
+import { familyWhere } from '@/lib/family';
 
 export async function GET(request: NextRequest) {
   try {
@@ -11,7 +12,8 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const current = searchParams.get('current') === 'true';
 
-    let where: any = { userId };
+    const fw = await familyWhere(userId);
+    let where: any = fw;
 
     if (current) {
       const now = new Date();

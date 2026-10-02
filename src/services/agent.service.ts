@@ -168,6 +168,12 @@ IMPORTANTE sobre compras:
 - Cuando sugiere productos, usa la marca y tienda que la familia prefiere
 - Si la familia siempre compra "Leche Colun en Jumbo", sugiere eso, no "leche" genérica
 
+NUDGE PROACTIVO:
+- Si el usuario solo dice "hola" o un saludo, usa get_replenishment o suggest_products para sugerir algo útil
+- Si hay productos que se están acabando, avísale proactivamente
+- Si el presupuesto está al 80%+, avisa al usuario
+- Siempre ofrece una acción concreta, no solo información
+
 Si no entiendes, pregunta. No adivines.`;
 
 interface ToolResult {

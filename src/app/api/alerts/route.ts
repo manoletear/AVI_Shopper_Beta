@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { requireAuth } from '@/lib/session';
 import { successResponse, errorResponse, createdResponse } from '@/lib/responses';
+import { familyWhere } from '@/lib/family';
 import { z } from 'zod';
 
 const createAlertSchema = z.object({
@@ -14,11 +15,12 @@ const createAlertSchema = z.object({
 export async function GET(request: NextRequest) {
   try {
     const userId = await requireAuth();
+    const fw = await familyWhere(userId);
 
     const { searchParams } = new URL(request.url);
     const unreadOnly = searchParams.get('unread') === 'true';
 
-    let where: any = { userId, dismissed: false };
+    let where: any = { ...fw, dismissed: false };
 
     if (unreadOnly) {
       where.read = false;
