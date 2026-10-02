@@ -221,10 +221,50 @@ async function executeTool(
         },
       });
 
+      // Verificar alergenos contra TODOS los miembros de la familia
+      let allergenWarning = '';
+      try {
+        const membership = await prisma.familyMember.findFirst({
+          where: { userId },
+          include: { family: { include: { members: { where: { isActive: true } } } } },
+        });
+
+        if (membership?.family?.members) {
+          const ALLERGEN_PATTERNS: Record<string, RegExp> = {
+            Gluten: /pan|fideos|galleta|harina|trigo|avena|cebada|centeno|pasta|marraqueta|molde|tortilla|pizza|empanada/i,
+            Lactosa: /leche|queso|yogurt|mantequilla|crema|helado|manjar|flan|chocolate con leche/i,
+            'Frutos secos': /nuez|almendra|maní|mani|avellana|pistacho|castaña|cashew|pecan|nogal/i,
+            Mariscos: /camarón|camaron|langostino|jaiba|cholga|chorito|almeja|ostra|centolla|pulpo|calamar/i,
+            Huevo: /huevo|mayonesa|merengue|bizcocho/i,
+            Soya: /soya|soja|tofu|edamame|salsa de soya/i,
+          };
+
+          const productName = input.name.toLowerCase();
+          const warnings: string[] = [];
+
+          for (const member of membership.family.members) {
+            if (!member.allergies) continue;
+            let allergies: string[] = [];
+            try { allergies = JSON.parse(member.allergies); } catch { continue; }
+
+            for (const allergy of allergies) {
+              const pattern = ALLERGEN_PATTERNS[allergy];
+              if (pattern && pattern.test(productName)) {
+                warnings.push(`⚠️ ${member.name} es alérgico/a a ${allergy}`);
+              }
+            }
+          }
+
+          if (warnings.length > 0) {
+            allergenWarning = '\n\n' + warnings.join('\n') + '\n¿Lo agrego de todas formas?';
+          }
+        }
+      } catch {}
+
       return {
         success: true,
-        data: { item: item.name, quantity: item.quantity, list: list.name },
-        message: `${item.name} x${item.quantity} agregado a "${list.name}"`,
+        data: { item: item.name, quantity: item.quantity, list: list.name, hasWarning: !!allergenWarning },
+        message: `${item.name} x${item.quantity} agregado a "${list.name}"${allergenWarning}`,
       };
     }
 
@@ -323,13 +363,67 @@ async function executeTool(
     case 'check_nutrition': {
       try {
         const res = await fetch(
-          `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(input.product)}&json=1&page_size=1&cc=cl&fields=product_name,brands,nutriscore_grade,nova_group,nutriments`
+          `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(input.product)}&json=1&page_size=1&cc=cl&fields=product_name,brands,nutriscore_grade,nova_group,nutriments,allergens_tags`
         );
         const data = await res.json();
 
         if (data.products?.length > 0) {
           const p = data.products[0];
           const n = p.nutriments || {};
+
+          let nutritionMsg = `${p.product_name}: NutriScore ${p.nutriscore_grade?.toUpperCase() || '?'}, NOVA ${p.nova_group || '?'}, ${Math.round(n['energy-kcal_100g'] || 0)} kcal/100g`;
+
+          // Alertas nutricionales
+          const warnings = [];
+          if (n['sugars_100g'] > 12.5) warnings.push('Alto en azucar');
+          if (n['sodium_100g'] > 0.6) warnings.push('Alto en sodio');
+          if (n['saturated-fat_100g'] > 5) warnings.push('Alto en grasa saturada');
+          if (p.nova_group >= 4) warnings.push('Ultra-procesado');
+          if (warnings.length > 0) nutritionMsg += `\n⚠️ ${warnings.join(', ')}`;
+
+          // Verificar alergenos del producto contra la familia
+          try {
+            const membership = await prisma.familyMember.findFirst({
+              where: { userId },
+              include: { family: { include: { members: { where: { isActive: true } } } } },
+            });
+
+            if (membership?.family?.members) {
+              const productAllergens = (p.allergens_tags || []).map((t: string) => t.replace('en:', '').toLowerCase());
+              const productName = (input.product as string).toLowerCase();
+
+              const ALLERGEN_MAP: Record<string, string[]> = {
+                Gluten: ['gluten', 'wheat', 'trigo'],
+                Lactosa: ['milk', 'lactose', 'leche', 'dairy'],
+                'Frutos secos': ['nuts', 'peanuts', 'tree-nuts', 'almonds'],
+                Mariscos: ['shellfish', 'crustaceans', 'fish'],
+                Huevo: ['eggs', 'huevo'],
+                Soya: ['soybeans', 'soy', 'soja'],
+              };
+
+              const familyWarnings: string[] = [];
+              for (const member of membership.family.members) {
+                if (!member.allergies) continue;
+                let allergies: string[] = [];
+                try { allergies = JSON.parse(member.allergies); } catch { continue; }
+
+                for (const allergy of allergies) {
+                  const keywords = ALLERGEN_MAP[allergy] || [allergy.toLowerCase()];
+                  const hasAllergen = keywords.some((kw) =>
+                    productAllergens.some((pa: string) => pa.includes(kw)) || productName.includes(kw)
+                  );
+                  if (hasAllergen) {
+                    familyWarnings.push(`🚨 ${member.name} es alérgico/a a ${allergy} — este producto puede contenerlo`);
+                  }
+                }
+              }
+
+              if (familyWarnings.length > 0) {
+                nutritionMsg += '\n\n' + familyWarnings.join('\n');
+              }
+            }
+          } catch {}
+
           return {
             success: true,
             data: {
@@ -342,8 +436,9 @@ async function executeTool(
               fat: n['fat_100g'],
               sodium: n['sodium_100g'],
               protein: n['proteins_100g'],
+              allergens: p.allergens_tags,
             },
-            message: `${p.product_name}: NutriScore ${p.nutriscore_grade?.toUpperCase() || '?'}, NOVA ${p.nova_group || '?'}, ${Math.round(n['energy-kcal_100g'] || 0)} kcal/100g`,
+            message: nutritionMsg,
           };
         }
         return { success: false, data: null, message: `No encontré datos nutricionales de "${input.product}"` };
