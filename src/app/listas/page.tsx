@@ -259,6 +259,15 @@ export default function ListasPage() {
     }
   }
 
+  const syncListItems = (listId: string, updater: (items: ShoppingItem[]) => ShoppingItem[]) => {
+    setActiveList((prev) =>
+      prev && prev.id === listId ? { ...prev, items: updater(prev.items) } : prev
+    )
+    setLists((prev) =>
+      prev.map((l) => l.id === listId ? { ...l, items: updater(l.items || []) } : l)
+    )
+  }
+
   const addItem = async () => {
     if (!newItemName.trim() || !activeList) return
     try {
@@ -269,9 +278,7 @@ export default function ListasPage() {
       })
       const data = await res.json()
       if (data.success) {
-        setActiveList((prev) =>
-          prev ? { ...prev, items: [...prev.items, data.data] } : null
-        )
+        syncListItems(activeList.id, (items) => [...items, data.data])
         setNewItemName('')
       }
     } catch {
@@ -287,15 +294,8 @@ export default function ListasPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ checked: !checked }),
       })
-      setActiveList((prev) =>
-        prev
-          ? {
-              ...prev,
-              items: prev.items.map((i) =>
-                i.id === itemId ? { ...i, checked: !checked } : i
-              ),
-            }
-          : null
+      syncListItems(activeList.id, (items) =>
+        items.map((i) => i.id === itemId ? { ...i, checked: !checked } : i)
       )
     } catch {
       setError('Error al actualizar item')
@@ -308,28 +308,27 @@ export default function ListasPage() {
       await fetch(`/api/shopping-lists/${activeList.id}/items/${itemId}`, {
         method: 'DELETE',
       })
-      setActiveList((prev) =>
-        prev
-          ? { ...prev, items: prev.items.filter((i) => i.id !== itemId) }
-          : null
-      )
+      syncListItems(activeList.id, (items) => items.filter((i) => i.id !== itemId))
     } catch {
       setError('Error al eliminar item')
     }
   }
 
+  const getListProducts = (list: ShoppingList): string[] => {
+    const items = list.items || []
+    return items.filter((i) => !i.checked).map((i) => i.name)
+  }
+
   const buyList = (list: ShoppingList) => {
-    const unchecked = list.items.filter((i) => !i.checked)
-    if (unchecked.length === 0) return
-    const products = unchecked.map((i) => i.name).join(', ')
-    window.location.href = `/cart-assistant?products=${encodeURIComponent(products)}`
+    const products = getListProducts(list)
+    if (products.length === 0) return
+    window.location.href = `/cart-assistant?products=${encodeURIComponent(products.join(', '))}`
   }
 
   const compareList = (list: ShoppingList) => {
-    const unchecked = list.items.filter((i) => !i.checked)
-    if (unchecked.length === 0) return
-    const products = unchecked.map((i) => i.name).join(', ')
-    window.location.href = `/comparar?q=${encodeURIComponent(products)}`
+    const products = getListProducts(list)
+    if (products.length === 0) return
+    window.location.href = `/comparar?q=${encodeURIComponent(products.join(', '))}`
   }
 
   if (loading) {
@@ -599,32 +598,32 @@ export default function ListasPage() {
             {activeList ? (
               <div className="bg-white rounded-xl border">
                 <div className="p-4 border-b">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between mb-3">
                     <div>
                       <h2 className="font-semibold text-gray-900">{activeList.name}</h2>
                       <p className="text-xs text-gray-400">
-                        {activeList.items.filter((i) => i.checked).length}/{activeList.items.length} completados
+                        {activeList.items.filter((i) => !i.checked).length} pendiente{activeList.items.filter((i) => !i.checked).length !== 1 ? 's' : ''} de {activeList.items.length}
                       </p>
                     </div>
-                    {activeList.items.length > 0 && (
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => compareList(activeList)}
-                          className="flex items-center gap-1.5 text-sm font-medium py-2 px-3 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors"
-                        >
-                          <DollarSign className="h-4 w-4" />
-                          Comparar precios
-                        </button>
-                        <button
-                          onClick={() => buyList(activeList)}
-                          className="flex items-center gap-1.5 text-sm font-medium py-2 px-3 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors"
-                        >
-                          <ShoppingCart className="h-4 w-4" />
-                          Comprar
-                        </button>
-                      </div>
-                    )}
                   </div>
+                  {activeList.items.filter((i) => !i.checked).length > 0 && (
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => compareList(activeList)}
+                        className="flex-1 flex items-center justify-center gap-1.5 text-sm font-medium py-2.5 px-3 rounded-xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors border border-emerald-200"
+                      >
+                        <DollarSign className="h-4 w-4" />
+                        Comparar precios
+                      </button>
+                      <button
+                        onClick={() => buyList(activeList)}
+                        className="flex-1 flex items-center justify-center gap-1.5 text-sm font-medium py-2.5 px-3 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+                      >
+                        <ShoppingCart className="h-4 w-4" />
+                        Comprar
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 {/* Agregar item */}
@@ -706,6 +705,28 @@ export default function ListasPage() {
           </div>
         </div>
       </main>
+
+      {/* Fixed bottom action bar for mobile */}
+      {activeList && activeList.items.filter((i) => !i.checked).length > 0 && (
+        <div className="fixed bottom-16 left-0 right-0 z-40 sm:hidden bg-white/95 backdrop-blur-md border-t border-gray-200 px-4 py-3">
+          <div className="flex gap-2 max-w-lg mx-auto">
+            <button
+              onClick={() => compareList(activeList)}
+              className="flex-1 flex items-center justify-center gap-1.5 text-sm font-semibold py-3 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200"
+            >
+              <DollarSign className="h-4 w-4" />
+              Comparar
+            </button>
+            <button
+              onClick={() => buyList(activeList)}
+              className="flex-1 flex items-center justify-center gap-1.5 text-sm font-semibold py-3 rounded-xl bg-blue-600 text-white"
+            >
+              <ShoppingCart className="h-4 w-4" />
+              Comprar ({activeList.items.filter((i) => !i.checked).length})
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
