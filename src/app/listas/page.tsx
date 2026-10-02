@@ -1,12 +1,13 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useSession } from 'next-auth/react'
 import {
   ShoppingCart, Plus, Trash2, Check, X, ArrowLeft,
   ListChecks, AlertCircle, Package, Settings,
   DollarSign, ArrowRight, Sparkles, Users, Flame,
   PartyPopper, Sun, Baby, PawPrint, Briefcase,
+  Camera, Loader2, Image as ImageIcon,
 } from 'lucide-react'
 
 interface ShoppingItem {
@@ -92,6 +93,9 @@ export default function ListasPage() {
   const [creatingList, setCreatingList] = useState(false)
   const [showTemplates, setShowTemplates] = useState(false)
   const [templatePeople, setTemplatePeople] = useState<{ template: ListTemplate; count: string } | null>(null)
+  const [importingImage, setImportingImage] = useState(false)
+  const [importedProducts, setImportedProducts] = useState<Array<{ name: string; quantity: number }> | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const fetchLists = useCallback(async () => {
     try {
@@ -180,6 +184,67 @@ export default function ListasPage() {
     } finally {
       setCreatingList(false)
     }
+  }
+
+  const importFromImage = async (file: File) => {
+    setImportingImage(true)
+    setImportedProducts(null)
+    setError('')
+
+    try {
+      const formData = new FormData()
+      formData.append('image', file)
+
+      const res = await fetch('/api/import-list', { method: 'POST', body: formData })
+      const data = await res.json()
+
+      if (data.success && data.data.products.length > 0) {
+        setImportedProducts(data.data.products)
+      } else {
+        setError(data.data?.message || 'No se encontraron productos en la imagen')
+      }
+    } catch {
+      setError('Error al procesar la imagen')
+    }
+    setImportingImage(false)
+  }
+
+  const createListFromImport = async () => {
+    if (!importedProducts || importedProducts.length === 0) return
+    setCreatingList(true)
+
+    try {
+      const res = await fetch('/api/shopping-lists', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: 'Lista importada' }),
+      })
+      const data = await res.json()
+      if (!data.success) return
+
+      const listId = data.data.id
+      const items: ShoppingItem[] = []
+
+      for (const p of importedProducts) {
+        try {
+          const itemRes = await fetch(`/api/shopping-lists/${listId}/items`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: p.name, quantity: p.quantity || 1 }),
+          })
+          const itemData = await itemRes.json()
+          if (itemData.success) items.push(itemData.data)
+        } catch {}
+      }
+
+      const newList = { ...data.data, items }
+      setLists((prev) => [newList, ...prev])
+      setActiveList(newList)
+      setImportedProducts(null)
+    } catch {
+      setError('Error al crear lista')
+    }
+    setCreatingList(false)
   }
 
   const deleteList = async (listId: string) => {
@@ -330,14 +395,75 @@ export default function ListasPage() {
                   <Plus className="h-4 w-4" />
                 </button>
               </div>
-              <button
-                onClick={() => setShowTemplates(!showTemplates)}
-                className="mt-2 w-full text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center justify-center gap-1 py-1.5 rounded-lg hover:bg-blue-50 transition-colors"
-              >
-                <Sparkles className="h-3.5 w-3.5" />
-                {showTemplates ? 'Ocultar plantillas' : 'Usar plantilla'}
-              </button>
+              <div className="flex gap-2 mt-2">
+                <button
+                  onClick={() => setShowTemplates(!showTemplates)}
+                  className="flex-1 text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center justify-center gap-1 py-1.5 rounded-lg hover:bg-blue-50 transition-colors"
+                >
+                  <Sparkles className="h-3.5 w-3.5" />
+                  Plantilla
+                </button>
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={importingImage}
+                  className="flex-1 text-sm text-purple-600 hover:text-purple-700 font-medium flex items-center justify-center gap-1 py-1.5 rounded-lg hover:bg-purple-50 transition-colors disabled:opacity-50"
+                >
+                  {importingImage ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Camera className="h-3.5 w-3.5" />}
+                  Desde foto
+                </button>
+              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0]
+                  if (file) importFromImage(file)
+                  e.target.value = ''
+                }}
+              />
             </div>
+
+            {/* Image import preview */}
+            {importedProducts && (
+              <div className="avi-card p-4 border-purple-200">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-sm font-medium text-purple-700 flex items-center gap-1">
+                    <ImageIcon className="h-4 w-4" />
+                    {importedProducts.length} productos encontrados
+                  </h3>
+                  <button onClick={() => setImportedProducts(null)} className="text-gray-400 hover:text-gray-600">
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+                <div className="max-h-40 overflow-y-auto space-y-1 mb-3">
+                  {importedProducts.map((p, i) => (
+                    <div key={i} className="flex items-center justify-between text-xs py-1 border-b border-gray-100 last:border-0">
+                      <span className="text-gray-800">{p.name}</span>
+                      {p.quantity > 1 && <span className="text-gray-400">x{p.quantity}</span>}
+                    </div>
+                  ))}
+                </div>
+                <button
+                  onClick={createListFromImport}
+                  disabled={creatingList}
+                  className="w-full bg-purple-600 text-white py-2.5 rounded-xl text-sm font-medium hover:bg-purple-700 disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {creatingList ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+                  Crear lista con estos productos
+                </button>
+              </div>
+            )}
+
+            {importingImage && (
+              <div className="avi-card p-4 text-center">
+                <Loader2 className="h-6 w-6 text-purple-500 animate-spin mx-auto mb-2" />
+                <p className="text-sm text-purple-700 font-medium">AVI analizando imagen...</p>
+                <p className="text-xs text-gray-400">Extrayendo productos</p>
+              </div>
+            )}
 
             {/* Plantillas */}
             {showTemplates && (
