@@ -6,6 +6,7 @@ import {
   ArrowLeft, Wallet, Plus, TrendingUp, TrendingDown,
   AlertCircle, Check, Settings, Loader2, Calendar,
   Trash2, Pencil, DollarSign, ShoppingCart, X,
+  Bot, Sparkles,
 } from 'lucide-react'
 
 interface Budget {
@@ -27,6 +28,8 @@ export default function PresupuestoPage() {
 
   const [newPeriod, setNewPeriod] = useState('monthly')
   const [newAmount, setNewAmount] = useState('')
+  const [aviSuggestion, setAviSuggestion] = useState<{ amount: number; reason: string; avgSpent: number; months: number } | null>(null)
+  const [loadingSuggestion, setLoadingSuggestion] = useState(false)
 
   useEffect(() => {
     if (!session) return
@@ -35,7 +38,24 @@ export default function PresupuestoPage() {
       fetch('/api/budgets?current=true').then((r) => r.json()),
     ])
       .then(([allData, currentData]) => {
-        if (allData.success) setBudgets(allData.data || [])
+        if (allData.success) {
+          setBudgets(allData.data || [])
+          // Calculate AVI suggestion from history
+          const monthlyBudgets = (allData.data || []).filter((b: Budget) => b.period === 'monthly' && b.spent > 0)
+          if (monthlyBudgets.length > 0) {
+            const totalSpent = monthlyBudgets.reduce((s: number, b: Budget) => s + b.spent, 0)
+            const avgSpent = Math.round(totalSpent / monthlyBudgets.length)
+            const suggested = Math.round(avgSpent * 1.1 / 1000) * 1000
+            setAviSuggestion({
+              amount: suggested,
+              avgSpent,
+              months: monthlyBudgets.length,
+              reason: avgSpent > 0
+                ? `Basado en ${monthlyBudgets.length} mes${monthlyBudgets.length > 1 ? 'es' : ''}, gastas ~${new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', minimumFractionDigits: 0 }).format(avgSpent)}/mes. Te sugiero ${new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', minimumFractionDigits: 0 }).format(suggested)} (10% margen).`
+                : '',
+            })
+          }
+        }
         if (currentData.success && currentData.data) setCurrentBudget(currentData.data)
       })
       .catch(() => {})
@@ -239,6 +259,29 @@ export default function PresupuestoPage() {
               </span>
             </div>
 
+            {/* AVI Insight */}
+            <div className="mt-4 bg-indigo-50 rounded-xl p-3.5">
+              <div className="flex items-center gap-2 mb-1.5">
+                <Sparkles className="h-3.5 w-3.5 text-indigo-600" />
+                <span className="text-xs font-bold text-indigo-700">Insight de AVI</span>
+              </div>
+              <p className="text-xs text-indigo-600">
+                {pct < 50 && daysLeft < 15
+                  ? `Vas bien. Llevas ${pct}% con ${daysLeft} dias restantes. Puedes gastar ~${formatCLP(dailyBudget)}/dia sin pasarte.`
+                  : pct < 70
+                  ? `Ritmo saludable. Te quedan ${formatCLP(remaining)} para ${daysLeft} dias (${formatCLP(dailyBudget)}/dia).`
+                  : pct < 90
+                  ? `Ojo: llevas ${pct}%. Compara precios en AVI antes de tu proxima compra para no pasarte.`
+                  : `Alerta: ${pct}% usado. Quedan solo ${formatCLP(remaining)}. Considera posponer compras no urgentes.`
+                }
+              </p>
+              {budgets.length >= 2 && aviSuggestion && (
+                <p className="text-[10px] text-indigo-400 mt-1">
+                  Promedio historico: {formatCLP(aviSuggestion.avgSpent)}/mes ({aviSuggestion.months} meses)
+                </p>
+              )}
+            </div>
+
             {/* Warnings */}
             {pct >= 90 && (
               <div className="mt-4 bg-red-50 border border-red-200 rounded-lg p-3">
@@ -287,6 +330,41 @@ export default function PresupuestoPage() {
         {showCreate ? (
           <div className="avi-card p-5">
             <h3 className="font-semibold text-gray-900 mb-4">Nuevo Presupuesto</h3>
+
+            {/* AVI Suggestion */}
+            {aviSuggestion && (
+              <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4 mb-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center flex-shrink-0">
+                    <Sparkles className="h-4 w-4 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-indigo-900">AVI sugiere: {formatCLP(aviSuggestion.amount)}/mes</p>
+                    <p className="text-xs text-indigo-700 mt-0.5">{aviSuggestion.reason}</p>
+                    <button
+                      onClick={() => { setNewAmount(String(aviSuggestion.amount)); setNewPeriod('monthly') }}
+                      className="mt-2 text-xs font-bold text-indigo-600 bg-indigo-100 px-3 py-1.5 rounded-lg hover:bg-indigo-200 transition-colors active:scale-95"
+                    >
+                      Usar esta sugerencia
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {!aviSuggestion && budgets.length === 0 && (
+              <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 mb-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0">
+                    <Bot className="h-4 w-4 text-gray-500" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-700 font-medium">AVI aprendera tu patron de gasto</p>
+                    <p className="text-xs text-gray-500 mt-0.5">Despues de tu primer mes, AVI te sugerira el monto ideal basado en tus compras reales.</p>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="space-y-4">
               <div>
