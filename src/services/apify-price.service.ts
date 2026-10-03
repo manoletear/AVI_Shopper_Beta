@@ -169,22 +169,31 @@ export async function searchUnimarc(
  * - Score = palabras encontradas / total palabras clave
  * - Bonus si el nombre empieza con la primera palabra clave
  */
+const NON_GROCERY_KEYWORDS = /antitranspirante|desodorante|shampoo|champu|acondicionador|crema facial|maquillaje|labial|esmalte|perfume|colonia|after shave|depilador|cepillo dental|enjuague bucal|pañal adulto|preservativo|toalla femenina|tampón|protector diario/i;
+
 function calculateRelevance(productName: string, query: string): number {
   const queryWords = query.toLowerCase().split(/\s+/).filter(w => w.length > 2);
   if (queryWords.length === 0) return 1;
 
   const nameLower = productName.toLowerCase();
-  let matches = 0;
 
+  if (NON_GROCERY_KEYWORDS.test(nameLower)) {
+    const queryLower = query.toLowerCase();
+    const isIntentionalSearch = NON_GROCERY_KEYWORDS.test(queryLower);
+    if (!isIntentionalSearch) return 0;
+  }
+
+  let matches = 0;
   for (const word of queryWords) {
     if (nameLower.includes(word)) matches++;
   }
 
   let score = matches / queryWords.length;
 
-  // Bonus si la primera palabra clave esta en el nombre
-  if (queryWords[0] && nameLower.includes(queryWords[0])) {
-    score = Math.min(1, score + 0.2);
+  if (queryWords[0] && nameLower.startsWith(queryWords[0])) {
+    score = Math.min(1, score + 0.3);
+  } else if (queryWords[0] && nameLower.includes(queryWords[0])) {
+    score = Math.min(1, score + 0.1);
   }
 
   return score;
