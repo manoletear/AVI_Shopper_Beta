@@ -149,6 +149,16 @@ const TOOLS: Anthropic.Tool[] = [
     },
   },
   {
+    name: 'upcoming_events',
+    description: 'Muestra eventos proximos (cumpleanos, feriados, Fiestas Patrias, Navidad) con lista de productos sugeridos. Usa cuando dice "que viene", "eventos", "cumpleanos", "feriados", "preparar", "se viene algo", "que tengo pendiente".',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        days: { type: 'number' as const, description: 'Dias a futuro (default 30)' },
+      },
+    },
+  },
+  {
     name: 'monthly_nutrition',
     description: 'Analiza el consumo nutricional del mes: calorias, azucar, sodio, ultra-procesados. Usa cuando dice "como vamos de nutricion", "calorias del mes", "comemos sano", "analisis mensual", "habitos".',
     input_schema: {
@@ -646,6 +656,40 @@ async function executeTool(
         success: true,
         data: { familyName: membership.family.name, members: membership.family.members },
         message: `Familia "${membership.family.name}" (${membership.family.members.length} miembros):\n${members.join('\n')}`,
+      };
+    }
+
+    case 'upcoming_events': {
+      const membership = await prisma.familyMember.findFirst({
+        where: { userId },
+      });
+
+      if (!membership) {
+        return { success: false, data: null, message: 'Crea tu familia primero para ver eventos.' };
+      }
+
+      const { getUpcomingEvents, seedNationalEvents } = await import('./proactive-events.service');
+
+      const count = await prisma.familyEvent.count({ where: { familyId: membership.familyId } });
+      if (count === 0) await seedNationalEvents(membership.familyId);
+
+      const days = (input.days as number) || 30;
+      const events = await getUpcomingEvents(membership.familyId, days);
+
+      if (events.length === 0) {
+        return { success: true, data: { events: [] }, message: 'No hay eventos proximos en los siguientes dias.' };
+      }
+
+      const lines = events.slice(0, 5).map((e) => {
+        const urgency = e.daysUntil <= 3 ? '🔴' : e.daysUntil <= 7 ? '🟡' : '🟢';
+        const dayText = e.daysUntil === 0 ? 'HOY' : e.daysUntil === 1 ? 'MANANA' : `en ${e.daysUntil} dias`;
+        return `${urgency} ${e.name} (${dayText}): ${e.suggestedProducts.slice(0, 4).join(', ')}...`;
+      });
+
+      return {
+        success: true,
+        data: { events },
+        message: `Eventos proximos:\n\n${lines.join('\n')}\n\n¿Quieres que arme la lista de compras para alguno?`,
       };
     }
 

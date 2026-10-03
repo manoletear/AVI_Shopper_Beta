@@ -889,15 +889,21 @@ function CompararInner() {
               </div>
             )}
 
-            {/* Result: no se pudo armar automaticamente */}
+            {/* Fallback: open store directly */}
             {cartResult && !cartResult.success && !cartBuilding && (
-              <div className="p-4 bg-amber-50 border-b flex-shrink-0">
-                <p className="text-sm text-amber-800 font-medium mb-1">
-                  No se pudo armar el carrito automaticamente
+              <div className="p-4 bg-indigo-50 border-b flex-shrink-0">
+                <p className="text-sm text-indigo-800 font-medium mb-1">
+                  Toca cada producto para abrirlo en {checkoutStore}
                 </p>
-                <p className="text-xs text-amber-600">
-                  Abre cada producto, agregalo al carrito del super y vuelve por el siguiente
+                <p className="text-xs text-indigo-600">
+                  Buscalo, agregalo al carrito y vuelve por el siguiente
                 </p>
+                <a
+                  href="/configuracion/cuentas"
+                  className="text-[10px] text-indigo-400 mt-1 inline-block hover:text-indigo-600"
+                >
+                  Vincula tu cuenta para que AVI lo haga automaticamente
+                </a>
               </div>
             )}
 

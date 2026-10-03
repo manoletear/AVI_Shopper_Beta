@@ -74,6 +74,7 @@ export default function DashboardPage() {
   const userName = session?.user?.name || session?.user?.email?.split('@')[0] || ''
   const [data, setData] = useState<DashboardData | null>(null)
   const [promoIndex, setPromoIndex] = useState(0)
+  const [upcomingEvents, setUpcomingEvents] = useState<Array<{ id: string; name: string; type: string; daysUntil: number; suggestedProducts: string[] }>>([])
 
   useEffect(() => {
     if (!session) return
@@ -105,6 +106,10 @@ export default function DashboardPage() {
       setData(results)
     }
     load()
+
+    fetch('/api/events?days=21').then(r => r.json()).then(d => {
+      if (d.success && d.data.events) setUpcomingEvents(d.data.events.slice(0, 3))
+    }).catch(() => {})
   }, [session])
 
   useEffect(() => {
@@ -231,6 +236,48 @@ export default function DashboardPage() {
               )}
               <p className="text-[10px] text-gray-400 font-medium">GASTO</p>
             </a>
+          </div>
+        )}
+
+        {/* Upcoming Events — Proactive reminders */}
+        {upcomingEvents.length > 0 && (
+          <div className="mb-5">
+            <h2 className="text-sm font-bold text-gray-900 mb-3">Preparate con tiempo</h2>
+            <div className="space-y-2">
+              {upcomingEvents.map((event) => (
+                <a
+                  key={event.id}
+                  href={`/cart-assistant?products=${encodeURIComponent(event.suggestedProducts.join(', '))}`}
+                  className="bg-white rounded-2xl p-4 shadow-sm flex items-center gap-3 active:scale-[0.98] transition-transform"
+                >
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                    event.daysUntil <= 3 ? 'bg-red-100' :
+                    event.daysUntil <= 7 ? 'bg-amber-100' : 'bg-indigo-100'
+                  }`}>
+                    <span className="text-lg">
+                      {event.type === 'national_holiday' ? '🇨🇱' :
+                       event.type === 'family' ? '🎂' :
+                       event.type === 'religious' ? '⛪' :
+                       event.type === 'seasonal' ? '📅' : '🎉'}
+                    </span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-gray-900">{event.name}</p>
+                    <p className="text-[11px] text-gray-400">
+                      {event.daysUntil === 0 ? 'Hoy' :
+                       event.daysUntil === 1 ? 'Manana' :
+                       `En ${event.daysUntil} dias`} · {event.suggestedProducts.length} productos sugeridos
+                    </p>
+                  </div>
+                  <div className={`text-xs font-bold px-2 py-1 rounded-full ${
+                    event.daysUntil <= 3 ? 'bg-red-100 text-red-700' :
+                    event.daysUntil <= 7 ? 'bg-amber-100 text-amber-700' : 'bg-indigo-50 text-indigo-600'
+                  }`}>
+                    {event.daysUntil <= 0 ? 'Hoy' : `${event.daysUntil}d`}
+                  </div>
+                </a>
+              ))}
+            </div>
           </div>
         )}
 

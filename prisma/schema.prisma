@@ -365,6 +365,7 @@ model Family {
   updatedAt  DateTime @updatedAt
 
   members    FamilyMember[]
+  events     FamilyEvent[]
 
   @@map("families")
 }
@@ -389,6 +390,7 @@ model FamilyMember {
   breed       String?  // raza
   notes       String?
   isActive    Boolean  @default(true)
+  events      FamilyEvent[]
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -396,4 +398,33 @@ model FamilyMember {
   @@index([familyId])
   @@index([userId])
   @@map("family_members")
+}
+
+model FamilyEvent {
+  id          String   @id @default(cuid())
+
+  familyId    String
+  family      Family   @relation(fields: [familyId], references: [id], onDelete: Cascade)
+
+  memberId    String?
+  member      FamilyMember? @relation(fields: [memberId], references: [id], onDelete: SetNull)
+
+  type        String   // national_holiday, religious, cultural, family, seasonal, recurring
+  name        String
+  month       Int?     // 1-12 for annual events
+  day         Int?     // 1-31 for annual events
+  isAnnual    Boolean  @default(true)
+  remindDays  Int      @default(7)
+
+  suggestedProducts String?  // JSON array
+  budgetEstimate    Int?
+  notes       String?
+  isActive    Boolean  @default(true)
+  lastNotified DateTime?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([familyId, month, day])
+  @@map("family_events")
 }

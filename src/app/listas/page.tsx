@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
+import AdBanner from '@/components/AdBanner'
 import { useSession } from 'next-auth/react'
 import {
   ShoppingCart, Plus, Trash2, Check, X, ArrowLeft,
