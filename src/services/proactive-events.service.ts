@@ -121,6 +121,9 @@ export async function getUpcomingEvents(
 }
 
 export async function getEventReminders(familyId: string): Promise<UpcomingEvent[]> {
-  const upcoming = await getUpcomingEvents(familyId, 14);
-  return upcoming.filter((e) => e.daysUntil <= e.daysUntil);
+  const events = await getUpcomingEvents(familyId, 30);
+  return events.filter((e) => {
+    const event = e as any;
+    return e.daysUntil <= (event.remindDays || 7);
+  });
 }
