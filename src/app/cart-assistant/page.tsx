@@ -49,8 +49,26 @@ function CartAssistantInner() {
     setLoading(true)
 
     try {
-      // Extraer productos del mensaje
-      const products = text.split(/[,\n]/).map((s) => s.trim()).filter(Boolean)
+      // Interpretar el mensaje con IA
+      let products: string[] = []
+      try {
+        const interpretRes = await fetch('/api/cart-interpret', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text }),
+        })
+        const interpretData = await interpretRes.json()
+        if (interpretData.success) {
+          products = interpretData.data.products
+          if (interpretData.data.message) {
+            setChatMessages((prev) => [...prev, { role: 'avi', text: interpretData.data.message }])
+          }
+        }
+      } catch {}
+
+      if (products.length === 0) {
+        products = text.split(/[\r\n,]+/).map((s) => s.trim()).filter(Boolean)
+      }
 
       if (products.length > 0) {
         setBuildingCart(true)
