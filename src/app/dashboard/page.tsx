@@ -33,34 +33,38 @@ const CATEGORIES = [
 const STORE_DEALS = [
   {
     store: 'Jumbo',
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2d/Jumbo_Logo.svg/200px-Jumbo_Logo.svg.png',
-    bg: 'bg-[#006B3F]',
+    bg: 'bg-gradient-to-br from-[#006B3F] to-[#004D2C]',
     product: 'Frutas y Verduras',
     discount: 'Hasta 40% dcto',
-    href: '/comparar?q=Frutas%2C+Verduras%2C+Palta%2C+Tomate%2C+Lechuga',
+    emoji: '🥬🍎🥑',
+    price: 'Desde $990/kg',
+    href: '/comparar?q=Palta%2C+Tomate%2C+Lechuga%2C+Manzana',
   },
   {
     store: 'Lider',
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/L%C3%ADder_logo.svg/200px-L%C3%ADder_logo.svg.png',
-    bg: 'bg-[#0032A0]',
-    product: 'Carnes y Pollo',
-    discount: 'Precios bajos',
+    bg: 'bg-gradient-to-br from-[#0032A0] to-[#001F6B]',
+    product: 'Carnes Frescas',
+    discount: 'Precios bajos siempre',
+    emoji: '🥩🍗🥓',
+    price: 'Pollo $2.490/kg',
     href: '/comparar?q=Pollo+entero%2C+Carne+molida%2C+Pechuga+pollo',
   },
   {
     store: 'Unimarc',
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/Unimarc_logo.svg/200px-Unimarc_logo.svg.png',
-    bg: 'bg-[#E8590C]',
-    product: 'Lacteos',
-    discount: '30% con tarjeta',
+    bg: 'bg-gradient-to-br from-[#E8590C] to-[#C44708]',
+    product: 'Lacteos del Dia',
+    discount: '30% con tarjeta Unimarc',
+    emoji: '🥛🧀🧈',
+    price: 'Leche $890/lt',
     href: '/comparar?q=Leche%2C+Yogurt%2C+Queso%2C+Mantequilla',
   },
   {
     store: 'Tottus',
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Tottus_logo.svg/200px-Tottus_logo.svg.png',
-    bg: 'bg-[#00695C]',
-    product: 'Limpieza',
+    bg: 'bg-gradient-to-br from-[#00695C] to-[#004D40]',
+    product: 'Limpieza Total',
     discount: '3x2 seleccion',
+    emoji: '🧴🧹🧽',
+    price: 'Detergente $3.990',
     href: '/comparar?q=Detergente%2C+Cloro%2C+Lavalozas%2C+Papel+higienico',
   },
 ]
@@ -157,28 +161,24 @@ export default function DashboardPage() {
           <Bot className="h-4 w-4 text-gray-300" />
         </a>
 
-        {/* Promo Banner — Supermarket ads with real branding */}
+        {/* Promo Banner — Supermarket ads */}
         <a href={STORE_DEALS[promoIndex].href} className="block mb-4">
-          <div className={`${STORE_DEALS[promoIndex].bg} rounded-2xl p-5 text-white relative overflow-hidden min-h-[120px]`}>
-            <div className="relative z-10">
-              <div className="flex items-center gap-2 mb-2">
-                <img
-                  src={STORE_DEALS[promoIndex].logo}
-                  alt={STORE_DEALS[promoIndex].store}
-                  className="h-5 brightness-0 invert"
-                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
-                />
-                <span className="text-xs font-medium bg-white/20 px-2 py-0.5 rounded-full">
+          <div className={`${STORE_DEALS[promoIndex].bg} rounded-2xl p-5 text-white relative overflow-hidden min-h-[130px]`}>
+            <div className="relative z-10 flex justify-between items-start">
+              <div>
+                <span className="text-xs font-bold bg-white/20 px-2.5 py-1 rounded-full">
                   {STORE_DEALS[promoIndex].store}
                 </span>
+                <h2 className="text-xl font-bold mt-2.5">{STORE_DEALS[promoIndex].product}</h2>
+                <p className="text-sm text-white/80 mt-0.5">{STORE_DEALS[promoIndex].discount}</p>
+                <p className="text-xs text-white/60 mt-1 font-medium">{STORE_DEALS[promoIndex].price}</p>
               </div>
-              <h2 className="text-lg font-bold">{STORE_DEALS[promoIndex].product}</h2>
-              <p className="text-sm text-white/80">{STORE_DEALS[promoIndex].discount}</p>
+              <span className="text-4xl mt-1">{STORE_DEALS[promoIndex].emoji}</span>
             </div>
           </div>
           <div className="flex justify-center gap-1.5 mt-2">
             {STORE_DEALS.map((_, i) => (
-              <div key={i} className={`w-1.5 h-1.5 rounded-full transition-colors ${i === promoIndex ? 'bg-gray-900' : 'bg-gray-300'}`} />
+              <div key={i} className={`w-1.5 h-1.5 rounded-full transition-colors ${i === promoIndex ? 'bg-indigo-600' : 'bg-gray-300'}`} />
             ))}
           </div>
         </a>
@@ -247,21 +247,17 @@ export default function DashboardPage() {
               <a
                 key={deal.store}
                 href={deal.href}
-                className="bg-white rounded-2xl p-3.5 min-w-[140px] shadow-sm flex-shrink-0 active:scale-95 transition-transform"
+                className="bg-white rounded-2xl min-w-[150px] shadow-sm flex-shrink-0 active:scale-95 transition-transform overflow-hidden"
               >
-                <img
-                  src={deal.logo}
-                  alt={deal.store}
-                  className="h-4 mb-2 object-contain"
-                  onError={(e) => {
-                    const el = e.target as HTMLImageElement
-                    el.style.display = 'none'
-                    el.parentElement!.querySelector('.fallback')?.classList.remove('hidden')
-                  }}
-                />
-                <span className="fallback hidden text-xs font-bold text-gray-700">{deal.store}</span>
-                <p className="text-sm font-semibold text-gray-900">{deal.product}</p>
-                <p className="text-[11px] text-gray-400">{deal.discount}</p>
+                <div className={`${deal.bg} px-3 py-3 text-center`}>
+                  <span className="text-3xl">{deal.emoji}</span>
+                </div>
+                <div className="p-3">
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{deal.store}</p>
+                  <p className="text-sm font-semibold text-gray-900 mt-0.5">{deal.product}</p>
+                  <p className="text-[11px] text-gray-500 mt-0.5">{deal.discount}</p>
+                  <p className="text-xs font-bold text-indigo-600 mt-1">{deal.price}</p>
+                </div>
               </a>
             ))}
           </div>
