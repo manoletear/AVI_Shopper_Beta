@@ -8,6 +8,7 @@ import {
   Settings, RefreshCw, ShoppingCart, DollarSign, Plus,
   Check, User,
 } from 'lucide-react'
+import AdBanner from '@/components/AdBanner'
 
 interface HealthAlert {
   type: string
@@ -243,6 +244,9 @@ export default function SaludPage() {
                 })}
               </div>
             )}
+
+            {/* Ad */}
+            <AdBanner variant="compact" />
 
             {/* Recommendations */}
             {report.recommendations.length > 0 && (

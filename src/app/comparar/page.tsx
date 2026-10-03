@@ -280,20 +280,17 @@ function CompararInner() {
             ? allResults.reduce((min, p) => (p.price < min.price ? p : min))
             : null
 
-          // Enriquecer con datos nutricionales de Open Food Facts
-          if (allResults.length > 0) {
+          // Enriquecer con datos nutricionales — solo el cheapest
+          if (cheapest) {
             try {
-              const nutritionRes = await fetch('/api/nutrition/lookup?q=' + encodeURIComponent(query))
+              const nutritionRes = await fetch('/api/nutrition/lookup?q=' + encodeURIComponent(cheapest.name || query))
               const nutritionData = await nutritionRes.json()
               if (nutritionData.success && nutritionData.data.found) {
                 const n = nutritionData.data.nutrition
-                const badge = nutritionData.data.badge
-                for (const r of allResults) {
-                  r.nutriscoreGrade = n.nutriscoreGrade
-                  r.novaGroup = n.novaGroup
-                  r.isUltraProcessed = n.isUltraProcessed
-                  r.nutritionWarnings = n.healthWarnings
-                }
+                cheapest.nutriscoreGrade = n.nutriscoreGrade
+                cheapest.novaGroup = n.novaGroup
+                cheapest.isUltraProcessed = n.isUltraProcessed
+                cheapest.nutritionWarnings = n.healthWarnings
               }
             } catch {}
           }

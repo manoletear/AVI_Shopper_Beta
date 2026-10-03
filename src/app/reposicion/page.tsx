@@ -8,6 +8,7 @@ import {
   Settings, Loader2, TrendingUp, DollarSign,
   ListChecks, ArrowRight,
 } from 'lucide-react'
+import AdBanner from '@/components/AdBanner'
 
 interface Alert {
   productName: string
@@ -186,6 +187,9 @@ export default function ReposicionPage() {
                 </div>
               </div>
             )}
+
+            {/* Ad */}
+            <AdBanner variant="compact" />
 
             {/* Alert list */}
             {plan.alerts.length > 0 ? (

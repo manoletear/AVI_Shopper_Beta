@@ -4,9 +4,9 @@ import { useState, useEffect } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import {
   ShoppingCart, ListChecks, Heart, Store, Users,
-  ArrowRight, Settings, ChevronRight,
+  ArrowRight, Settings, ChevronRight, CreditCard,
   Wallet, Package, User, Bot, Bell, MessageCircle,
-  Repeat, Zap, TrendingDown,
+  Repeat, Zap,
 } from 'lucide-react'
 import OnboardingWizard from '@/components/OnboardingWizard'
 
@@ -326,6 +326,7 @@ export default function DashboardPage() {
             {[
               { href: '/perfil', label: 'Mi perfil', sub: 'Dieta y alergias', icon: User },
               { href: '/configuracion/cuentas', label: 'Supermercados', sub: 'Vincular cuentas', icon: Store },
+              { href: '/configuracion/pagos', label: 'Pagos', sub: 'Tarjetas y metodos', icon: CreditCard },
               { href: '/reposicion', label: 'Reposicion', sub: 'Lo que se acaba', icon: Package },
               { href: '/familia', label: 'Mi familia', sub: 'Miembros y alergenos', icon: Users },
             ].map((svc) => {
