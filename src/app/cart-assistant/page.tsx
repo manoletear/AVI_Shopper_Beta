@@ -4,23 +4,13 @@ import { useState, useRef, useEffect, Suspense } from 'react'
 import { useSession } from 'next-auth/react'
 import { useSearchParams } from 'next/navigation'
 import {
-  ArrowLeft, ShoppingCart, Send, Loader2, Minus, Plus,
-  Pencil, Trash2, ExternalLink, AlertTriangle, Heart,
-  Camera,
+  ArrowLeft, Send, Loader2, Camera, DollarSign,
+  ShoppingCart, X, Check, Trash2, Plus,
 } from 'lucide-react'
 
-interface CartProduct {
-  name: string
-  brand: string
-  store: string
-  storeSlug: string
-  price: number
-  listPrice?: number
-  imageUrl?: string
-  quantity: number
-  url?: string
-  nutriscoreGrade?: string
-  allergenWarning?: string
+interface ChatMessage {
+  role: 'user' | 'avi'
+  text: string
 }
 
 function CartAssistantInner() {
@@ -28,121 +18,59 @@ function CartAssistantInner() {
   const searchParams = useSearchParams()
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
-  const [buildingCart, setBuildingCart] = useState(false)
-  const [cartItems, setCartItems] = useState<CartProduct[]>([])
-  const [chatMessages, setChatMessages] = useState<Array<{ role: string; text: string }>>([])
-  const [phase, setPhase] = useState<'chat' | 'cart'>('chat')
+  const [messages, setMessages] = useState<ChatMessage[]>([])
+  const [products, setProducts] = useState<string[]>([])
+  const [importingImage, setImportingImage] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const imageInputRef = useRef<HTMLInputElement>(null)
+  const chatEndRef = useRef<HTMLDivElement>(null)
   const autoSentRef = useRef(false)
-  const [importingImage, setImportingImage] = useState(false)
 
-  const formatCLP = (n: number) =>
-    new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', minimumFractionDigits: 0 }).format(n)
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages])
 
-  const totalPrice = cartItems.reduce((s, i) => s + i.price * i.quantity, 0)
+  useEffect(() => {
+    const p = searchParams.get('products')
+    if (p && !autoSentRef.current) {
+      autoSentRef.current = true
+      sendMessage(p)
+    }
+  }, [searchParams])
 
   const sendMessage = async (text: string) => {
     if (!text.trim() || loading) return
-    setChatMessages((prev) => [...prev, { role: 'user', text }])
+    const userMsg: ChatMessage = { role: 'user', text }
+    const updatedMessages = [...messages, userMsg]
+    setMessages(updatedMessages)
     setInput('')
     setLoading(true)
 
     try {
-      // Interpretar el mensaje con IA
-      let products: string[] = []
-      try {
-        const interpretRes = await fetch('/api/cart-interpret', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text }),
-        })
-        const interpretData = await interpretRes.json()
-        if (interpretData.success) {
-          products = interpretData.data.products
-          if (interpretData.data.message) {
-            setChatMessages((prev) => [...prev, { role: 'avi', text: interpretData.data.message }])
-          }
+      const res = await fetch('/api/cart-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: updatedMessages }),
+      })
+      const data = await res.json()
+
+      if (data.success) {
+        const aviMsg: ChatMessage = { role: 'avi', text: data.data.reply }
+        setMessages((prev) => [...prev, aviMsg])
+
+        if (data.data.products && Array.isArray(data.data.products)) {
+          setProducts(data.data.products)
         }
-      } catch {}
-
-      if (products.length === 0) {
-        products = text.split(/[\r\n,]+/).map((s) => s.trim()).filter(Boolean)
-      }
-
-      if (products.length > 0) {
-        setBuildingCart(true)
-        setChatMessages((prev) => [...prev, { role: 'avi', text: `Buscando ${products.length} producto${products.length > 1 ? 's' : ''} en los mejores precios...` }])
-
-        const newItems: CartProduct[] = []
-
-        for (const product of products) {
-          try {
-            const res = await fetch(`/api/prices?q=${encodeURIComponent(product)}`)
-            const data = await res.json()
-
-            if (data.success && data.data.cheapest) {
-              const c = data.data.cheapest
-              newItems.push({
-                name: c.name || product,
-                brand: c.brand || '',
-                store: c.store || 'Jumbo',
-                storeSlug: (c.store || 'jumbo').toLowerCase(),
-                price: c.price,
-                listPrice: c.listPrice,
-                imageUrl: c.imageUrl,
-                quantity: 1,
-                url: c.url,
-              })
-            } else {
-              // Producto no encontrado — agregar sin precio
-              newItems.push({
-                name: product,
-                brand: '',
-                store: 'Por buscar',
-                storeSlug: '',
-                price: 0,
-                quantity: 1,
-              })
-            }
-          } catch {
-            newItems.push({
-              name: product,
-              brand: '',
-              store: 'Por buscar',
-              storeSlug: '',
-              price: 0,
-              quantity: 1,
-            })
-          }
-        }
-
-        setCartItems((prev) => [...prev, ...newItems])
-        setBuildingCart(false)
-        setPhase('cart')
-
-        const found = newItems.filter((i) => i.price > 0).length
-        const total = newItems.reduce((s, i) => s + i.price * i.quantity, 0)
-        setChatMessages((prev) => [...prev, {
-          role: 'avi',
-          text: `Listo! Encontre ${found} de ${products.length} productos. Total estimado: ${formatCLP(total)}. Revisa tu carrito abajo.`,
-        }])
+      } else {
+        setMessages((prev) => [...prev, { role: 'avi', text: 'Error al procesar. Intenta de nuevo.' }])
       }
     } catch {
-      setChatMessages((prev) => [...prev, { role: 'avi', text: 'Error buscando productos' }])
+      setMessages((prev) => [...prev, { role: 'avi', text: 'Error de conexion.' }])
     }
 
     setLoading(false)
     inputRef.current?.focus()
   }
-
-  useEffect(() => {
-    const products = searchParams.get('products')
-    if (products && !autoSentRef.current) {
-      autoSentRef.current = true
-      sendMessage(products)
-    }
-  }, [searchParams])
 
   const importFromImage = async (file: File) => {
     setImportingImage(true)
@@ -152,116 +80,34 @@ function CartAssistantInner() {
       const res = await fetch('/api/import-list', { method: 'POST', body: formData })
       const data = await res.json()
       if (data.success && data.data.products.length > 0) {
-        const products = data.data.products.map((p: any) => p.name).join(', ')
-        sendMessage(products)
+        const names = data.data.products.map((p: any) => p.name)
+        setProducts(names)
+        setMessages((prev) => [...prev, {
+          role: 'avi',
+          text: `Encontre ${names.length} productos en la imagen. Revisa la lista abajo y cuando estes listo, comparamos precios.`,
+        }])
       } else {
-        setChatMessages((prev) => [...prev, { role: 'avi', text: 'No encontre productos en la imagen. Intenta con otra foto o escribe tu lista.' }])
+        setMessages((prev) => [...prev, { role: 'avi', text: 'No encontre productos en la imagen.' }])
       }
     } catch {
-      setChatMessages((prev) => [...prev, { role: 'avi', text: 'Error al procesar la imagen.' }])
+      setMessages((prev) => [...prev, { role: 'avi', text: 'Error al procesar la imagen.' }])
     }
     setImportingImage(false)
   }
 
-  const updateQuantity = (idx: number, delta: number) => {
-    setCartItems((prev) => prev.map((item, i) => {
-      if (i !== idx) return item
-      const newQty = Math.max(0, item.quantity + delta)
-      return newQty === 0 ? item : { ...item, quantity: newQty }
-    }))
+  const removeProduct = (idx: number) => {
+    setProducts((prev) => prev.filter((_, i) => i !== idx))
   }
 
-  const removeItem = (idx: number) => {
-    setCartItems((prev) => prev.filter((_, i) => i !== idx))
+  const goToCompare = () => {
+    if (products.length === 0) return
+    window.location.href = `/comparar?q=${encodeURIComponent(products.join(', '))}`
   }
 
-  const [checkingOut, setCheckingOut] = useState(false)
-  const [checkoutResult, setCheckoutResult] = useState<Array<{ store: string; success: boolean; cartUrl?: string; items: string[] }>>([])
-
-  const checkout = async () => {
-    setCheckingOut(true)
-    setCheckoutResult([])
-
-    const byStore = new Map<string, CartProduct[]>()
-    for (const item of cartItems) {
-      const key = item.storeSlug || item.store.toLowerCase()
-      const arr = byStore.get(key) || []
-      arr.push(item)
-      byStore.set(key, arr)
-    }
-
-    const results: Array<{ store: string; success: boolean; cartUrl?: string; items: string[] }> = []
-
-    for (const [slug, items] of byStore) {
-      const storeLabel = items[0]?.store || slug
-      setChatMessages((prev) => [...prev, {
-        role: 'avi',
-        text: `Armando carrito en ${storeLabel} con ${items.length} producto${items.length > 1 ? 's' : ''}...`,
-      }])
-
-      try {
-        const res = await fetch('/api/checkout', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            storeSlug: slug,
-            items: items.map((i) => ({
-              productName: i.name,
-              quantity: i.quantity,
-              price: i.price,
-              productUrl: i.url,
-            })),
-          }),
-        })
-        const data = await res.json()
-
-        if (data.success && data.data.mode === 'auto') {
-          results.push({ store: storeLabel, success: true, cartUrl: data.data.cartUrl, items: items.map((i) => i.name) })
-          setChatMessages((prev) => [...prev, {
-            role: 'avi',
-            text: `Carrito armado en ${storeLabel} con ${data.data.itemsAdded} productos. Listo para pagar.`,
-          }])
-        } else {
-          const searchUrls: Record<string, (q: string) => string> = {
-            jumbo: (q) => `https://www.jumbo.cl/search?ft=${encodeURIComponent(q)}`,
-            lider: (q) => `https://super.lider.cl/search?q=${encodeURIComponent(q)}`,
-            unimarc: (q) => `https://www.unimarc.cl/buscar?q=${encodeURIComponent(q)}`,
-            'santa isabel': (q) => `https://www.santaisabel.cl/search?ft=${encodeURIComponent(q)}`,
-            tottus: (q) => `https://www.tottus.cl/search?Ntt=${encodeURIComponent(q)}`,
-          }
-          const allNames = items.map((i) => i.name).join(' ')
-          const searchUrl = searchUrls[slug]?.(allNames) || searchUrls.jumbo(allNames)
-          results.push({ store: storeLabel, success: false, cartUrl: searchUrl, items: items.map((i) => i.name) })
-        }
-      } catch {
-        results.push({ store: storeLabel, success: false, items: items.map((i) => i.name) })
-      }
-    }
-
-    setCheckoutResult(results)
-    setCheckingOut(false)
-
-    const autoResults = results.filter((r) => r.success)
-    if (autoResults.length > 0) {
-      setChatMessages((prev) => [...prev, {
-        role: 'avi',
-        text: `Tu carrito esta listo en ${autoResults.map((r) => r.store).join(' y ')}. Toca "Ir a pagar" para completar la compra.`,
-      }])
-    } else {
-      setChatMessages((prev) => [...prev, {
-        role: 'avi',
-        text: `Abri ${results.length} supermercado${results.length > 1 ? 's' : ''} con tus productos. Toca cada uno para buscar y agregar al carrito.`,
-      }])
-    }
-  }
-
-  const STORE_COLORS: Record<string, string> = {
-    Jumbo: 'bg-green-100 text-green-700',
-    Lider: 'bg-red-100 text-red-700',
-    Unimarc: 'bg-orange-100 text-orange-700',
-    'Santa Isabel': 'bg-blue-100 text-blue-700',
-    Tottus: 'bg-teal-100 text-teal-700',
-    'Por buscar': 'bg-gray-100 text-gray-500',
+  const goToBuy = () => {
+    if (products.length === 0) return
+    const byStore = products.join(', ')
+    window.location.href = `/comparar?q=${encodeURIComponent(byStore)}`
   }
 
   return (
@@ -273,170 +119,130 @@ function CartAssistantInner() {
             <ArrowLeft className="h-5 w-5" />
           </a>
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-full flex items-center justify-center overflow-hidden">
+            <div className="w-8 h-8 bg-black rounded-full flex items-center justify-center overflow-hidden">
               <img src="/avi-icon.svg" alt="" className="w-6 h-6" />
             </div>
             <div>
-              <span className="text-sm font-semibold">Cart Assistant</span>
-              <span className="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded ml-1.5 font-medium">Beta</span>
+              <span className="text-sm font-bold">AVI</span>
+              <span className="text-xs text-gray-400 ml-1.5">Asistente de compras</span>
             </div>
           </div>
         </div>
       </header>
 
-      {/* Content */}
+      {/* Chat area */}
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-lg mx-auto px-4 py-4">
-
-          {/* Chat messages */}
-          {chatMessages.length === 0 && (
+          {/* Empty state */}
+          {messages.length === 0 && (
             <div className="text-center py-8">
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4 overflow-hidden">
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 overflow-hidden">
                 <img src="/avi-icon.svg" alt="" className="w-12 h-12" />
               </div>
-              <h2 className="text-lg font-bold text-gray-900">Cart Assistant</h2>
+              <h2 className="text-lg font-bold text-gray-900">¿Que necesitas comprar?</h2>
               <p className="text-sm text-gray-500 mt-1 max-w-xs mx-auto">
-                Dime que necesitas y AVI arma tu carrito con los mejores precios de 4 supermercados.
+                Dime que necesitas y te ayudo a armar la lista. Luego comparamos precios en 5 supermercados.
               </p>
               <div className="mt-4 space-y-2">
                 {[
-                  'Leche, huevos, pan, cafe, mantequilla',
-                  'Lo que necesito para un asado',
-                  'Productos de limpieza para la casa',
+                  'Necesito hacer un asado para 10 personas',
+                  'Armar la despensa del mes para mi familia',
+                  'Cumpleanos de mi hijo de 5 anos',
                 ].map((s) => (
                   <button key={s} onClick={() => sendMessage(s)}
-                    className="block w-full text-left text-sm px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-gray-600 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all">
-                    "{s}"
+                    className="block w-full text-left text-sm px-4 py-2.5 bg-white rounded-xl text-gray-600 hover:bg-gray-50 active:scale-[0.98] transition-all shadow-sm">
+                    {s}
                   </button>
                 ))}
               </div>
             </div>
           )}
 
-          {chatMessages.map((msg, i) => (
+          {/* Messages */}
+          {messages.map((msg, i) => (
             <div key={i} className={`mb-3 ${msg.role === 'user' ? 'text-right' : ''}`}>
-              <span className={`inline-block text-sm px-4 py-2 rounded-2xl max-w-[85%] ${
-                msg.role === 'user'
-                  ? 'bg-blue-600 text-white rounded-br-md'
-                  : 'bg-white border border-gray-200 text-gray-800 rounded-bl-md'
-              }`}>
-                {msg.text}
-              </span>
+              {msg.role === 'avi' && (
+                <div className="flex items-start gap-2">
+                  <div className="w-6 h-6 bg-black rounded-full flex items-center justify-center flex-shrink-0 mt-1 overflow-hidden">
+                    <img src="/avi-icon.svg" alt="" className="w-4 h-4" />
+                  </div>
+                  <span className="inline-block text-sm px-4 py-2.5 rounded-2xl rounded-bl-md bg-white shadow-sm text-gray-800 max-w-[85%]">
+                    {msg.text}
+                  </span>
+                </div>
+              )}
+              {msg.role === 'user' && (
+                <span className="inline-block text-sm px-4 py-2.5 rounded-2xl rounded-br-md bg-black text-white max-w-[85%]">
+                  {msg.text}
+                </span>
+              )}
             </div>
           ))}
 
-          {buildingCart && (
-            <div className="flex items-center gap-2 text-sm text-purple-600 mb-4">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              <span className="font-medium">Armando tu carrito...</span>
-            </div>
-          )}
-
-          {/* Cart Items */}
-          {cartItems.length > 0 && (
-            <div className="mt-4">
-              <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Tu carrito</h3>
-
-              <div className="space-y-2">
-                {cartItems.map((item, idx) => (
-                  <div key={idx} className="avi-card p-3 flex gap-3">
-                    {/* Image */}
-                    <div className="w-14 h-14 rounded-xl bg-gray-100 flex-shrink-0 overflow-hidden flex items-center justify-center">
-                      {item.imageUrl ? (
-                        <img src={item.imageUrl} alt="" className="w-full h-full object-cover" />
-                      ) : (
-                        <ShoppingCart className="h-5 w-5 text-gray-300" />
-                      )}
-                    </div>
-
-                    {/* Info */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          {item.price > 0 && (
-                            <span className="text-sm font-bold text-gray-900">{formatCLP(item.price)}</span>
-                          )}
-                          {item.listPrice && item.listPrice > item.price && (
-                            <span className="text-xs text-gray-400 line-through ml-1">{formatCLP(item.listPrice)}</span>
-                          )}
-                        </div>
-                        <button onClick={() => removeItem(idx)} className="text-gray-300 hover:text-red-500 p-0.5">
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
-                      </div>
-                      <p className="text-sm text-gray-800 truncate">{item.name}</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${STORE_COLORS[item.store] || 'bg-gray-100 text-gray-500'}`}>
-                          {item.store}
-                        </span>
-                        {item.brand && <span className="text-[10px] text-gray-400">{item.brand}</span>}
-                      </div>
-                    </div>
-
-                    {/* Quantity */}
-                    <div className="flex items-center gap-1 flex-shrink-0">
-                      <button onClick={() => updateQuantity(idx, -1)}
-                        className="w-7 h-7 rounded-lg border border-gray-200 flex items-center justify-center hover:bg-gray-100">
-                        <Minus className="h-3 w-3" />
-                      </button>
-                      <span className="w-6 text-center text-sm font-semibold">{item.quantity}</span>
-                      <button onClick={() => updateQuantity(idx, 1)}
-                        className="w-7 h-7 rounded-lg border border-gray-200 flex items-center justify-center hover:bg-gray-100">
-                        <Plus className="h-3 w-3" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
+          {loading && (
+            <div className="flex items-start gap-2 mb-3">
+              <div className="w-6 h-6 bg-black rounded-full flex items-center justify-center flex-shrink-0 mt-1 overflow-hidden">
+                <img src="/avi-icon.svg" alt="" className="w-4 h-4" />
+              </div>
+              <div className="bg-white shadow-sm rounded-2xl rounded-bl-md px-4 py-3">
+                <div className="flex gap-1">
+                  <span className="w-2 h-2 bg-gray-300 rounded-full animate-bounce" />
+                  <span className="w-2 h-2 bg-gray-300 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                  <span className="w-2 h-2 bg-gray-300 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                </div>
               </div>
             </div>
           )}
-        </div>
-      </div>
 
-      {/* Bottom: Add all to cart button OR input */}
-      <div className="flex-shrink-0 bg-white/90 backdrop-blur-md border-t border-gray-100 pb-20 sm:pb-4">
-        <div className="max-w-lg mx-auto px-4 py-3">
-          {cartItems.length > 0 && checkoutResult.length === 0 && (
-            <button onClick={checkout} disabled={checkingOut}
-              className="w-full flex items-center justify-center gap-2 bg-black text-white py-3.5 rounded-xl font-semibold text-sm active:scale-[0.98] transition-all disabled:opacity-50 mb-3">
-              {checkingOut ? (
-                <><Loader2 className="h-4 w-4 animate-spin" /> AVI armando carrito...</>
-              ) : (
-                <><ShoppingCart className="h-4 w-4" /> Comprar · {formatCLP(totalPrice)}</>
-              )}
-            </button>
-          )}
+          {/* Product list generated by AVI */}
+          {products.length > 0 && (
+            <div className="mt-4 mb-4">
+              <div className="bg-white rounded-2xl shadow-sm p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-bold text-gray-900">Tu lista ({products.length})</h3>
+                  <button onClick={() => setProducts([])} className="text-xs text-gray-400 hover:text-gray-600">Limpiar</button>
+                </div>
 
-          {checkoutResult.length > 0 && (
-            <div className="space-y-2 mb-3">
-              {checkoutResult.map((r, i) => (
-                <a
-                  key={i}
-                  href={r.cartUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`w-full flex items-center justify-between gap-3 py-3.5 px-4 rounded-xl font-semibold text-sm transition-all active:scale-[0.98] ${
-                    r.success
-                      ? 'bg-green-600 text-white'
-                      : 'bg-black text-white'
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    <ShoppingCart className="h-4 w-4" />
-                    <span>{r.success ? `Ir a pagar en ${r.store}` : `Abrir ${r.store}`}</span>
-                  </div>
-                  <span className="text-xs opacity-70">{r.items.length} producto{r.items.length > 1 ? 's' : ''}</span>
-                </a>
-              ))}
+                <div className="space-y-1.5 mb-4 max-h-60 overflow-y-auto">
+                  {products.map((p, i) => (
+                    <div key={i} className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-gray-50">
+                      <div className="flex items-center gap-2">
+                        <span className="w-5 h-5 bg-gray-100 rounded-full flex items-center justify-center text-[10px] font-bold text-gray-400">{i + 1}</span>
+                        <span className="text-sm text-gray-800">{p}</span>
+                      </div>
+                      <button onClick={() => removeProduct(i)} className="text-gray-300 hover:text-red-500 p-1">
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex gap-2">
+                  <button
+                    onClick={goToCompare}
+                    className="flex-1 flex items-center justify-center gap-2 bg-black text-white py-3 rounded-xl font-semibold text-sm active:scale-[0.98] transition-transform"
+                  >
+                    <DollarSign className="h-4 w-4" />
+                    Comparar precios
+                  </button>
+                </div>
+              </div>
             </div>
           )}
 
+          <div ref={chatEndRef} />
+        </div>
+      </div>
+
+      {/* Input */}
+      <div className="flex-shrink-0 bg-white border-t border-gray-100 pb-20 sm:pb-4">
+        <div className="max-w-lg mx-auto px-4 py-3">
           <form onSubmit={(e) => { e.preventDefault(); sendMessage(input) }} className="flex gap-2">
             <button
               type="button"
               onClick={() => imageInputRef.current?.click()}
               disabled={loading || importingImage}
-              className="w-11 h-11 bg-gray-100 text-gray-500 rounded-full flex items-center justify-center hover:bg-purple-50 hover:text-purple-600 disabled:opacity-40 flex-shrink-0 transition-colors"
+              className="w-11 h-11 bg-gray-100 text-gray-500 rounded-full flex items-center justify-center hover:bg-gray-200 disabled:opacity-40 flex-shrink-0 transition-colors"
             >
               {importingImage ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}
             </button>
@@ -461,16 +267,20 @@ function CartAssistantInner() {
                 const pasted = e.clipboardData.getData('text')
                 if (pasted.includes('\n') || pasted.includes('\r')) {
                   e.preventDefault()
-                  const products = pasted.split(/[\r\n]+/).map((s) => s.trim()).filter(Boolean).join(', ')
-                  sendMessage(products)
+                  const items = pasted.split(/[\r\n]+/).map((s) => s.trim()).filter(Boolean)
+                  setProducts((prev) => [...prev, ...items])
+                  setMessages((prev) => [...prev, {
+                    role: 'avi',
+                    text: `Agregue ${items.length} productos a tu lista. Revisa abajo y cuando estes listo, comparamos precios.`,
+                  }])
                 }
               }}
-              placeholder="Escribe, pega o sube foto..."
-              className="flex-1 px-4 py-3 bg-gray-100 rounded-2xl text-sm border-0 focus:ring-2 focus:ring-blue-500/20 focus:bg-white focus:border focus:border-blue-200 placeholder:text-gray-400"
+              placeholder="Dime que necesitas..."
+              className="flex-1 px-4 py-3 bg-gray-100 rounded-full text-sm focus:ring-2 focus:ring-black/10 focus:bg-white placeholder:text-gray-400 transition-all"
               disabled={loading}
             />
             <button type="submit" disabled={!input.trim() || loading}
-              className="w-11 h-11 bg-gradient-to-br from-blue-600 to-indigo-600 text-white rounded-full flex items-center justify-center disabled:opacity-40 flex-shrink-0">
+              className="w-11 h-11 bg-black text-white rounded-full flex items-center justify-center disabled:opacity-40 flex-shrink-0 active:scale-95 transition-transform">
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
             </button>
           </form>
