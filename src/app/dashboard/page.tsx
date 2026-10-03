@@ -3,10 +3,10 @@
 import { useState, useEffect } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import {
-  ShoppingCart, ListChecks, DollarSign, Heart, Store, Users,
+  ShoppingCart, ListChecks, Heart, Store, Users,
   ArrowRight, Settings, ChevronRight,
   Wallet, Package, User, Bot, Bell, MessageCircle,
-  Repeat,
+  Repeat, Zap, TrendingDown,
 } from 'lucide-react'
 import OnboardingWizard from '@/components/OnboardingWizard'
 
@@ -20,14 +20,14 @@ interface DashboardData {
 }
 
 const CATEGORIES = [
-  { href: '/cart-assistant', label: 'Comprar', icon: ShoppingCart },
-  { href: '/comparar', label: 'Precios', icon: DollarSign },
-  { href: '/listas', label: 'Listas', icon: ListChecks },
-  { href: '/reposicion', label: 'Reponer', icon: Repeat },
-  { href: '/salud', label: 'Salud', icon: Heart },
-  { href: '/familia', label: 'Familia', icon: Users },
-  { href: '/presupuesto', label: 'Gastos', icon: Wallet },
-  { href: '/perfil', label: 'Perfil', icon: User },
+  { href: '/comparar', label: 'Mejor Precio', icon: Zap, bg: 'bg-amber-500', text: 'text-white' },
+  { href: '/listas', label: 'Listas', icon: ListChecks, bg: 'bg-indigo-500', text: 'text-white' },
+  { href: '/reposicion', label: 'Reponer', icon: Repeat, bg: 'bg-teal-500', text: 'text-white' },
+  { href: '/salud', label: 'Salud', icon: Heart, bg: 'bg-rose-500', text: 'text-white' },
+  { href: '/familia', label: 'Familia', icon: Users, bg: 'bg-violet-500', text: 'text-white' },
+  { href: '/presupuesto', label: 'Gastos', icon: Wallet, bg: 'bg-emerald-500', text: 'text-white' },
+  { href: '/perfil', label: 'Perfil', icon: User, bg: 'bg-slate-500', text: 'text-white' },
+  { href: '/configuracion/cuentas', label: 'Supers', icon: Store, bg: 'bg-orange-500', text: 'text-white' },
 ]
 
 const STORE_DEALS = [
@@ -200,15 +200,15 @@ export default function DashboardPage() {
         </a>
 
         {/* Category Icons */}
-        <div className="grid grid-cols-4 gap-2 mb-5">
+        <div className="grid grid-cols-4 gap-3 mb-5">
           {CATEGORIES.map((cat) => {
             const Icon = cat.icon
             return (
-              <a key={cat.href} href={cat.href} className="flex flex-col items-center gap-1 py-2 group">
-                <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-sm group-active:scale-90 transition-transform border border-slate-100">
-                  <Icon className="h-5 w-5 text-slate-700 stroke-[1.5]" />
+              <a key={cat.href} href={cat.href} className="flex flex-col items-center gap-1.5 py-1 group">
+                <div className={`w-13 h-13 ${cat.bg} rounded-2xl flex items-center justify-center shadow-md group-active:scale-90 transition-transform`} style={{ width: 52, height: 52 }}>
+                  <Icon className={`h-5 w-5 ${cat.text} stroke-[1.8]`} />
                 </div>
-                <span className="text-[11px] font-medium text-gray-500">{cat.label}</span>
+                <span className="text-[11px] font-semibold text-gray-600">{cat.label}</span>
               </a>
             )
           })}

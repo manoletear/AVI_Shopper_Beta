@@ -3,13 +3,13 @@
 import { usePathname } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import {
-  Home, ListChecks, ShoppingCart, Bot, User,
+  Home, ListChecks, Zap, Bot, User,
 } from 'lucide-react'
 
 const NAV_ITEMS = [
   { href: '/dashboard', label: 'Inicio', icon: Home },
   { href: '/listas', label: 'Listas', icon: ListChecks },
-  { href: '/cart-assistant', label: 'Comprar', icon: ShoppingCart },
+  { href: '/comparar', label: 'Mejor Precio', icon: Zap, isCenter: true },
   { href: '/avi', label: 'AVI', icon: Bot },
   { href: '/perfil', label: 'Perfil', icon: User },
 ]
@@ -29,26 +29,25 @@ export default function BottomNav() {
         {NAV_ITEMS.map((item) => {
           const Icon = item.icon
           const isActive = pathname === item.href || pathname?.startsWith(item.href + '/')
-          const isCenter = item.href === '/cart-assistant'
 
           return (
             <a
               key={item.href}
               href={item.href}
-              className={`flex flex-col items-center justify-center gap-0.5 py-1.5 px-4 transition-colors ${
+              className={`flex flex-col items-center justify-center gap-0.5 py-1.5 px-3 transition-colors ${
                 isActive ? 'text-indigo-600' : 'text-gray-400'
               }`}
             >
-              {isCenter ? (
+              {item.isCenter ? (
                 <div className={`w-11 h-11 -mt-5 rounded-full flex items-center justify-center shadow-lg ${
-                  isActive ? 'bg-indigo-600' : 'bg-indigo-500'
+                  isActive ? 'bg-amber-500' : 'bg-amber-400'
                 }`}>
-                  <img src="/avi-icon.svg" alt="AVI" className="w-6 h-6" />
+                  <Icon className="h-5 w-5 text-white stroke-[2.5]" />
                 </div>
               ) : (
                 <Icon className={`w-5 h-5 ${isActive ? 'stroke-[2.5]' : 'stroke-[1.5]'}`} />
               )}
-              <span className={`text-[10px] ${isActive ? 'font-bold' : 'font-medium'} ${isCenter ? 'mt-0.5' : ''}`}>
+              <span className={`text-[10px] ${isActive ? 'font-bold' : 'font-medium'} ${item.isCenter ? 'mt-0.5' : ''}`}>
                 {item.label}
               </span>
             </a>
