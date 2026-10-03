@@ -6,7 +6,14 @@ import BottomNav from '@/components/BottomNav'
 export const metadata = {
   title: 'AVI Shopper',
   description: 'Tu asistente de compras familiar con IA',
-  icons: { icon: '/avi-icon.svg', apple: '/avi-icon.svg' },
+  icons: {
+    icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/avi-icon.svg', type: 'image/svg+xml' },
+    ],
+    apple: '/avi-icon.svg',
+    shortcut: '/favicon.svg',
+  },
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,

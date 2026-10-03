@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" fill="none">
+  <!-- Bag body -->
+  <path d="M28 44c0-3.3 2.7-6 6-6h52c3.3 0 6 2.7 6 6v42c0 5.5-4.5 10-10 10H38c-5.5 0-10-4.5-10-10V44z" fill="white"/>
+
+  <!-- Bag handles -->
+  <path d="M44 38V28c0-8.8 7.2-16 16-16s16 7.2 16 16v10" stroke="white" stroke-width="6" stroke-linecap="round"/>
+
+  <!-- Bold A letterform -->
+  <path d="M46 82L60 48l14 34" stroke="#111" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M51 72h18" stroke="#111" stroke-width="5.5" stroke-linecap="round"/>
+
+  <!-- AI dot -->
+  <circle cx="82" cy="46" r="5" fill="#22c55e"/>
+</svg>
