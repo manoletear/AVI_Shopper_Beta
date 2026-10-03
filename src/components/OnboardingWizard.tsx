@@ -42,7 +42,9 @@ export default function OnboardingWizard() {
         status.profile = !!(prefsRes?.success && prefsRes?.data?.dietType)
         if (familyRes?.success && familyRes?.data?.family) {
           const members = familyRes.data.family.members || []
-          status.family = members.length >= 2
+          let confirmed = false
+          try { confirmed = localStorage.getItem('avi-family-confirmed') === 'true' } catch {}
+          status.family = members.length >= 2 || confirmed
         }
         status.budget = !!(budgetRes?.success && budgetRes?.data)
         status.list = !!(listsRes?.success && listsRes?.data?.length > 0)

@@ -456,6 +456,22 @@ export default function FamiliaPage() {
                 </button>
               )
             )}
+            {/* Confirm family is complete */}
+            <div className="mt-6 avi-card p-5 text-center">
+              <p className="text-sm text-gray-600 mb-3">
+                ¿Tu familia ya esta configurada?
+              </p>
+              <button
+                onClick={() => {
+                  try { localStorage.setItem('avi-family-confirmed', 'true') } catch {}
+                  window.location.href = '/dashboard'
+                }}
+                className="w-full bg-indigo-600 text-white py-3 rounded-xl font-semibold text-sm active:scale-[0.98] transition-transform hover:bg-indigo-700"
+              >
+                Mi familia esta lista
+              </button>
+              <p className="text-xs text-gray-400 mt-2">Siempre puedes volver a agregar miembros</p>
+            </div>
           </>
         )}
       </main>
