@@ -106,7 +106,7 @@ export async function searchLider(
     listPrice: item.originalPrice,
     inStock: item.inStock,
     store: 'Lider' as const,
-    url: item.url,
+    url: `https://super.lider.cl/search?q=${encodeURIComponent(item.name)}`,
     imageUrl: item.imageUrl,
   }));
 }
