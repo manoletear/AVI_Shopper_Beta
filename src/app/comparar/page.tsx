@@ -808,9 +808,14 @@ function CompararInner() {
                       </div>
                     )}
 
-                    {!comp.loading && comp.results.length === 0 && !comp.error && (
-                      <div className="px-4 py-4 text-center text-sm text-gray-400">
-                        No se encontraron resultados
+                    {!comp.loading && comp.results.length === 0 && (
+                      <div className="px-4 py-4 text-center">
+                        <p className="text-sm text-gray-500 font-medium">
+                          {comp.error || 'Sin resultados para este producto'}
+                        </p>
+                        <p className="text-xs text-gray-400 mt-1">
+                          Intenta con un nombre mas especifico (ej: "Leche Colun 1L" en vez de "leche")
+                        </p>
                       </div>
                     )}
                   </div>

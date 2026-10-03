@@ -101,21 +101,7 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    return successResponse({
-      query,
-      totalResults: comparison.results.length,
-      cheapest: comparison.cheapest,
-      byStore: {
-        jumbo: comparison.results.filter((r) => r.store === 'Jumbo'),
-        lider: comparison.results.filter((r) => r.store === 'Lider'),
-        unimarc: comparison.results.filter((r) => r.store === 'Unimarc'),
-      },
-      healthAnalysis: analyze ? healthAnalysis : undefined,
-      source: 'live',
-      scrapedAt: comparison.scrapedAt,
-    });
-
-    // Guardar precios observados en background (no bloquea respuesta)
+    // Guardar precios observados en background
     savePriceObservations(
       comparison.results.map((r) => ({
         productName: r.name,
@@ -130,6 +116,21 @@ export async function GET(request: NextRequest) {
         searchTerm: query!,
       }))
     ).catch(() => {});
+
+    return successResponse({
+      query,
+      totalResults: comparison.results.length,
+      cheapest: comparison.cheapest,
+      byStore: {
+        jumbo: comparison.results.filter((r) => r.store === 'Jumbo'),
+        lider: comparison.results.filter((r) => r.store === 'Lider'),
+        unimarc: comparison.results.filter((r) => r.store === 'Unimarc'),
+        tottus: comparison.results.filter((r) => r.store === 'Tottus'),
+      },
+      healthAnalysis: analyze ? healthAnalysis : undefined,
+      source: 'live',
+      scrapedAt: comparison.scrapedAt,
+    });
   } catch (error: any) {
     console.error('Price search error:', error);
     return errorResponse(error.message || 'Error al buscar precios', 500);
