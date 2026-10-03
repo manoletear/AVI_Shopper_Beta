@@ -17,7 +17,7 @@ interface OnboardingStep {
 
 const STEPS: OnboardingStep[] = [
   { key: 'profile', title: 'Tu perfil nutricional', description: 'Alergias, dieta, objetivos', icon: Heart, href: '/perfil', color: 'text-rose-600' },
-  { key: 'family', title: 'Tu familia', description: 'Miembros, mascotas, alergenos', icon: Users, href: '/familia', color: 'text-purple-600' },
+  { key: 'family', title: 'Tu familia', description: 'Invita miembros, agrega hijos y mascotas', icon: Users, href: '/familia', color: 'text-purple-600' },
   { key: 'budget', title: 'Tu presupuesto', description: 'Control de gastos mensual', icon: Wallet, href: '/presupuesto', color: 'text-teal-600' },
   { key: 'list', title: 'Primera lista', description: 'Crea o importa tu lista de compras', icon: ShoppingCart, href: '/listas', color: 'text-blue-600' },
 ]
@@ -40,7 +40,10 @@ export default function OnboardingWizard() {
         ])
 
         status.profile = !!(prefsRes?.success && prefsRes?.data?.dietType)
-        status.family = !!(familyRes?.success && familyRes?.data?.family)
+        if (familyRes?.success && familyRes?.data?.family) {
+          const members = familyRes.data.family.members || []
+          status.family = members.length >= 2
+        }
         status.budget = !!(budgetRes?.success && budgetRes?.data)
         status.list = !!(listsRes?.success && listsRes?.data?.length > 0)
       } catch {}
