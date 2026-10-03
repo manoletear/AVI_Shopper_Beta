@@ -148,10 +148,21 @@ export default function DashboardPage() {
       </header>
 
       <main className="max-w-lg mx-auto px-4">
-        {/* Greeting */}
-        <div className="pt-4 pb-2">
-          <p className="text-sm text-gray-500">{greeting},</p>
-          <h1 className="text-xl font-bold text-gray-900">{userName}</h1>
+        {/* Greeting + WhatsApp */}
+        <div className="pt-4 pb-2 flex items-end justify-between">
+          <div>
+            <p className="text-sm text-gray-500">{greeting},</p>
+            <h1 className="text-xl font-bold text-gray-900">{userName}</h1>
+          </div>
+          <a
+            href="https://wa.me/56XXXXXXXXXX?text=Hola%20AVI%2C%20te%20agrego%20al%20grupo%20familiar"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 bg-[#25D366] text-white px-3 py-2 rounded-xl text-xs font-semibold active:scale-95 transition-transform"
+          >
+            <MessageCircle className="h-3.5 w-3.5" />
+            Agregar a WZP
+          </a>
         </div>
 
         {/* AVI Search Bar — links to cart-assistant (the AI agent) */}
@@ -337,27 +348,6 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* WhatsApp — Add AVI to family group */}
-        <div className="bg-white rounded-2xl p-4 shadow-sm mb-4">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-9 h-9 bg-[#25D366] rounded-full flex items-center justify-center flex-shrink-0">
-              <MessageCircle className="h-4 w-4 text-white" />
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-semibold text-gray-900">AVI en tu grupo familiar</p>
-              <p className="text-[10px] text-gray-400">Agrega a AVI a tu grupo de WhatsApp y gestiona compras en familia</p>
-            </div>
-          </div>
-          <a
-            href="https://wa.me/56XXXXXXXXXX?text=Hola%20AVI%2C%20te%20agrego%20al%20grupo%20familiar"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-full flex items-center justify-center gap-2 bg-[#25D366] text-white py-2.5 rounded-xl text-sm font-semibold active:scale-[0.98] transition-transform"
-          >
-            <MessageCircle className="h-4 w-4" />
-            Agregar AVI al grupo
-          </a>
-        </div>
       </main>
     </div>
   )

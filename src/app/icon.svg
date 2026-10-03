@@ -1,14 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" fill="none">
-  <!-- Bag body - brand indigo -->
-  <path d="M28 44c0-3.3 2.7-6 6-6h52c3.3 0 6 2.7 6 6v42c0 5.5-4.5 10-10 10H38c-5.5 0-10-4.5-10-10V44z" fill="#4F46E5"/>
-
-  <!-- Bag handles -->
-  <path d="M44 38V28c0-8.8 7.2-16 16-16s16 7.2 16 16v10" stroke="#4F46E5" stroke-width="6" stroke-linecap="round"/>
-
-  <!-- Bold A letterform -->
-  <path d="M46 82L60 48l14 34" stroke="white" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M51 72h18" stroke="white" stroke-width="5.5" stroke-linecap="round"/>
-
-  <!-- AI dot - teal accent -->
-  <circle cx="82" cy="46" r="5" fill="#0D9488"/>
+  <!-- Bag body -->
+  <rect x="25" y="50" width="70" height="50" rx="12" fill="#4F46E5"/>
+  <!-- Bag handles - wider apart so they don't look like a lock -->
+  <path d="M42 50V38a18 18 0 0 1 36 0v12" stroke="#4F46E5" stroke-width="5" stroke-linecap="round" fill="none"/>
+  <!-- A letterform -->
+  <path d="M47 86L60 58l13 28" stroke="white" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M52 78h16" stroke="white" stroke-width="5" stroke-linecap="round"/>
+  <!-- AI dot -->
+  <circle cx="83" cy="52" r="5" fill="#0D9488"/>
 </svg>
