@@ -4,17 +4,17 @@ test.describe('Auth Flow', () => {
   test('landing page has navigation links', async ({ page }) => {
     await page.goto('/');
     await expect(page.getByText('AVI', { exact: true }).first()).toBeVisible();
-    await expect(page.locator('a[href="/login"]')).toBeVisible();
-    await expect(page.locator('a[href="/registro"]')).toBeVisible();
-    await expect(page.locator('a[href="/demo"]')).toBeVisible();
+    await expect(page.locator('a[href="/login"]').first()).toBeVisible();
+    await expect(page.locator('a[href="/registro"]').first()).toBeVisible();
+    await expect(page.locator('a[href="/demo"]').first()).toBeVisible();
   });
 
   test('login page renders correctly', async ({ page }) => {
     await page.goto('/login');
-    await expect(page.locator('text=Inicia sesión en tu cuenta')).toBeVisible();
     await expect(page.locator('input[type="email"]')).toBeVisible();
     await expect(page.locator('input[type="password"]')).toBeVisible();
     await expect(page.locator('a[href="/registro"]')).toBeVisible();
+    await expect(page.locator('a[href="/recuperar"]')).toBeVisible();
   });
 
   test('registro page renders correctly', async ({ page }) => {
@@ -30,7 +30,6 @@ test.describe('Auth Flow', () => {
     await page.fill('input[type="email"]', 'bad@email.com');
     await page.fill('input[type="password"]', 'wrongpassword');
     await page.click('button[type="submit"]');
-    // NextAuth shows generic error on failed credentials
     await expect(page.locator('text=/error|Error|incorrecta|encontrado/i')).toBeVisible({ timeout: 10000 });
   });
 
@@ -40,7 +39,7 @@ test.describe('Auth Flow', () => {
     await page.fill('input[type="password"]', 'demo123456');
     await page.click('button[type="submit"]');
     await page.waitForURL('/dashboard', { timeout: 15000 });
-    await expect(page.locator('text=Hola')).toBeVisible();
+    await expect(page.locator('text=/Buenos|Buenas/i')).toBeVisible();
   });
 
   test('protected routes redirect to login when unauthenticated', async ({ page }) => {

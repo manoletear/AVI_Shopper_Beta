@@ -1,4 +1,5 @@
 import './globals.css'
+import type { Viewport } from 'next'
 import Providers from './providers'
 import BottomNav from '@/components/BottomNav'
 
@@ -7,19 +8,20 @@ export const metadata = {
   description: 'Tu asistente de compras familiar con IA',
   icons: { icon: '/avi-icon.svg', apple: '/avi-icon.svg' },
   manifest: '/manifest.json',
-  themeColor: '#000000',
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
-    viewportFit: 'cover',
-  },
   appleWebApp: {
     capable: true,
-    statusBarStyle: 'black-translucent',
+    statusBarStyle: 'black-translucent' as const,
     title: 'AVI Shopper',
   },
+}
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: 'cover',
+  themeColor: '#000000',
 }
 
 export default function RootLayout({
