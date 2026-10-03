@@ -361,10 +361,40 @@ async function executeTool(
         };
       }
 
+      // Sin cache — buscar en vivo via Apify
+      const apifyToken = process.env.APIFY_API_TOKEN;
+      if (apifyToken) {
+        try {
+          const { comparePrices } = await import('./apify-price.service');
+          const comparison = await comparePrices(input.product as string, apifyToken);
+
+          if (comparison.results.length > 0) {
+            const topResults = comparison.results.slice(0, 8).map((r) => ({
+              product: r.name,
+              store: r.store,
+              price: r.price,
+              url: r.url,
+            }));
+
+            return {
+              success: true,
+              data: { prices: topResults, cheapest: comparison.cheapest ? {
+                product: comparison.cheapest.name,
+                store: comparison.cheapest.store,
+                price: comparison.cheapest.price,
+              } : null },
+              message: comparison.cheapest
+                ? `Busqué en vivo. El más barato: ${comparison.cheapest.name} en ${comparison.cheapest.store} a $${comparison.cheapest.price.toLocaleString('es-CL')}. Encontré ${topResults.length} opciones.`
+                : `Busqué en vivo pero no encontré "${input.product}" en stock.`,
+            };
+          }
+        } catch {}
+      }
+
       return {
         success: true,
-        data: { prices: [], note: 'Sin datos en cache' },
-        message: `No tengo precios recientes de "${input.product}". Usa /comparar en la app para buscar precios en vivo.`,
+        data: { prices: [] },
+        message: `No encontré precios de "${input.product}" en este momento. Intenta con otro nombre o usa /comparar.`,
       };
     }
 

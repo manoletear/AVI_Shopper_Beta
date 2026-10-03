@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { successResponse, errorResponse } from '@/lib/responses';
 import { buildCart } from '@/services/store-cart.service';
 import { decrypt } from '@/lib/encryption';
+import { recordMultiplePurchases } from '@/services/purchase-learning.service';
 
 const STORE_SEARCH_URLS: Record<string, (q: string) => string> = {
   jumbo: (q) => `https://www.jumbo.cl/search?ft=${encodeURIComponent(q)}`,
@@ -68,6 +69,15 @@ export async function POST(request: NextRequest) {
       });
 
       if (result.success) {
+        recordMultiplePurchases(userId, cartItems.map((item: any) => ({
+          productName: item.productName,
+          storeSlug,
+          storeName: result.store,
+          price: item.price || undefined,
+          quantity: item.quantity || 1,
+          source: 'checkout',
+        }))).catch(() => {});
+
         return successResponse({
           mode: 'auto',
           cartUrl: result.cartUrl,
@@ -91,6 +101,15 @@ export async function POST(request: NextRequest) {
       quantity: item.quantity || 1,
       url: item.productUrl || urlFn(item.productName),
     }));
+
+    recordMultiplePurchases(userId, cartItems.map((item: any) => ({
+      productName: item.productName,
+      storeSlug,
+      storeName: storeSlug,
+      price: item.price || undefined,
+      quantity: item.quantity || 1,
+      source: 'checkout-guest',
+    }))).catch(() => {});
 
     return successResponse({
       mode: 'guest',

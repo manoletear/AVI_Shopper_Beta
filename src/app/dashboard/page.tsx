@@ -5,9 +5,10 @@ import { useSession, signOut } from 'next-auth/react'
 import {
   ShoppingCart, ListChecks, DollarSign, Heart, Store, Users,
   ArrowRight, LogOut, Settings, AlertCircle,
-  Wallet, Package, User, Bot, Bell, TrendingUp,
+  Wallet, Package, User, Bot, Bell, TrendingUp, MessageCircle,
 } from 'lucide-react'
 import SmartAlerts from '@/components/SmartAlerts'
+import OnboardingWizard from '@/components/OnboardingWizard'
 
 interface DashboardData {
   listsCount: number
@@ -115,6 +116,26 @@ export default function DashboardPage() {
           </h1>
           <p className="text-gray-500 mt-0.5">¿Que quieres hacer hoy?</p>
         </div>
+
+        {/* WhatsApp CTA */}
+        <a
+          href="https://wa.me/56XXXXXXXXXX?text=Hola%20AVI"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mb-4 flex items-center gap-3 p-3 bg-green-50 border border-green-200 rounded-xl hover:bg-green-100 transition-colors"
+        >
+          <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
+            <MessageCircle className="h-5 w-5 text-white" />
+          </div>
+          <div className="flex-1">
+            <p className="text-sm font-medium text-green-800">AVI en WhatsApp</p>
+            <p className="text-xs text-green-600">Chatea con AVI desde tu WhatsApp para compras rapidas</p>
+          </div>
+          <ArrowRight className="h-4 w-4 text-green-400" />
+        </a>
+
+        {/* Onboarding wizard for new users */}
+        <OnboardingWizard />
 
         {/* Smart Alerts — onboarding + time-based */}
         <SmartAlerts />

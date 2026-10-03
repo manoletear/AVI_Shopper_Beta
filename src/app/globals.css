@@ -4,31 +4,37 @@
 
 @layer base {
   :root {
-    --background: 220 20% 97%;
-    --foreground: 222 84% 5%;
+    --background: 0 0% 98%;
+    --foreground: 0 0% 9%;
     --primary: 221 83% 53%;
     --primary-light: 217 91% 60%;
     --primary-dark: 224 76% 48%;
-    --accent: 199 89% 48%;
+    --accent: 142 71% 45%;
     --success: 142 71% 45%;
     --warning: 38 92% 50%;
     --danger: 0 84% 60%;
     --card: 0 0% 100%;
-    --muted: 220 14% 96%;
+    --muted: 0 0% 96%;
   }
 
   @media (prefers-color-scheme: dark) {
     :root {
-      --background: 222 47% 11%;
-      --foreground: 210 40% 98%;
+      --background: 0 0% 7%;
+      --foreground: 0 0% 95%;
       --primary: 217 91% 60%;
-      --card: 222 47% 15%;
-      --muted: 217 33% 17%;
+      --card: 0 0% 12%;
+      --muted: 0 0% 15%;
     }
   }
 
   * {
-    border-color: hsl(214.3 31.8% 91.4%);
+    border-color: hsl(0 0% 92%);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
   }
 
   body {
@@ -36,28 +42,77 @@
     color: hsl(var(--foreground));
     font-feature-settings: "rlig" 1, "calt" 1;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overscroll-behavior-y: none;
+  }
+
+  /* PWA-like fullscreen feel */
+  @supports (padding: env(safe-area-inset-top)) {
+    body {
+      padding-top: env(safe-area-inset-top);
+    }
+  }
+
+  /* Prevent pull-to-refresh on mobile */
+  body {
+    overscroll-behavior-y: contain;
+  }
+
+  /* Smooth scrolling containers */
+  [class*="overflow-y-auto"],
+  [class*="overflow-auto"] {
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  [class*="overflow-y-auto"]::-webkit-scrollbar,
+  [class*="overflow-auto"]::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Selection color */
+  ::selection {
+    background: hsl(var(--primary) / 0.15);
+  }
+
+  /* Input zoom prevention on iOS */
+  @media screen and (max-width: 640px) {
+    input, select, textarea {
+      font-size: 16px !important;
+    }
   }
 }
 
 @layer components {
+  /* ========================================
+     CARDS — Clean, no border, subtle shadow
+     ======================================== */
   .avi-card {
-    @apply bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow;
+    @apply bg-white rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-all duration-200;
   }
 
   .avi-card-interactive {
-    @apply avi-card hover:border-blue-200 cursor-pointer transition-all;
+    @apply avi-card cursor-pointer active:scale-[0.98] hover:shadow-[0_4px_12px_rgba(0,0,0,0.1)] transition-all duration-200;
   }
 
+  /* ========================================
+     HEADER — Frosted glass, no border
+     ======================================== */
   .avi-header {
-    @apply bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-40;
+    @apply bg-white/90 backdrop-blur-xl sticky top-0 z-40 shadow-[0_1px_0_rgba(0,0,0,0.05)];
   }
 
+  /* ========================================
+     PAGE — Clean white/gray background
+     ======================================== */
   .avi-page {
-    @apply min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20;
+    @apply min-h-screen bg-[#f7f7f7];
   }
 
+  /* ========================================
+     BADGES
+     ======================================== */
   .avi-badge {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+    @apply inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold tracking-tight;
   }
 
   .avi-badge-green {
@@ -76,27 +131,40 @@
     @apply avi-badge bg-blue-100 text-blue-700;
   }
 
+  /* ========================================
+     BUTTONS — Larger touch targets, bold
+     ======================================== */
   .avi-btn-primary {
-    @apply bg-blue-600 text-white px-6 py-2.5 rounded-xl font-medium
-           hover:bg-blue-700 active:bg-blue-800
-           disabled:opacity-50 disabled:cursor-not-allowed
-           transition-colors shadow-sm hover:shadow;
+    @apply bg-black text-white px-6 py-3 rounded-xl font-semibold text-sm
+           hover:bg-gray-900 active:bg-gray-800 active:scale-[0.98]
+           disabled:opacity-40 disabled:cursor-not-allowed
+           transition-all duration-150;
   }
 
   .avi-btn-secondary {
-    @apply bg-white text-gray-700 px-6 py-2.5 rounded-xl font-medium
-           border border-gray-200 hover:bg-gray-50 hover:border-gray-300
-           transition-colors;
+    @apply bg-gray-100 text-gray-900 px-6 py-3 rounded-xl font-semibold text-sm
+           hover:bg-gray-200 active:bg-gray-300 active:scale-[0.98]
+           transition-all duration-150;
   }
 
+  /* ========================================
+     INPUTS — Larger, rounded, gray bg
+     ======================================== */
   .avi-input {
-    @apply w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm
-           bg-white/80 backdrop-blur-sm
-           focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500
-           placeholder:text-gray-400 transition-all;
+    @apply w-full px-4 py-3 bg-gray-100 rounded-xl text-sm
+           border-0
+           focus:ring-2 focus:ring-black/10 focus:bg-white focus:shadow-[0_0_0_1px_rgba(0,0,0,0.1)]
+           placeholder:text-gray-400 transition-all duration-200;
   }
 
   .avi-section-title {
-    @apply text-sm font-semibold text-gray-500 uppercase tracking-wider;
+    @apply text-sm font-bold text-gray-900 tracking-tight;
+  }
+
+  /* ========================================
+     SKELETON LOADER
+     ======================================== */
+  .avi-skeleton {
+    @apply bg-gray-200 rounded-lg animate-pulse;
   }
 }

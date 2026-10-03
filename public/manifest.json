@@ -1,0 +1,18 @@
+{
+  "name": "AVI Shopper",
+  "short_name": "AVI",
+  "description": "Tu asistente de compras familiar con IA",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#f7f7f7",
+  "theme_color": "#000000",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/avi-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

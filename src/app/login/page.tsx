@@ -71,7 +71,11 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <p className="mt-4 text-center text-sm text-gray-500">
+          <div className="mt-3 text-center">
+            <a href="/recuperar" className="text-sm text-gray-400 hover:text-blue-500">¿Olvidaste tu contrasena?</a>
+          </div>
+
+          <p className="mt-3 text-center text-sm text-gray-500">
             ¿No tienes cuenta? <a href="/registro" className="font-medium text-blue-600 hover:text-blue-500">Registrate gratis</a>
           </p>
 
