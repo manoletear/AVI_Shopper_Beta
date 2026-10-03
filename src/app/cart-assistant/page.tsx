@@ -175,30 +175,83 @@ function CartAssistantInner() {
     setCartItems((prev) => prev.filter((_, i) => i !== idx))
   }
 
-  const checkout = () => {
-    // Agrupar por tienda y abrir links
+  const [checkingOut, setCheckingOut] = useState(false)
+  const [checkoutResult, setCheckoutResult] = useState<Array<{ store: string; success: boolean; cartUrl?: string; items: string[] }>>([])
+
+  const checkout = async () => {
+    setCheckingOut(true)
+    setCheckoutResult([])
+
     const byStore = new Map<string, CartProduct[]>()
     for (const item of cartItems) {
-      if (!item.url && !item.storeSlug) continue
-      const key = item.storeSlug || 'jumbo'
+      const key = item.storeSlug || item.store.toLowerCase()
       const arr = byStore.get(key) || []
       arr.push(item)
       byStore.set(key, arr)
     }
 
-    const searchUrls: Record<string, (q: string) => string> = {
-      jumbo: (q) => `https://www.jumbo.cl/search?ft=${encodeURIComponent(q)}`,
-      lider: (q) => `https://super.lider.cl/search?q=${encodeURIComponent(q)}`,
-      unimarc: (q) => `https://www.unimarc.cl/buscar?q=${encodeURIComponent(q)}`,
-      'santa isabel': (q) => `https://www.santaisabel.cl/search?ft=${encodeURIComponent(q)}`,
-      tottus: (q) => `https://www.tottus.cl/search?Ntt=${encodeURIComponent(q)}`,
-    }
+    const results: Array<{ store: string; success: boolean; cartUrl?: string; items: string[] }> = []
 
     for (const [slug, items] of byStore) {
-      for (const item of items) {
-        const url = item.url || searchUrls[slug]?.(item.name) || searchUrls.jumbo(item.name)
-        window.open(url, '_blank')
+      const storeLabel = items[0]?.store || slug
+      setChatMessages((prev) => [...prev, {
+        role: 'avi',
+        text: `Armando carrito en ${storeLabel} con ${items.length} producto${items.length > 1 ? 's' : ''}...`,
+      }])
+
+      try {
+        const res = await fetch('/api/checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            storeSlug: slug,
+            items: items.map((i) => ({
+              productName: i.name,
+              quantity: i.quantity,
+              price: i.price,
+              productUrl: i.url,
+            })),
+          }),
+        })
+        const data = await res.json()
+
+        if (data.success && data.data.mode === 'auto') {
+          results.push({ store: storeLabel, success: true, cartUrl: data.data.cartUrl, items: items.map((i) => i.name) })
+          setChatMessages((prev) => [...prev, {
+            role: 'avi',
+            text: `Carrito armado en ${storeLabel} con ${data.data.itemsAdded} productos. Listo para pagar.`,
+          }])
+        } else {
+          const searchUrls: Record<string, (q: string) => string> = {
+            jumbo: (q) => `https://www.jumbo.cl/search?ft=${encodeURIComponent(q)}`,
+            lider: (q) => `https://super.lider.cl/search?q=${encodeURIComponent(q)}`,
+            unimarc: (q) => `https://www.unimarc.cl/buscar?q=${encodeURIComponent(q)}`,
+            'santa isabel': (q) => `https://www.santaisabel.cl/search?ft=${encodeURIComponent(q)}`,
+            tottus: (q) => `https://www.tottus.cl/search?Ntt=${encodeURIComponent(q)}`,
+          }
+          const allNames = items.map((i) => i.name).join(' ')
+          const searchUrl = searchUrls[slug]?.(allNames) || searchUrls.jumbo(allNames)
+          results.push({ store: storeLabel, success: false, cartUrl: searchUrl, items: items.map((i) => i.name) })
+        }
+      } catch {
+        results.push({ store: storeLabel, success: false, items: items.map((i) => i.name) })
       }
+    }
+
+    setCheckoutResult(results)
+    setCheckingOut(false)
+
+    const autoResults = results.filter((r) => r.success)
+    if (autoResults.length > 0) {
+      setChatMessages((prev) => [...prev, {
+        role: 'avi',
+        text: `Tu carrito esta listo en ${autoResults.map((r) => r.store).join(' y ')}. Toca "Ir a pagar" para completar la compra.`,
+      }])
+    } else {
+      setChatMessages((prev) => [...prev, {
+        role: 'avi',
+        text: `Abri ${results.length} supermercado${results.length > 1 ? 's' : ''} con tus productos. Toca cada uno para buscar y agregar al carrito.`,
+      }])
     }
   }
 
@@ -343,12 +396,39 @@ function CartAssistantInner() {
       {/* Bottom: Add all to cart button OR input */}
       <div className="flex-shrink-0 bg-white/90 backdrop-blur-md border-t border-gray-100 pb-20 sm:pb-4">
         <div className="max-w-lg mx-auto px-4 py-3">
-          {cartItems.length > 0 && (
-            <button onClick={checkout}
-              className="w-full flex items-center justify-center gap-2 bg-gray-900 text-white py-3.5 rounded-xl font-semibold text-sm hover:bg-gray-800 transition-colors mb-3">
-              <ShoppingCart className="h-4 w-4" />
-              Agregar todo al carrito · {formatCLP(totalPrice)}
+          {cartItems.length > 0 && checkoutResult.length === 0 && (
+            <button onClick={checkout} disabled={checkingOut}
+              className="w-full flex items-center justify-center gap-2 bg-black text-white py-3.5 rounded-xl font-semibold text-sm active:scale-[0.98] transition-all disabled:opacity-50 mb-3">
+              {checkingOut ? (
+                <><Loader2 className="h-4 w-4 animate-spin" /> AVI armando carrito...</>
+              ) : (
+                <><ShoppingCart className="h-4 w-4" /> Comprar · {formatCLP(totalPrice)}</>
+              )}
             </button>
+          )}
+
+          {checkoutResult.length > 0 && (
+            <div className="space-y-2 mb-3">
+              {checkoutResult.map((r, i) => (
+                <a
+                  key={i}
+                  href={r.cartUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`w-full flex items-center justify-between gap-3 py-3.5 px-4 rounded-xl font-semibold text-sm transition-all active:scale-[0.98] ${
+                    r.success
+                      ? 'bg-green-600 text-white'
+                      : 'bg-black text-white'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <ShoppingCart className="h-4 w-4" />
+                    <span>{r.success ? `Ir a pagar en ${r.store}` : `Abrir ${r.store}`}</span>
+                  </div>
+                  <span className="text-xs opacity-70">{r.items.length} producto{r.items.length > 1 ? 's' : ''}</span>
+                </a>
+              ))}
+            </div>
           )}
 
           <form onSubmit={(e) => { e.preventDefault(); sendMessage(input) }} className="flex gap-2">
