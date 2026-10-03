@@ -151,9 +151,7 @@ function CartAssistantInner() {
             <ArrowLeft className="h-5 w-5" />
           </a>
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center overflow-hidden">
-              <img src="/avi-icon.svg" alt="" className="w-6 h-6" />
-            </div>
+            <img src="/avi-icon.svg" alt="" className="w-8 h-8 rounded-full" />
             <div>
               <span className="text-sm font-bold text-indigo-700">AVI</span>
               <span className="text-xs text-gray-400 ml-1.5">Asistente de compras</span>
@@ -195,9 +193,7 @@ function CartAssistantInner() {
             <div key={i} className={`mb-3 ${msg.role === 'user' ? 'text-right' : ''}`}>
               {msg.role === 'avi' && (
                 <div className="flex items-start gap-2">
-                  <div className="w-6 h-6 bg-indigo-600 rounded-full flex items-center justify-center flex-shrink-0 mt-1 overflow-hidden">
-                    <img src="/avi-icon.svg" alt="" className="w-4 h-4" />
-                  </div>
+                  <img src="/avi-icon.svg" alt="" className="w-6 h-6 rounded-full flex-shrink-0 mt-1" />
                   <span className="inline-block text-sm px-4 py-2.5 rounded-2xl rounded-bl-md bg-white shadow-sm text-gray-800 max-w-[85%]">
                     {msg.text}
                   </span>
@@ -213,9 +209,7 @@ function CartAssistantInner() {
 
           {loading && (
             <div className="flex items-start gap-2 mb-3">
-              <div className="w-6 h-6 bg-indigo-600 rounded-full flex items-center justify-center flex-shrink-0 mt-1 overflow-hidden">
-                <img src="/avi-icon.svg" alt="" className="w-4 h-4" />
-              </div>
+              <img src="/avi-icon.svg" alt="" className="w-6 h-6 rounded-full flex-shrink-0 mt-1" />
               <div className="bg-white shadow-sm rounded-2xl rounded-bl-md px-4 py-3">
                 <div className="flex gap-1">
                   <span className="w-2 h-2 bg-gray-300 rounded-full animate-bounce" />

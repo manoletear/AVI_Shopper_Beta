@@ -130,9 +130,7 @@ export default function DashboardPage() {
       <header className="avi-header">
         <div className="max-w-lg mx-auto px-4 py-2.5 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center overflow-hidden">
-              <img src="/avi-icon.svg" alt="" className="w-7 h-7" />
-            </div>
+            <img src="/avi-icon.svg" alt="AVI" className="w-8 h-8 rounded-full" />
             <span className="text-base font-bold text-indigo-700">AVI</span>
           </div>
           <div className="flex items-center gap-1">
@@ -167,9 +165,7 @@ export default function DashboardPage() {
 
         {/* AVI Search Bar — links to cart-assistant (the AI agent) */}
         <a href="/cart-assistant" className="flex items-center gap-3 bg-white rounded-2xl px-4 py-3.5 mb-5 shadow-sm active:scale-[0.98] transition-transform border border-indigo-100">
-          <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0">
-            <img src="/avi-icon.svg" alt="" className="w-6 h-6" />
-          </div>
+          <img src="/avi-icon.svg" alt="" className="w-8 h-8 rounded-full flex-shrink-0" />
           <div className="flex-1">
             <p className="text-sm text-gray-400">Habla con AVI...</p>
             <p className="text-[10px] text-gray-300">Arma listas, busca productos, compara precios</p>
