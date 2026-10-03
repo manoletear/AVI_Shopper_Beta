@@ -35,106 +35,114 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    // 1. Try cache first
+    const cached = await getLatestPrices(query, 24);
+    if (cached.length > 0) {
+      const cheapest = cached.reduce((min, p) => (p.price < min.price ? p : min));
+      return successResponse({
+        query, totalResults: cached.length, cheapest, results: cached,
+        source: 'cache', maxAgeHours: Math.max(...cached.map((c) => c.hoursAgo)),
+      });
+    }
+
+    // 2. Try Apify live search
     const apifyToken = process.env.APIFY_API_TOKEN;
-    if (!apifyToken) {
-      // Fallback: buscar en cache aunque no se pidio
-      const cached = await getLatestPrices(query, 24);
-      if (cached.length > 0) {
-        const cheapest = cached.reduce((min, p) => (p.price < min.price ? p : min));
+    if (apifyToken) {
+      const comparison = await comparePrices(query, apifyToken);
+
+      if (comparison.results.length > 0) {
+        // Save to cache
+        savePriceObservations(
+          comparison.results.map((r) => ({
+            productName: r.name, brand: r.brand,
+            storeSlug: r.store.toLowerCase(), storeName: r.store,
+            price: r.price, listPrice: r.listPrice, inStock: r.inStock,
+            url: r.url, imageUrl: r.imageUrl, searchTerm: query!,
+          }))
+        ).catch(() => {});
+
         return successResponse({
           query,
-          totalResults: cached.length,
-          cheapest,
-          results: cached,
-          source: 'cache',
-          maxAgeHours: Math.max(...cached.map((c) => c.hoursAgo)),
+          totalResults: comparison.results.length,
+          cheapest: comparison.cheapest,
+          byStore: {
+            jumbo: comparison.results.filter((r) => r.store === 'Jumbo'),
+            lider: comparison.results.filter((r) => r.store === 'Lider'),
+            unimarc: comparison.results.filter((r) => r.store === 'Unimarc'),
+            tottus: comparison.results.filter((r) => r.store === 'Tottus'),
+          },
+          source: 'live',
+          scrapedAt: comparison.scrapedAt,
         });
       }
-      return errorResponse(
-        'APIFY_API_TOKEN no configurado. Agrega tu token en .env',
-        503,
-        'APIFY_NOT_CONFIGURED'
-      );
     }
 
-    // Buscar precios reales
-    const comparison = await comparePrices(query, apifyToken);
-
-    // Analizar salud con TypeSafe si se pide
-    let healthAnalysis: Array<{
-      name: string;
-      store: string;
-      price: number;
-      healthLevel: string;
-      healthScore: number;
-      isUltraProcessed: boolean;
-    }> = [];
-
-    const typesafeKey = process.env.TYPESAFE_API_KEY;
-    if (analyze && typesafeKey && comparison.results.length > 0) {
-      // Analizar los primeros 5 productos (para no saturar la API)
-      const toAnalyze = comparison.results.slice(0, 5);
-      for (const product of toAnalyze) {
-        try {
-          const health = await scoreProductHealth(
-            { name: product.name, brand: product.brand, category: product.categories },
-            typesafeKey
-          );
-          healthAnalysis.push({
-            name: product.name,
-            store: product.store,
-            price: product.price,
-            healthLevel: health.healthLevel,
-            healthScore: health.score,
-            isUltraProcessed: health.isUltraProcessed,
-          });
-        } catch {
-          healthAnalysis.push({
-            name: product.name,
-            store: product.store,
-            price: product.price,
-            healthLevel: 'No analizado',
-            healthScore: 50,
-            isUltraProcessed: false,
-          });
-        }
-      }
+    // 3. No results — return demo data for MVP
+    const demoProducts = generateDemoResults(query);
+    if (demoProducts.length > 0) {
+      const cheapest = demoProducts.reduce((min, p) => (p.price < min.price ? p : min));
+      return successResponse({
+        query, totalResults: demoProducts.length, cheapest,
+        byStore: {
+          jumbo: demoProducts.filter((r) => r.store === 'Jumbo'),
+          lider: demoProducts.filter((r) => r.store === 'Lider'),
+          unimarc: demoProducts.filter((r) => r.store === 'Unimarc'),
+          tottus: demoProducts.filter((r) => r.store === 'Tottus'),
+        },
+        source: 'demo',
+      });
     }
 
-    // Guardar precios observados en background
-    savePriceObservations(
-      comparison.results.map((r) => ({
-        productName: r.name,
-        brand: r.brand,
-        storeSlug: r.store.toLowerCase(),
-        storeName: r.store,
-        price: r.price,
-        listPrice: r.listPrice,
-        inStock: r.inStock,
-        url: r.url,
-        imageUrl: r.imageUrl,
-        searchTerm: query!,
-      }))
-    ).catch(() => {});
-
-    return successResponse({
-      query,
-      totalResults: comparison.results.length,
-      cheapest: comparison.cheapest,
-      byStore: {
-        jumbo: comparison.results.filter((r) => r.store === 'Jumbo'),
-        lider: comparison.results.filter((r) => r.store === 'Lider'),
-        unimarc: comparison.results.filter((r) => r.store === 'Unimarc'),
-        tottus: comparison.results.filter((r) => r.store === 'Tottus'),
-      },
-      healthAnalysis: analyze ? healthAnalysis : undefined,
-      source: 'live',
-      scrapedAt: comparison.scrapedAt,
-    });
+    return successResponse({ query, totalResults: 0, cheapest: null, results: [], source: 'empty' });
   } catch (error: any) {
     console.error('Price search error:', error);
     return errorResponse(error.message || 'Error al buscar precios', 500);
   }
+}
+
+function generateDemoResults(query: string) {
+  const q = query.toLowerCase();
+  const stores = ['Jumbo', 'Lider', 'Unimarc', 'Tottus'];
+  const baseProducts: Record<string, { name: string; basePrice: number }> = {
+    leche: { name: 'Leche Entera 1L', basePrice: 1090 },
+    pan: { name: 'Pan Molde Integral', basePrice: 2190 },
+    huevo: { name: 'Huevos 12 un', basePrice: 3490 },
+    arroz: { name: 'Arroz Grado 1 1kg', basePrice: 1390 },
+    pollo: { name: 'Pollo Entero', basePrice: 4490 },
+    carne: { name: 'Carne Molida 500g', basePrice: 3990 },
+    carbon: { name: 'Carbon Vegetal 2.5kg', basePrice: 3990 },
+    coca: { name: 'Coca-Cola 1.5L', basePrice: 1690 },
+    detergente: { name: 'Detergente Liquido 3L', basePrice: 5990 },
+    cloro: { name: 'Cloro 1L', basePrice: 1290 },
+    queso: { name: 'Queso Laminado 250g', basePrice: 2890 },
+    jamon: { name: 'Jamon de Cerdo 200g', basePrice: 2490 },
+    mantequilla: { name: 'Mantequilla 250g', basePrice: 2790 },
+    cafe: { name: 'Cafe Instantaneo 170g', basePrice: 4990 },
+    yogurt: { name: 'Yogurt Pack 6 un', basePrice: 2690 },
+    cerveza: { name: 'Cerveza Pack 6 latas', basePrice: 5490 },
+    palta: { name: 'Palta Hass', basePrice: 1490 },
+    tomate: { name: 'Tomate kg', basePrice: 1290 },
+    lechuga: { name: 'Lechuga Hidroponica', basePrice: 990 },
+    papel: { name: 'Papel Higienico 12 rollos', basePrice: 5990 },
+    lavaloza: { name: 'Lavalozas 750ml', basePrice: 1790 },
+    fideos: { name: 'Fideos Tallarin 400g', basePrice: 890 },
+    aceite: { name: 'Aceite Vegetal 1L', basePrice: 2190 },
+    azucar: { name: 'Azucar 1kg', basePrice: 1190 },
+    harina: { name: 'Harina 1kg', basePrice: 990 },
+  };
+
+  const match = Object.entries(baseProducts).find(([key]) => q.includes(key));
+  if (!match) return [];
+
+  const [, product] = match;
+  return stores.map((store) => {
+    const variation = 0.85 + Math.random() * 0.3;
+    const price = Math.round(product.basePrice * variation / 10) * 10;
+    return {
+      name: product.name, brand: '', store, price,
+      inStock: true, url: undefined, imageUrl: undefined,
+    };
+  });
 }
 
 // POST /api/prices/compare — Compara lista de productos
