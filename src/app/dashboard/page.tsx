@@ -121,10 +121,10 @@ export default function DashboardPage() {
       <header className="avi-header">
         <div className="max-w-lg mx-auto px-4 py-2.5 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-black rounded-full flex items-center justify-center overflow-hidden">
+            <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center overflow-hidden">
               <img src="/avi-icon.svg" alt="" className="w-7 h-7" />
             </div>
-            <span className="text-base font-bold text-gray-900">AVI</span>
+            <span className="text-base font-bold text-indigo-700">AVI</span>
           </div>
           <div className="flex items-center gap-1">
             {data && data.alertsCount > 0 && (
@@ -146,8 +146,8 @@ export default function DashboardPage() {
         </div>
 
         {/* AVI Search Bar — links to cart-assistant (the AI agent) */}
-        <a href="/cart-assistant" className="flex items-center gap-3 bg-white rounded-2xl px-4 py-3.5 mb-5 shadow-sm active:scale-[0.98] transition-transform">
-          <div className="w-8 h-8 bg-black rounded-full flex items-center justify-center overflow-hidden flex-shrink-0">
+        <a href="/cart-assistant" className="flex items-center gap-3 bg-white rounded-2xl px-4 py-3.5 mb-5 shadow-sm active:scale-[0.98] transition-transform border border-indigo-100">
+          <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0">
             <img src="/avi-icon.svg" alt="" className="w-6 h-6" />
           </div>
           <div className="flex-1">
@@ -189,8 +189,8 @@ export default function DashboardPage() {
             const Icon = cat.icon
             return (
               <a key={cat.href} href={cat.href} className="flex flex-col items-center gap-1 py-2 group">
-                <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-sm group-active:scale-90 transition-transform">
-                  <Icon className="h-5 w-5 text-gray-700 stroke-[1.5]" />
+                <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-sm group-active:scale-90 transition-transform border border-slate-100">
+                  <Icon className="h-5 w-5 text-slate-700 stroke-[1.5]" />
                 </div>
                 <span className="text-[11px] font-medium text-gray-500">{cat.label}</span>
               </a>
@@ -294,22 +294,27 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* WhatsApp */}
-        <a
-          href="https://wa.me/56XXXXXXXXXX?text=Hola%20AVI"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-3 bg-white rounded-2xl p-4 shadow-sm mb-4 active:scale-[0.98] transition-transform"
-        >
-          <div className="w-9 h-9 bg-[#25D366] rounded-full flex items-center justify-center flex-shrink-0">
-            <MessageCircle className="h-4 w-4 text-white" />
+        {/* WhatsApp — Add AVI to family group */}
+        <div className="bg-white rounded-2xl p-4 shadow-sm mb-4">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-9 h-9 bg-[#25D366] rounded-full flex items-center justify-center flex-shrink-0">
+              <MessageCircle className="h-4 w-4 text-white" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-gray-900">AVI en tu grupo familiar</p>
+              <p className="text-[10px] text-gray-400">Agrega a AVI a tu grupo de WhatsApp y gestiona compras en familia</p>
+            </div>
           </div>
-          <div className="flex-1">
-            <p className="text-sm font-semibold text-gray-900">AVI en WhatsApp</p>
-            <p className="text-[10px] text-gray-400">Compras rapidas desde tu chat</p>
-          </div>
-          <ChevronRight className="h-4 w-4 text-gray-300" />
-        </a>
+          <a
+            href="https://wa.me/56XXXXXXXXXX?text=Hola%20AVI%2C%20te%20agrego%20al%20grupo%20familiar"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full flex items-center justify-center gap-2 bg-[#25D366] text-white py-2.5 rounded-xl text-sm font-semibold active:scale-[0.98] transition-transform"
+          >
+            <MessageCircle className="h-4 w-4" />
+            Agregar AVI al grupo
+          </a>
+        </div>
       </main>
     </div>
   )

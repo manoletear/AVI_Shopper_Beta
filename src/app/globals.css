@@ -3,32 +3,40 @@
 @tailwind utilities;
 
 @layer base {
+  /* ===========================================
+     AVI SHOPPER BRAND PALETTE
+     Primary: Indigo (intelligence, premium)
+     Accent: Teal (savings, freshness)
+     CTA: Amber (urgency, promotions)
+     =========================================== */
   :root {
-    --background: 0 0% 98%;
-    --foreground: 0 0% 9%;
-    --primary: 221 83% 53%;
-    --primary-light: 217 91% 60%;
-    --primary-dark: 224 76% 48%;
-    --accent: 142 71% 45%;
-    --success: 142 71% 45%;
-    --warning: 38 92% 50%;
-    --danger: 0 84% 60%;
-    --card: 0 0% 100%;
-    --muted: 0 0% 96%;
+    --avi-primary: #4F46E5;
+    --avi-primary-dark: #3730A3;
+    --avi-primary-light: #E0E7FF;
+    --avi-accent: #0D9488;
+    --avi-cta: #F59E0B;
+    --avi-success: #16A34A;
+    --avi-warning: #EAB308;
+    --avi-error: #DC2626;
+    --avi-bg: #F8FAFC;
+    --avi-surface: #FFFFFF;
+    --avi-surface-alt: #F1F5F9;
+    --avi-text: #0F172A;
+    --avi-text-secondary: #64748B;
   }
 
   @media (prefers-color-scheme: dark) {
     :root {
-      --background: 0 0% 7%;
-      --foreground: 0 0% 95%;
-      --primary: 217 91% 60%;
-      --card: 0 0% 12%;
-      --muted: 0 0% 15%;
+      --avi-bg: #0F172A;
+      --avi-surface: #1E293B;
+      --avi-surface-alt: #334155;
+      --avi-text: #F8FAFC;
+      --avi-text-secondary: #94A3B8;
     }
   }
 
   * {
-    border-color: hsl(0 0% 92%);
+    border-color: #E2E8F0;
     -webkit-tap-highlight-color: transparent;
   }
 
@@ -38,27 +46,18 @@
   }
 
   body {
-    background-color: hsl(var(--background));
-    color: hsl(var(--foreground));
+    background-color: var(--avi-bg);
+    color: var(--avi-text);
     font-feature-settings: "rlig" 1, "calt" 1;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    overscroll-behavior-y: none;
-  }
-
-  /* PWA-like fullscreen feel */
-  @supports (padding: env(safe-area-inset-top)) {
-    body {
-      padding-top: env(safe-area-inset-top);
-    }
-  }
-
-  /* Prevent pull-to-refresh on mobile */
-  body {
     overscroll-behavior-y: contain;
   }
 
-  /* Smooth scrolling containers */
+  @supports (padding: env(safe-area-inset-top)) {
+    body { padding-top: env(safe-area-inset-top); }
+  }
+
   [class*="overflow-y-auto"],
   [class*="overflow-auto"] {
     -webkit-overflow-scrolling: touch;
@@ -69,12 +68,10 @@
     display: none;
   }
 
-  /* Selection color */
   ::selection {
-    background: hsl(var(--primary) / 0.15);
+    background: rgba(79, 70, 229, 0.15);
   }
 
-  /* Input zoom prevention on iOS */
   @media screen and (max-width: 640px) {
     input, select, textarea {
       font-size: 16px !important;
@@ -83,77 +80,52 @@
 }
 
 @layer components {
-  /* ========================================
-     CARDS — Clean, no border, subtle shadow
-     ======================================== */
   .avi-card {
-    @apply bg-white rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-all duration-200;
+    @apply bg-white rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.06)] transition-all duration-200;
   }
 
   .avi-card-interactive {
-    @apply avi-card cursor-pointer active:scale-[0.98] hover:shadow-[0_4px_12px_rgba(0,0,0,0.1)] transition-all duration-200;
+    @apply avi-card cursor-pointer active:scale-[0.98] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-all duration-200;
   }
 
-  /* ========================================
-     HEADER — Frosted glass, no border
-     ======================================== */
   .avi-header {
-    @apply bg-white/90 backdrop-blur-xl sticky top-0 z-40 shadow-[0_1px_0_rgba(0,0,0,0.05)];
+    @apply bg-white/90 backdrop-blur-xl sticky top-0 z-40 shadow-[0_1px_0_rgba(0,0,0,0.04)];
   }
 
-  /* ========================================
-     PAGE — Clean white/gray background
-     ======================================== */
   .avi-page {
-    @apply min-h-screen bg-[#f7f7f7];
+    background-color: var(--avi-bg);
+    @apply min-h-screen;
   }
 
-  /* ========================================
-     BADGES
-     ======================================== */
   .avi-badge {
     @apply inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold tracking-tight;
   }
 
-  .avi-badge-green {
-    @apply avi-badge bg-emerald-100 text-emerald-700;
-  }
+  .avi-badge-green { @apply avi-badge bg-emerald-50 text-emerald-700; }
+  .avi-badge-red { @apply avi-badge bg-red-50 text-red-700; }
+  .avi-badge-amber { @apply avi-badge bg-amber-50 text-amber-700; }
+  .avi-badge-blue { @apply avi-badge bg-indigo-50 text-indigo-700; }
 
-  .avi-badge-red {
-    @apply avi-badge bg-red-100 text-red-700;
-  }
-
-  .avi-badge-amber {
-    @apply avi-badge bg-amber-100 text-amber-700;
-  }
-
-  .avi-badge-blue {
-    @apply avi-badge bg-blue-100 text-blue-700;
-  }
-
-  /* ========================================
-     BUTTONS — Larger touch targets, bold
-     ======================================== */
   .avi-btn-primary {
-    @apply bg-black text-white px-6 py-3 rounded-xl font-semibold text-sm
-           hover:bg-gray-900 active:bg-gray-800 active:scale-[0.98]
+    background-color: var(--avi-primary);
+    @apply text-white px-6 py-3 rounded-xl font-semibold text-sm
+           active:scale-[0.98] active:brightness-90
            disabled:opacity-40 disabled:cursor-not-allowed
            transition-all duration-150;
   }
+  .avi-btn-primary:hover { background-color: var(--avi-primary-dark); }
 
   .avi-btn-secondary {
-    @apply bg-gray-100 text-gray-900 px-6 py-3 rounded-xl font-semibold text-sm
-           hover:bg-gray-200 active:bg-gray-300 active:scale-[0.98]
+    background-color: var(--avi-surface-alt);
+    @apply text-gray-900 px-6 py-3 rounded-xl font-semibold text-sm
+           hover:bg-gray-200 active:scale-[0.98]
            transition-all duration-150;
   }
 
-  /* ========================================
-     INPUTS — Larger, rounded, gray bg
-     ======================================== */
   .avi-input {
-    @apply w-full px-4 py-3 bg-gray-100 rounded-xl text-sm
-           border-0
-           focus:ring-2 focus:ring-black/10 focus:bg-white focus:shadow-[0_0_0_1px_rgba(0,0,0,0.1)]
+    background-color: var(--avi-surface-alt);
+    @apply w-full px-4 py-3 rounded-xl text-sm border-0
+           focus:ring-2 focus:ring-indigo-500/20 focus:bg-white focus:shadow-[0_0_0_1px_rgba(79,70,229,0.3)]
            placeholder:text-gray-400 transition-all duration-200;
   }
 
@@ -161,10 +133,7 @@
     @apply text-sm font-bold text-gray-900 tracking-tight;
   }
 
-  /* ========================================
-     SKELETON LOADER
-     ======================================== */
   .avi-skeleton {
-    @apply bg-gray-200 rounded-lg animate-pulse;
+    @apply bg-slate-200 rounded-lg animate-pulse;
   }
 }

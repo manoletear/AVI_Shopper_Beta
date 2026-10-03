@@ -36,12 +36,12 @@ export default function BottomNav() {
               key={item.href}
               href={item.href}
               className={`flex flex-col items-center justify-center gap-0.5 py-1.5 px-4 transition-colors ${
-                isActive ? 'text-black' : 'text-gray-400'
+                isActive ? 'text-indigo-600' : 'text-gray-400'
               }`}
             >
               {isCenter ? (
                 <div className={`w-11 h-11 -mt-5 rounded-full flex items-center justify-center shadow-lg ${
-                  isActive ? 'bg-black' : 'bg-gray-900'
+                  isActive ? 'bg-indigo-600' : 'bg-indigo-500'
                 }`}>
                   <img src="/avi-icon.svg" alt="AVI" className="w-6 h-6" />
                 </div>

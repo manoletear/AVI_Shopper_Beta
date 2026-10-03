@@ -119,11 +119,11 @@ function CartAssistantInner() {
             <ArrowLeft className="h-5 w-5" />
           </a>
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-black rounded-full flex items-center justify-center overflow-hidden">
+            <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center overflow-hidden">
               <img src="/avi-icon.svg" alt="" className="w-6 h-6" />
             </div>
             <div>
-              <span className="text-sm font-bold">AVI</span>
+              <span className="text-sm font-bold text-indigo-700">AVI</span>
               <span className="text-xs text-gray-400 ml-1.5">Asistente de compras</span>
             </div>
           </div>
@@ -163,7 +163,7 @@ function CartAssistantInner() {
             <div key={i} className={`mb-3 ${msg.role === 'user' ? 'text-right' : ''}`}>
               {msg.role === 'avi' && (
                 <div className="flex items-start gap-2">
-                  <div className="w-6 h-6 bg-black rounded-full flex items-center justify-center flex-shrink-0 mt-1 overflow-hidden">
+                  <div className="w-6 h-6 bg-indigo-600 rounded-full flex items-center justify-center flex-shrink-0 mt-1 overflow-hidden">
                     <img src="/avi-icon.svg" alt="" className="w-4 h-4" />
                   </div>
                   <span className="inline-block text-sm px-4 py-2.5 rounded-2xl rounded-bl-md bg-white shadow-sm text-gray-800 max-w-[85%]">
@@ -172,7 +172,7 @@ function CartAssistantInner() {
                 </div>
               )}
               {msg.role === 'user' && (
-                <span className="inline-block text-sm px-4 py-2.5 rounded-2xl rounded-br-md bg-black text-white max-w-[85%]">
+                <span className="inline-block text-sm px-4 py-2.5 rounded-2xl rounded-br-md bg-indigo-600 text-white max-w-[85%]">
                   {msg.text}
                 </span>
               )}
@@ -181,7 +181,7 @@ function CartAssistantInner() {
 
           {loading && (
             <div className="flex items-start gap-2 mb-3">
-              <div className="w-6 h-6 bg-black rounded-full flex items-center justify-center flex-shrink-0 mt-1 overflow-hidden">
+              <div className="w-6 h-6 bg-indigo-600 rounded-full flex items-center justify-center flex-shrink-0 mt-1 overflow-hidden">
                 <img src="/avi-icon.svg" alt="" className="w-4 h-4" />
               </div>
               <div className="bg-white shadow-sm rounded-2xl rounded-bl-md px-4 py-3">
@@ -220,7 +220,7 @@ function CartAssistantInner() {
                 <div className="flex gap-2">
                   <button
                     onClick={goToCompare}
-                    className="flex-1 flex items-center justify-center gap-2 bg-black text-white py-3 rounded-xl font-semibold text-sm active:scale-[0.98] transition-transform"
+                    className="flex-1 flex items-center justify-center gap-2 bg-indigo-600 text-white py-3 rounded-xl font-semibold text-sm active:scale-[0.98] transition-transform hover:bg-indigo-700"
                   >
                     <DollarSign className="h-4 w-4" />
                     Comparar precios
@@ -280,7 +280,7 @@ function CartAssistantInner() {
               disabled={loading}
             />
             <button type="submit" disabled={!input.trim() || loading}
-              className="w-11 h-11 bg-black text-white rounded-full flex items-center justify-center disabled:opacity-40 flex-shrink-0 active:scale-95 transition-transform">
+              className="w-11 h-11 bg-indigo-600 text-white rounded-full flex items-center justify-center disabled:opacity-40 flex-shrink-0 active:scale-95 transition-transform">
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
             </button>
           </form>
