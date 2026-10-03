@@ -4,10 +4,10 @@ import { useState, useEffect } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import {
   ShoppingCart, ListChecks, DollarSign, Heart, Store, Users,
-  ArrowRight, LogOut, Settings, AlertCircle,
-  Wallet, Package, User, Bot, Bell, TrendingUp, MessageCircle,
+  ArrowRight, LogOut, Settings, Search, ChevronRight,
+  Wallet, Package, User, Bot, Bell, MessageCircle,
+  Repeat, Sparkles, Camera, TrendingDown,
 } from 'lucide-react'
-import SmartAlerts from '@/components/SmartAlerts'
 import OnboardingWizard from '@/components/OnboardingWizard'
 
 interface DashboardData {
@@ -19,23 +19,35 @@ interface DashboardData {
   budgetTotal: number | null
 }
 
-const NAV_ITEMS = [
-  { href: '/cart-assistant', label: 'Cart Assistant', description: 'Dime que necesitas y armo tu carrito', icon: ShoppingCart, gradient: 'from-gray-800 to-gray-900', iconBg: 'bg-gray-900' },
-  { href: '/avi', label: 'Hablar con AVI', description: 'Asistente conversacional', icon: Bot, gradient: 'from-blue-500 to-indigo-600', iconBg: 'bg-blue-500' },
-  { href: '/comparar', label: 'Comparar Precios', description: '4 supermercados en vivo', icon: DollarSign, gradient: 'from-emerald-500 to-teal-600', iconBg: 'bg-emerald-500' },
-  { href: '/listas', label: 'Mis Listas', description: 'Listas familiares', icon: ListChecks, gradient: 'from-purple-500 to-violet-600', iconBg: 'bg-purple-500' },
-  { href: '/reposicion', label: 'Reposicion', description: 'Que se esta acabando', icon: Package, gradient: 'from-orange-500 to-red-500', iconBg: 'bg-orange-500' },
-  { href: '/salud', label: 'Mi Salud', description: 'Nutricion y alertas', icon: Heart, gradient: 'from-rose-500 to-pink-600', iconBg: 'bg-rose-500' },
-  { href: '/perfil', label: 'Perfil Nutricional', description: 'Dieta y alergias', icon: User, gradient: 'from-indigo-500 to-purple-600', iconBg: 'bg-indigo-500' },
-  { href: '/familia', label: 'Mi Familia', description: 'Miembros, alergias, mascotas', icon: Users, gradient: 'from-fuchsia-500 to-pink-600', iconBg: 'bg-fuchsia-500' },
-  { href: '/presupuesto', label: 'Presupuesto', description: 'Control de gastos', icon: Wallet, gradient: 'from-teal-500 to-cyan-600', iconBg: 'bg-teal-500' },
-  { href: '/configuracion/cuentas', label: 'Supermercados', description: 'Vincular cuentas', icon: Store, gradient: 'from-amber-500 to-orange-600', iconBg: 'bg-amber-500' },
+const CATEGORIES = [
+  { href: '/cart-assistant', label: 'Comprar', icon: ShoppingCart, color: 'bg-gray-900' },
+  { href: '/comparar', label: 'Precios', icon: DollarSign, color: 'bg-gray-700' },
+  { href: '/listas', label: 'Listas', icon: ListChecks, color: 'bg-gray-700' },
+  { href: '/avi', label: 'AVI', icon: Bot, color: 'bg-gray-700' },
+  { href: '/reposicion', label: 'Reponer', icon: Package, color: 'bg-gray-700' },
+  { href: '/salud', label: 'Salud', icon: Heart, color: 'bg-gray-700' },
+  { href: '/familia', label: 'Familia', icon: Users, color: 'bg-gray-700' },
+  { href: '/presupuesto', label: 'Gastos', icon: Wallet, color: 'bg-gray-700' },
+]
+
+const PROMO_BANNERS = [
+  { store: 'Jumbo', bg: 'bg-green-700', text: 'Ofertas de la semana', sub: 'Hasta 40% en frutas y verduras', href: '/comparar' },
+  { store: 'Lider', bg: 'bg-red-700', text: 'Precios bajos siempre', sub: 'Compara y ahorra con AVI', href: '/comparar' },
+  { store: 'Tottus', bg: 'bg-teal-700', text: 'Dias Tottus', sub: 'Descuentos en limpieza y hogar', href: '/comparar' },
+]
+
+const QUICK_LISTS = [
+  { label: 'Asado', emoji: '🔥' },
+  { label: 'Desayuno', emoji: '☀️' },
+  { label: 'Limpieza', emoji: '🧹' },
+  { label: 'Bebe', emoji: '👶' },
 ]
 
 export default function DashboardPage() {
   const { data: session } = useSession()
-  const userName = session?.user?.name || session?.user?.email?.split('@')[0] || 'Usuario'
+  const userName = session?.user?.name || session?.user?.email?.split('@')[0] || ''
   const [data, setData] = useState<DashboardData | null>(null)
+  const [promoIndex, setPromoIndex] = useState(0)
 
   useEffect(() => {
     if (!session) return
@@ -69,165 +81,227 @@ export default function DashboardPage() {
     load()
   }, [session])
 
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setPromoIndex((i) => (i + 1) % PROMO_BANNERS.length)
+    }, 5000)
+    return () => clearInterval(timer)
+  }, [])
+
   const formatCLP = (n: number) =>
     new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', minimumFractionDigits: 0 }).format(n)
 
   const budgetPct = data?.budgetTotal ? Math.round((data.budgetSpent! / data.budgetTotal) * 100) : 0
+  const greeting = new Date().getHours() < 12 ? 'Buenos dias' : new Date().getHours() < 20 ? 'Buenas tardes' : 'Buenas noches'
 
   return (
-    <div className="avi-page">
+    <div className="avi-page pb-20">
       {/* Header */}
       <header className="avi-header">
-        <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-9 h-9 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-sm">
-              <ShoppingCart className="h-5 w-5 text-white" />
+        <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 bg-black rounded-full flex items-center justify-center overflow-hidden">
+              <img src="/avi-icon.svg" alt="" className="w-6 h-6" />
             </div>
-            <div>
-              <span className="text-lg font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">AVI</span>
-              <span className="text-lg font-semibold text-gray-800 ml-1">Shopper</span>
-            </div>
+            <span className="text-base font-bold text-gray-900">AVI</span>
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center gap-1">
             {data && data.alertsCount > 0 && (
-              <a href="/salud" className="relative p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-white/50">
+              <a href="/salud" className="relative p-2 text-gray-500">
                 <Bell className="h-5 w-5" />
-                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 rounded-full text-[10px] text-white flex items-center justify-center font-bold">{data.alertsCount}</span>
+                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
               </a>
             )}
-            <a href="/configuracion/cuentas" className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-white/50">
+            <a href="/configuracion/cuentas" className="p-2 text-gray-400">
               <Settings className="h-5 w-5" />
             </a>
-            <button
-              onClick={() => signOut({ callbackUrl: '/' })}
-              className="p-2 text-gray-400 hover:text-red-500 rounded-lg hover:bg-red-50/50 transition-colors"
-            >
-              <LogOut className="h-5 w-5" />
-            </button>
           </div>
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-4 py-6">
-        {/* Greeting */}
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">
-            Hola, <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">{userName}</span>
-          </h1>
-          <p className="text-gray-500 mt-0.5">¿Que quieres hacer hoy?</p>
+      <main className="max-w-lg mx-auto px-4">
+        {/* Greeting + Search */}
+        <div className="pt-4 pb-3">
+          <p className="text-sm text-gray-500">{greeting},</p>
+          <h1 className="text-xl font-bold text-gray-900">{userName}</h1>
         </div>
 
-        {/* WhatsApp CTA */}
-        <a
-          href="https://wa.me/56XXXXXXXXXX?text=Hola%20AVI"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mb-4 flex items-center gap-3 p-3 bg-green-50 border border-green-200 rounded-xl hover:bg-green-100 transition-colors"
-        >
-          <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
-            <MessageCircle className="h-5 w-5 text-white" />
-          </div>
-          <div className="flex-1">
-            <p className="text-sm font-medium text-green-800">AVI en WhatsApp</p>
-            <p className="text-xs text-green-600">Chatea con AVI desde tu WhatsApp para compras rapidas</p>
-          </div>
-          <ArrowRight className="h-4 w-4 text-green-400" />
+        {/* Search bar */}
+        <a href="/cart-assistant" className="flex items-center gap-3 bg-gray-100 rounded-full px-4 py-3 mb-5">
+          <Search className="h-4 w-4 text-gray-400" />
+          <span className="text-sm text-gray-400 flex-1">Buscar productos...</span>
+          <Camera className="h-4 w-4 text-gray-400" />
         </a>
 
-        {/* Onboarding wizard for new users */}
+        {/* Promo Banner — Ad space */}
+        <a href={PROMO_BANNERS[promoIndex].href} className="block mb-5">
+          <div className={`${PROMO_BANNERS[promoIndex].bg} rounded-2xl p-5 text-white relative overflow-hidden`}>
+            <div className="relative z-10">
+              <span className="text-xs font-medium bg-white/20 px-2 py-0.5 rounded-full">
+                {PROMO_BANNERS[promoIndex].store}
+              </span>
+              <h2 className="text-lg font-bold mt-2">{PROMO_BANNERS[promoIndex].text}</h2>
+              <p className="text-sm text-white/80 mt-0.5">{PROMO_BANNERS[promoIndex].sub}</p>
+            </div>
+            <div className="absolute right-4 bottom-0 opacity-10">
+              <ShoppingCart className="h-24 w-24" />
+            </div>
+          </div>
+          {/* Dots */}
+          <div className="flex justify-center gap-1.5 mt-2">
+            {PROMO_BANNERS.map((_, i) => (
+              <div key={i} className={`w-1.5 h-1.5 rounded-full transition-colors ${i === promoIndex ? 'bg-gray-900' : 'bg-gray-300'}`} />
+            ))}
+          </div>
+        </a>
+
+        {/* Category Icons */}
+        <div className="grid grid-cols-4 gap-3 mb-6">
+          {CATEGORIES.map((cat) => {
+            const Icon = cat.icon
+            return (
+              <a key={cat.href} href={cat.href} className="flex flex-col items-center gap-1.5 group">
+                <div className={`w-12 h-12 ${cat.color} rounded-2xl flex items-center justify-center group-active:scale-95 transition-transform`}>
+                  <Icon className="h-5 w-5 text-white" />
+                </div>
+                <span className="text-[11px] font-medium text-gray-600">{cat.label}</span>
+              </a>
+            )
+          })}
+        </div>
+
+        {/* Onboarding */}
         <OnboardingWizard />
 
-        {/* Smart Alerts — onboarding + time-based */}
-        <SmartAlerts />
-
-        {/* Stats */}
-        {data && (
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-            <a href="/listas" className="avi-card-interactive p-4 block">
-              <div className="flex items-center space-x-2 mb-1">
-                <div className="w-6 h-6 bg-purple-100 rounded-lg flex items-center justify-center">
-                  <Package className="h-3.5 w-3.5 text-purple-600" />
-                </div>
-                <span className="text-xs text-gray-500">Listas</span>
-              </div>
-              <p className="text-2xl font-bold text-gray-900">{data.listsCount}</p>
-              <p className="text-xs text-gray-400">{data.itemsCount} productos</p>
+        {/* Quick Lists */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-base font-bold text-gray-900">Listas rapidas</h2>
+            <a href="/listas" className="text-xs font-medium text-gray-500 flex items-center gap-0.5">
+              Ver todas <ChevronRight className="h-3 w-3" />
             </a>
+          </div>
+          <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+            {QUICK_LISTS.map((ql) => (
+              <a
+                key={ql.label}
+                href={`/cart-assistant?products=${encodeURIComponent(ql.label === 'Asado' ? 'Carbon, Carne, Longanizas, Pan, Tomate, Palta, Bebidas' : ql.label === 'Desayuno' ? 'Leche, Pan, Huevos, Cafe, Mantequilla, Mermelada' : ql.label === 'Limpieza' ? 'Detergente, Cloro, Lavalozas, Papel higienico, Esponja' : 'Panales, Toallitas, Formula, Compotas')}`}
+                className="flex items-center gap-2 bg-white rounded-full px-4 py-2.5 shadow-sm whitespace-nowrap active:scale-95 transition-transform"
+              >
+                <span className="text-sm">{ql.emoji}</span>
+                <span className="text-sm font-medium text-gray-800">{ql.label}</span>
+              </a>
+            ))}
+          </div>
+        </div>
 
-            <a href="/salud" className="avi-card-interactive p-4 block">
-              <div className="flex items-center space-x-2 mb-1">
-                <div className="w-6 h-6 bg-rose-100 rounded-lg flex items-center justify-center">
-                  <Heart className="h-3.5 w-3.5 text-rose-600" />
-                </div>
-                <span className="text-xs text-gray-500">Salud</span>
-              </div>
-              <p className={`text-2xl font-bold ${
+        {/* Stats Row */}
+        {data && (
+          <div className="grid grid-cols-3 gap-2 mb-6">
+            <a href="/listas" className="bg-white rounded-2xl p-3.5 text-center shadow-sm active:scale-95 transition-transform">
+              <p className="text-xl font-bold text-gray-900">{data.listsCount}</p>
+              <p className="text-[10px] text-gray-400 font-medium mt-0.5">LISTAS</p>
+            </a>
+            <a href="/salud" className="bg-white rounded-2xl p-3.5 text-center shadow-sm active:scale-95 transition-transform">
+              <p className={`text-xl font-bold ${
                 data.healthScore === null ? 'text-gray-300' :
                 data.healthScore >= 75 ? 'text-emerald-600' :
                 data.healthScore >= 50 ? 'text-amber-600' : 'text-red-600'
               }`}>
                 {data.healthScore ?? '—'}
               </p>
-              <p className="text-xs text-gray-400">score /100</p>
+              <p className="text-[10px] text-gray-400 font-medium mt-0.5">SALUD</p>
             </a>
-
-            <a href="/presupuesto" className="avi-card-interactive p-4 block">
-              <div className="flex items-center space-x-2 mb-1">
-                <div className="w-6 h-6 bg-teal-100 rounded-lg flex items-center justify-center">
-                  <Wallet className="h-3.5 w-3.5 text-teal-600" />
-                </div>
-                <span className="text-xs text-gray-500">Presupuesto</span>
-              </div>
+            <a href="/presupuesto" className="bg-white rounded-2xl p-3.5 text-center shadow-sm active:scale-95 transition-transform">
               {data.budgetTotal ? (
                 <>
-                  <p className="text-2xl font-bold text-gray-900">{budgetPct}%</p>
-                  <div className="w-full bg-gray-100 rounded-full h-1.5 mt-1">
-                    <div className={`h-1.5 rounded-full ${budgetPct >= 90 ? 'bg-red-500' : budgetPct >= 70 ? 'bg-amber-500' : 'bg-emerald-500'}`} style={{ width: `${Math.min(100, budgetPct)}%` }} />
+                  <p className="text-xl font-bold text-gray-900">{budgetPct}%</p>
+                  <div className="w-full bg-gray-100 rounded-full h-1 mt-1.5">
+                    <div className={`h-1 rounded-full ${budgetPct >= 90 ? 'bg-red-500' : budgetPct >= 70 ? 'bg-amber-500' : 'bg-emerald-500'}`} style={{ width: `${Math.min(100, budgetPct)}%` }} />
                   </div>
                 </>
               ) : (
-                <p className="text-2xl font-bold text-gray-300">—</p>
+                <p className="text-xl font-bold text-gray-300">—</p>
               )}
-            </a>
-
-            <a href="/salud" className="avi-card-interactive p-4 block">
-              <div className="flex items-center space-x-2 mb-1">
-                <div className="w-6 h-6 bg-amber-100 rounded-lg flex items-center justify-center">
-                  <AlertCircle className="h-3.5 w-3.5 text-amber-600" />
-                </div>
-                <span className="text-xs text-gray-500">Alertas</span>
-              </div>
-              <p className={`text-2xl font-bold ${data.alertsCount > 0 ? 'text-amber-600' : 'text-gray-300'}`}>
-                {data.alertsCount}
-              </p>
-              <p className="text-xs text-gray-400">sin leer</p>
+              <p className="text-[10px] text-gray-400 font-medium mt-0.5">GASTO</p>
             </a>
           </div>
         )}
 
-        {/* Action Grid */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          {NAV_ITEMS.map((item, i) => {
-            const Icon = item.icon
-            const isMain = i < 2
-            return (
+        {/* Supermarket Deals — Ad placeholders */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-base font-bold text-gray-900">Ofertas del dia</h2>
+            <a href="/comparar" className="text-xs font-medium text-gray-500 flex items-center gap-0.5">
+              Ver mas <ChevronRight className="h-3 w-3" />
+            </a>
+          </div>
+          <div className="flex gap-3 overflow-x-auto pb-1 -mx-1 px-1">
+            {[
+              { store: 'Jumbo', color: 'border-green-200', tag: 'bg-green-100 text-green-800', product: 'Frutas y Verduras', discount: 'Hasta 40% dcto', img: '🥬' },
+              { store: 'Lider', color: 'border-red-200', tag: 'bg-red-100 text-red-800', product: 'Carnes y Pollo', discount: '2x1 seleccionados', img: '🥩' },
+              { store: 'Unimarc', color: 'border-orange-200', tag: 'bg-orange-100 text-orange-800', product: 'Lacteos', discount: '30% con tarjeta', img: '🥛' },
+              { store: 'Tottus', color: 'border-teal-200', tag: 'bg-teal-100 text-teal-800', product: 'Limpieza', discount: '3x2 toda la linea', img: '🧴' },
+            ].map((deal) => (
               <a
-                key={item.href}
-                href={item.href}
-                className={`avi-card-interactive p-4 group ${isMain ? 'sm:col-span-2 lg:col-span-2' : ''}`}
+                key={deal.store}
+                href={`/comparar?q=${encodeURIComponent(deal.product)}`}
+                className={`bg-white rounded-2xl p-4 min-w-[160px] border ${deal.color} shadow-sm flex-shrink-0 active:scale-95 transition-transform`}
               >
-                <div className="flex items-start justify-between">
-                  <div className={`w-10 h-10 ${item.iconBg} rounded-xl flex items-center justify-center shadow-sm`}>
-                    <Icon className="h-5 w-5 text-white" />
-                  </div>
-                  <ArrowRight className="h-4 w-4 text-gray-300 group-hover:text-blue-500 group-hover:translate-x-0.5 transition-all" />
-                </div>
-                <h3 className="text-base font-semibold text-gray-900 mt-3">{item.label}</h3>
-                <p className="text-sm text-gray-500 mt-0.5">{item.description}</p>
+                <span className="text-3xl">{deal.img}</span>
+                <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full mt-2 inline-block ${deal.tag}`}>
+                  {deal.store}
+                </span>
+                <p className="text-sm font-semibold text-gray-900 mt-1.5">{deal.product}</p>
+                <p className="text-xs text-gray-500">{deal.discount}</p>
               </a>
-            )
-          })}
+            ))}
+          </div>
         </div>
+
+        {/* Services Grid */}
+        <div className="mb-6">
+          <h2 className="text-base font-bold text-gray-900 mb-3">Servicios</h2>
+          <div className="grid grid-cols-2 gap-2">
+            {[
+              { href: '/perfil', label: 'Mi perfil', sub: 'Dieta y alergias', icon: User, iconColor: 'text-gray-600' },
+              { href: '/configuracion/cuentas', label: 'Supermercados', sub: 'Vincular cuentas', icon: Store, iconColor: 'text-gray-600' },
+              { href: '/reposicion', label: 'Reposicion', sub: 'Lo que se acaba', icon: Repeat, iconColor: 'text-gray-600' },
+              { href: '/familia', label: 'Mi familia', sub: 'Miembros y alergenos', icon: Users, iconColor: 'text-gray-600' },
+            ].map((svc) => {
+              const Icon = svc.icon
+              return (
+                <a key={svc.href} href={svc.href}
+                  className="bg-white rounded-2xl p-4 shadow-sm flex items-start gap-3 active:scale-[0.97] transition-transform">
+                  <div className="w-9 h-9 bg-gray-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <Icon className={`h-4 w-4 ${svc.iconColor}`} />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900">{svc.label}</p>
+                    <p className="text-[11px] text-gray-400">{svc.sub}</p>
+                  </div>
+                </a>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* WhatsApp */}
+        <a
+          href="https://wa.me/56XXXXXXXXXX?text=Hola%20AVI"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-3 bg-white rounded-2xl p-4 shadow-sm mb-6 active:scale-[0.98] transition-transform"
+        >
+          <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
+            <MessageCircle className="h-5 w-5 text-white" />
+          </div>
+          <div className="flex-1">
+            <p className="text-sm font-semibold text-gray-900">AVI en WhatsApp</p>
+            <p className="text-[11px] text-gray-400">Compras rapidas desde tu chat</p>
+          </div>
+          <ChevronRight className="h-4 w-4 text-gray-300" />
+        </a>
       </main>
     </div>
   )
