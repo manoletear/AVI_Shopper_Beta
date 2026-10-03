@@ -62,10 +62,42 @@ function CartAssistantInner() {
           setProducts(data.data.products)
         }
       } else {
-        setMessages((prev) => [...prev, { role: 'avi', text: 'Error al procesar. Intenta de nuevo.' }])
+        // Fallback: try cart-interpret
+        try {
+          const interpretRes = await fetch('/api/cart-interpret', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text }),
+          })
+          const interpretData = await interpretRes.json()
+          if (interpretData.success && interpretData.data.products?.length > 0) {
+            setProducts(interpretData.data.products)
+            setMessages((prev) => [...prev, { role: 'avi', text: interpretData.data.message || `Agregue ${interpretData.data.products.length} productos a tu lista. Revisa abajo.` }])
+          } else {
+            // Last fallback: treat as direct product list
+            const items = text.split(/[\r\n,]+/).map((s: string) => s.trim()).filter(Boolean)
+            if (items.length > 0) {
+              setProducts((prev) => [...prev, ...items])
+              setMessages((prev) => [...prev, { role: 'avi', text: `Agregue ${items.length} producto${items.length > 1 ? 's' : ''} a tu lista.` }])
+            }
+          }
+        } catch {
+          const items = text.split(/[\r\n,]+/).map((s: string) => s.trim()).filter(Boolean)
+          if (items.length > 0) {
+            setProducts((prev) => [...prev, ...items])
+            setMessages((prev) => [...prev, { role: 'avi', text: `Agregue ${items.length} producto${items.length > 1 ? 's' : ''} a tu lista.` }])
+          }
+        }
       }
     } catch {
-      setMessages((prev) => [...prev, { role: 'avi', text: 'Error de conexion.' }])
+      // Network error fallback: add as products directly
+      const items = text.split(/[\r\n,]+/).map((s: string) => s.trim()).filter(Boolean)
+      if (items.length > 0) {
+        setProducts((prev) => [...prev, ...items])
+        setMessages((prev) => [...prev, { role: 'avi', text: `Agregue ${items.length} producto${items.length > 1 ? 's' : ''} a tu lista.` }])
+      } else {
+        setMessages((prev) => [...prev, { role: 'avi', text: 'Error de conexion. Intenta de nuevo.' }])
+      }
     }
 
     setLoading(false)

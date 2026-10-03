@@ -593,7 +593,7 @@ function CompararInner() {
             ) : (
               <>
                 <Zap className="h-5 w-5" />
-                <span>Comparar en 4 supermercados ({queries.length} producto{queries.length !== 1 ? 's' : ''})</span>
+                <span>Comparar en 5 supermercados ({queries.length} producto{queries.length !== 1 ? 's' : ''})</span>
               </>
             )}
           </button>

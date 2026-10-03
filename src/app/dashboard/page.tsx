@@ -23,11 +23,11 @@ const CATEGORIES = [
   { href: '/cart-assistant', label: 'Comprar', icon: ShoppingCart },
   { href: '/comparar', label: 'Precios', icon: DollarSign },
   { href: '/listas', label: 'Listas', icon: ListChecks },
-  { href: '/avi', label: 'AVI', icon: Bot },
   { href: '/reposicion', label: 'Reponer', icon: Repeat },
   { href: '/salud', label: 'Salud', icon: Heart },
   { href: '/familia', label: 'Familia', icon: Users },
   { href: '/presupuesto', label: 'Gastos', icon: Wallet },
+  { href: '/perfil', label: 'Perfil', icon: User },
 ]
 
 const STORE_DEALS = [
