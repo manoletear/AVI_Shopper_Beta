@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 180" fill="none">
+  <rect width="400" height="180" rx="16" fill="#006B3F"/>
+  <rect width="400" height="180" rx="16" fill="url(#jg)" opacity="0.3"/>
+  <defs><linearGradient id="jg" x1="0" y1="0" x2="400" y2="180"><stop stop-color="#00A651"/><stop offset="1" stop-color="#004D2C"/></linearGradient></defs>
+  <!-- Jumbo text -->
+  <text x="24" y="40" fill="white" font-family="Arial,sans-serif" font-weight="900" font-size="28" opacity="0.9">JUMBO</text>
+  <!-- Offer -->
+  <text x="24" y="80" fill="white" font-family="Arial,sans-serif" font-weight="800" font-size="22">Frutas y Verduras</text>
+  <text x="24" y="105" fill="white" font-family="Arial,sans-serif" font-weight="600" font-size="16" opacity="0.8">Hasta 40% descuento</text>
+  <rect x="24" y="120" width="120" height="32" rx="8" fill="white"/>
+  <text x="50" y="141" fill="#006B3F" font-family="Arial,sans-serif" font-weight="700" font-size="13">Ver ofertas</text>
+  <!-- Product circles -->
+  <circle cx="310" cy="60" r="35" fill="white" opacity="0.15"/>
+  <text x="296" y="70" font-size="36">🥑</text>
+  <circle cx="360" cy="100" r="28" fill="white" opacity="0.15"/>
+  <text x="348" y="110" font-size="28">🍎</text>
+  <circle cx="320" cy="130" r="22" fill="white" opacity="0.15"/>
+  <text x="310" y="138" font-size="22">🥬</text>
+</svg>

@@ -33,38 +33,42 @@ const CATEGORIES = [
 const STORE_DEALS = [
   {
     store: 'Jumbo',
-    bg: 'bg-gradient-to-br from-[#006B3F] to-[#004D2C]',
+    banner: '/banners/jumbo-banner.svg',
     product: 'Frutas y Verduras',
     discount: 'Hasta 40% dcto',
-    emoji: '🥬🍎🥑',
     price: 'Desde $990/kg',
+    color: '#006B3F',
+    emoji: '🥬🍎🥑',
     href: '/comparar?q=Palta%2C+Tomate%2C+Lechuga%2C+Manzana',
   },
   {
     store: 'Lider',
-    bg: 'bg-gradient-to-br from-[#0032A0] to-[#001F6B]',
+    banner: '/banners/lider-banner.svg',
     product: 'Carnes Frescas',
     discount: 'Precios bajos siempre',
-    emoji: '🥩🍗🥓',
     price: 'Pollo $2.490/kg',
+    color: '#0032A0',
+    emoji: '🥩🍗🥓',
     href: '/comparar?q=Pollo+entero%2C+Carne+molida%2C+Pechuga+pollo',
   },
   {
     store: 'Unimarc',
-    bg: 'bg-gradient-to-br from-[#E8590C] to-[#C44708]',
+    banner: '/banners/unimarc-banner.svg',
     product: 'Lacteos del Dia',
     discount: '30% con tarjeta Unimarc',
-    emoji: '🥛🧀🧈',
     price: 'Leche $890/lt',
+    color: '#E8590C',
+    emoji: '🥛🧀🧈',
     href: '/comparar?q=Leche%2C+Yogurt%2C+Queso%2C+Mantequilla',
   },
   {
     store: 'Tottus',
-    bg: 'bg-gradient-to-br from-[#00695C] to-[#004D40]',
+    banner: '/banners/tottus-banner.svg',
     product: 'Limpieza Total',
     discount: '3x2 seleccion',
-    emoji: '🧴🧹🧽',
     price: 'Detergente $3.990',
+    color: '#00695C',
+    emoji: '🧴🧹🧽',
     href: '/comparar?q=Detergente%2C+Cloro%2C+Lavalozas%2C+Papel+higienico',
   },
 ]
@@ -173,24 +177,21 @@ export default function DashboardPage() {
           <Bot className="h-4 w-4 text-gray-300" />
         </a>
 
-        {/* Promo Banner — Supermarket ads */}
-        <a href={STORE_DEALS[promoIndex].href} className="block mb-4">
-          <div className={`${STORE_DEALS[promoIndex].bg} rounded-2xl p-5 text-white relative overflow-hidden min-h-[130px]`}>
-            <div className="relative z-10 flex justify-between items-start">
-              <div>
-                <span className="text-xs font-bold bg-white/20 px-2.5 py-1 rounded-full">
-                  {STORE_DEALS[promoIndex].store}
-                </span>
-                <h2 className="text-xl font-bold mt-2.5">{STORE_DEALS[promoIndex].product}</h2>
-                <p className="text-sm text-white/80 mt-0.5">{STORE_DEALS[promoIndex].discount}</p>
-                <p className="text-xs text-white/60 mt-1 font-medium">{STORE_DEALS[promoIndex].price}</p>
-              </div>
-              <span className="text-4xl mt-1">{STORE_DEALS[promoIndex].emoji}</span>
-            </div>
-          </div>
-          <div className="flex justify-center gap-1.5 mt-2">
-            {STORE_DEALS.map((_, i) => (
-              <div key={i} className={`w-1.5 h-1.5 rounded-full transition-colors ${i === promoIndex ? 'bg-indigo-600' : 'bg-gray-300'}`} />
+        {/* Promo Banner — Supermarket ads with SVG banners */}
+        <a href={STORE_DEALS[promoIndex].href} className="block mb-4 active:scale-[0.98] transition-transform">
+          <img
+            src={STORE_DEALS[promoIndex].banner}
+            alt={`${STORE_DEALS[promoIndex].store} — ${STORE_DEALS[promoIndex].product}`}
+            className="w-full rounded-2xl shadow-md"
+          />
+          <div className="flex justify-center gap-1.5 mt-2.5">
+            {STORE_DEALS.map((deal, i) => (
+              <button
+                key={i}
+                onClick={(e) => { e.preventDefault(); setPromoIndex(i) }}
+                className={`w-2 h-2 rounded-full transition-all ${i === promoIndex ? 'w-5' : ''}`}
+                style={{ backgroundColor: i === promoIndex ? deal.color : '#D1D5DB' }}
+              />
             ))}
           </div>
         </a>
@@ -301,16 +302,17 @@ export default function DashboardPage() {
               <a
                 key={deal.store}
                 href={deal.href}
-                className="bg-white rounded-2xl min-w-[150px] shadow-sm flex-shrink-0 active:scale-95 transition-transform overflow-hidden"
+                className="rounded-2xl min-w-[150px] shadow-sm flex-shrink-0 active:scale-95 transition-transform overflow-hidden"
+                style={{ backgroundColor: deal.color }}
               >
-                <div className={`${deal.bg} px-3 py-3 text-center`}>
+                <div className="px-3 pt-3 text-center">
                   <span className="text-3xl">{deal.emoji}</span>
                 </div>
-                <div className="p-3">
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{deal.store}</p>
-                  <p className="text-sm font-semibold text-gray-900 mt-0.5">{deal.product}</p>
-                  <p className="text-[11px] text-gray-500 mt-0.5">{deal.discount}</p>
-                  <p className="text-xs font-bold text-indigo-600 mt-1">{deal.price}</p>
+                <div className="p-3 text-white">
+                  <p className="text-[10px] font-bold uppercase tracking-wider opacity-70">{deal.store}</p>
+                  <p className="text-sm font-bold mt-0.5">{deal.product}</p>
+                  <p className="text-[11px] opacity-80 mt-0.5">{deal.discount}</p>
+                  <p className="text-xs font-bold mt-1 opacity-90">{deal.price}</p>
                 </div>
               </a>
             ))}

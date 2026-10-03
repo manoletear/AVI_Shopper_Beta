@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 180" fill="none">
+  <rect width="400" height="180" rx="16" fill="#00695C"/>
+  <rect width="400" height="180" rx="16" fill="url(#tg)" opacity="0.3"/>
+  <defs><linearGradient id="tg" x1="0" y1="0" x2="400" y2="180"><stop stop-color="#00897B"/><stop offset="1" stop-color="#004D40"/></linearGradient></defs>
+  <text x="24" y="40" fill="white" font-family="Arial,sans-serif" font-weight="900" font-size="28" opacity="0.9">TOTTUS</text>
+  <text x="24" y="80" fill="white" font-family="Arial,sans-serif" font-weight="800" font-size="22">Limpieza Total</text>
+  <text x="24" y="105" fill="white" font-family="Arial,sans-serif" font-weight="600" font-size="16" opacity="0.8">3x2 en productos seleccionados</text>
+  <rect x="24" y="120" width="120" height="32" rx="8" fill="#4DB6AC"/>
+  <text x="46" y="141" fill="white" font-family="Arial,sans-serif" font-weight="700" font-size="13">Aprovechar</text>
+  <circle cx="310" cy="55" r="32" fill="white" opacity="0.12"/>
+  <text x="297" y="65" font-size="32">🧴</text>
+  <circle cx="365" cy="90" r="26" fill="white" opacity="0.12"/>
+  <text x="354" y="100" font-size="26">🧹</text>
+  <circle cx="320" cy="130" r="22" fill="white" opacity="0.12"/>
+  <text x="310" y="138" font-size="22">🧽</text>
+</svg>
