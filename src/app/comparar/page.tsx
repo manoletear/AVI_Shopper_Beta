@@ -839,20 +839,18 @@ function CompararInner() {
 
       {/* Checkout panel — AVI arma el carrito */}
       {checkoutItems && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center">
-          <div className="bg-white w-full max-w-lg rounded-t-2xl sm:rounded-2xl max-h-[85vh] flex flex-col">
-            <div className="p-4 border-b flex items-center justify-between flex-shrink-0">
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-end justify-center" onClick={() => { setCheckoutItems(null); setCartResult(null); setCartProgress([]) }}>
+          <div className="bg-white w-full max-w-lg rounded-t-2xl max-h-[60vh] flex flex-col" style={{ marginBottom: '56px' }} onClick={(e) => e.stopPropagation()}>
+            <div className="p-3 border-b flex items-center justify-between flex-shrink-0">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-full flex items-center justify-center overflow-hidden">
-                  <img src="/avi-icon.svg" alt="" className="w-6 h-6" />
-                </div>
+                <img src="/avi-icon.svg" alt="" className="w-7 h-7 rounded-full" />
                 <div>
                   <h3 className="font-semibold text-gray-900 text-sm">AVI armando tu carrito</h3>
                   <p className="text-xs text-gray-500">{checkoutStore} · {checkoutItems.length} productos</p>
                 </div>
               </div>
-              <button onClick={() => { setCheckoutItems(null); setCartResult(null); setCartProgress([]) }} className="p-2 text-gray-400 hover:text-gray-600">
-                <X className="h-5 w-5" />
+              <button onClick={() => { setCheckoutItems(null); setCartResult(null); setCartProgress([]) }} className="p-1.5 text-gray-400 hover:text-gray-600 bg-gray-100 rounded-full">
+                <X className="h-4 w-4" />
               </button>
             </div>
 
@@ -893,24 +891,18 @@ function CompararInner() {
 
             {/* Fallback: open store directly */}
             {cartResult && !cartResult.success && !cartBuilding && (
-              <div className="p-4 bg-indigo-50 border-b flex-shrink-0">
-                <p className="text-sm text-indigo-800 font-medium mb-1">
+              <div className="px-3 py-2.5 bg-indigo-50 border-b flex-shrink-0">
+                <p className="text-xs text-indigo-800 font-medium">
                   Toca cada producto para abrirlo en {checkoutStore}
                 </p>
-                <p className="text-xs text-indigo-600">
+                <p className="text-[10px] text-indigo-500">
                   Buscalo, agregalo al carrito y vuelve por el siguiente
                 </p>
-                <a
-                  href="/configuracion/cuentas"
-                  className="text-[10px] text-indigo-400 mt-1 inline-block hover:text-indigo-600"
-                >
-                  Vincula tu cuenta para que AVI lo haga automaticamente
-                </a>
               </div>
             )}
 
             {/* Items list */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-2">
+            <div className="flex-1 overflow-y-auto px-3 py-2 space-y-1.5">
               {(cartProgress.length > 0 ? cartProgress : checkoutItems.map((i) => ({ name: i.name, status: 'pending' as const, url: i.url }))).map((item, idx) => {
                 const SEARCH_URLS: Record<string, (q: string) => string> = {
                   Jumbo: (q) => `https://www.jumbo.cl/search?ft=${encodeURIComponent(q)}`,
@@ -964,9 +956,9 @@ function CompararInner() {
               })}
             </div>
 
-            <div className="p-4 border-t flex-shrink-0">
-              <p className="text-center text-xs text-gray-400">
-                Total estimado: {formatCLP(checkoutItems.reduce((s, i) => s + i.price, 0))}
+            <div className="px-3 py-2 border-t flex-shrink-0">
+              <p className="text-center text-[10px] text-gray-400">
+                Total: {formatCLP(checkoutItems.reduce((s, i) => s + i.price, 0))}
               </p>
             </div>
           </div>
