@@ -19,5 +19,6 @@ export const config = {
     '/familia/:path*',
     '/presupuesto/:path*',
     '/configuracion/:path*',
+    '/historial/:path*',
   ],
 };

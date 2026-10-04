@@ -218,7 +218,7 @@ function CompararInner() {
 
     for (const query of queries) {
       try {
-        const res = await fetch(`/api/prices?q=${encodeURIComponent(query)}&analyze=true`)
+        const res = await fetch(`/api/prices?q=${encodeURIComponent(query)}`)
         const data = await res.json()
 
         if (data.success) {

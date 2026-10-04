@@ -157,7 +157,7 @@ export default function DashboardPage() {
             <h1 className="text-xl font-bold text-gray-900">{userName}</h1>
           </div>
           <a
-            href="https://wa.me/56XXXXXXXXXX?text=Hola%20AVI%2C%20te%20agrego%20al%20grupo%20familiar"
+            href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '56912345678'}?text=Hola%20AVI%2C%20te%20agrego%20al%20grupo%20familiar`}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-1.5 bg-[#25D366] text-white px-3 py-2 rounded-xl text-xs font-semibold active:scale-95 transition-transform"
@@ -327,7 +327,7 @@ export default function DashboardPage() {
               { href: '/perfil', label: 'Mi perfil', sub: 'Dieta y alergias', icon: User },
               { href: '/configuracion/cuentas', label: 'Supermercados', sub: 'Vincular cuentas', icon: Store },
               { href: '/configuracion/pagos', label: 'Pagos', sub: 'Tarjetas y metodos', icon: CreditCard },
-              { href: '/reposicion', label: 'Reposicion', sub: 'Lo que se acaba', icon: Package },
+              { href: '/historial', label: 'Historial', sub: 'Compras pasadas', icon: ShoppingCart },
               { href: '/familia', label: 'Mi familia', sub: 'Miembros y alergenos', icon: Users },
             ].map((svc) => {
               const Icon = svc.icon
