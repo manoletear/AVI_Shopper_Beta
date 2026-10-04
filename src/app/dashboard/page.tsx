@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import {
   ShoppingCart, ListChecks, Heart, Store, Users,
-  ArrowRight, Settings, ChevronRight, CreditCard,
-  Wallet, Package, User, Bot, Bell, MessageCircle,
+  ArrowRight, ChevronRight, CreditCard,
+  Wallet, Package, User, Bot, MessageCircle,
   Repeat, Zap,
 } from 'lucide-react'
 import OnboardingWizard from '@/components/OnboardingWizard'
@@ -130,28 +130,9 @@ export default function DashboardPage() {
 
   return (
     <div className="avi-page pb-20">
-      {/* Header */}
-      <header className="avi-header">
-        <div className="max-w-lg mx-auto px-4 py-2.5 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <img src="/avi-icon.svg" alt="AVI" className="w-8 h-8 rounded-full" />
-            <span className="text-base font-bold text-indigo-700">AVI</span>
-          </div>
-          <div className="flex items-center gap-1">
-            {data && data.alertsCount > 0 && (
-              <a href="/salud" className="relative p-2 text-gray-500">
-                <Bell className="h-5 w-5" />
-                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
-              </a>
-            )}
-            <a href="/configuracion/cuentas" className="p-2 text-gray-400"><Settings className="h-5 w-5" /></a>
-          </div>
-        </div>
-      </header>
-
       <main className="max-w-lg mx-auto px-4">
         {/* Greeting + WhatsApp */}
-        <div className="pt-4 pb-2 flex items-end justify-between">
+        <div className="pt-5 pb-2 flex items-end justify-between">
           <div>
             <p className="text-sm text-gray-500">{greeting},</p>
             <h1 className="text-xl font-bold text-gray-900">{userName}</h1>
@@ -177,46 +158,9 @@ export default function DashboardPage() {
           <Bot className="h-4 w-4 text-gray-300" />
         </a>
 
-        {/* Promo Banner — Supermarket ads with SVG banners */}
-        <a href={STORE_DEALS[promoIndex].href} className="block mb-4 active:scale-[0.98] transition-transform">
-          <img
-            src={STORE_DEALS[promoIndex].banner}
-            alt={`${STORE_DEALS[promoIndex].store} — ${STORE_DEALS[promoIndex].product}`}
-            className="w-full rounded-2xl shadow-md"
-          />
-          <div className="flex justify-center gap-1.5 mt-2.5">
-            {STORE_DEALS.map((deal, i) => (
-              <button
-                key={i}
-                onClick={(e) => { e.preventDefault(); setPromoIndex(i) }}
-                className={`w-2 h-2 rounded-full transition-all ${i === promoIndex ? 'w-5' : ''}`}
-                style={{ backgroundColor: i === promoIndex ? deal.color : '#D1D5DB' }}
-              />
-            ))}
-          </div>
-        </a>
-
-        {/* Category Icons */}
-        <div className="grid grid-cols-4 gap-3 mb-5">
-          {CATEGORIES.map((cat) => {
-            const Icon = cat.icon
-            return (
-              <a key={cat.href} href={cat.href} className="flex flex-col items-center gap-1.5 py-1 group">
-                <div className={`w-13 h-13 ${cat.bg} rounded-2xl flex items-center justify-center shadow-md group-active:scale-90 transition-transform`} style={{ width: 52, height: 52 }}>
-                  <Icon className={`h-5 w-5 ${cat.text} stroke-[1.8]`} />
-                </div>
-                <span className="text-[11px] font-semibold text-gray-600">{cat.label}</span>
-              </a>
-            )
-          })}
-        </div>
-
-        {/* Onboarding */}
-        <OnboardingWizard />
-
-        {/* Stats Row */}
+        {/* Stats Row — between AVI bar and banner */}
         {data && (
-          <div className="grid grid-cols-3 gap-2 mb-5">
+          <div className="grid grid-cols-3 gap-2 mb-4">
             <a href="/listas" className="bg-white rounded-2xl p-3 text-center shadow-sm active:scale-95 transition-transform">
               <p className="text-lg font-bold text-gray-900">{data.listsCount}</p>
               <p className="text-[10px] text-gray-400 font-medium">LISTAS</p>
@@ -246,6 +190,43 @@ export default function DashboardPage() {
             </a>
           </div>
         )}
+
+        {/* Promo Banner — Supermarket ads with SVG banners */}
+        <a href={STORE_DEALS[promoIndex].href} className="block mb-4 active:scale-[0.98] transition-transform">
+          <img
+            src={STORE_DEALS[promoIndex].banner}
+            alt={`${STORE_DEALS[promoIndex].store} — ${STORE_DEALS[promoIndex].product}`}
+            className="w-full rounded-2xl shadow-md"
+          />
+          <div className="flex justify-center gap-1.5 mt-2.5">
+            {STORE_DEALS.map((deal, i) => (
+              <button
+                key={i}
+                onClick={(e) => { e.preventDefault(); setPromoIndex(i) }}
+                className={`w-2 h-2 rounded-full transition-all ${i === promoIndex ? 'w-5' : ''}`}
+                style={{ backgroundColor: i === promoIndex ? deal.color : '#D1D5DB' }}
+              />
+            ))}
+          </div>
+        </a>
+
+        {/* Category Icons */}
+        <div className="grid grid-cols-4 gap-3 mb-5">
+          {CATEGORIES.map((cat) => {
+            const Icon = cat.icon
+            return (
+              <a key={cat.href} href={cat.href} className="flex flex-col items-center gap-1.5 py-1 group">
+                <div className={`${cat.bg} rounded-2xl flex items-center justify-center shadow-md group-active:scale-90 transition-transform`} style={{ width: 52, height: 52 }}>
+                  <Icon className={`h-5 w-5 ${cat.text} stroke-[1.8]`} />
+                </div>
+                <span className="text-[11px] font-semibold text-gray-600">{cat.label}</span>
+              </a>
+            )
+          })}
+        </div>
+
+        {/* Onboarding */}
+        <OnboardingWizard />
 
         {/* Upcoming Events — Proactive reminders */}
         {upcomingEvents.length > 0 && (
