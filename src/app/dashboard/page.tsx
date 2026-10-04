@@ -78,6 +78,7 @@ export default function DashboardPage() {
   const userName = session?.user?.name || session?.user?.email?.split('@')[0] || ''
   const [data, setData] = useState<DashboardData | null>(null)
   const [promoIndex, setPromoIndex] = useState(0)
+  const [showWzp, setShowWzp] = useState(false)
   const [upcomingEvents, setUpcomingEvents] = useState<Array<{ id: string; name: string; type: string; daysUntil: number; suggestedProducts: string[] }>>([])
 
   useEffect(() => {
@@ -137,16 +138,44 @@ export default function DashboardPage() {
             <p className="text-sm text-gray-500">{greeting},</p>
             <h1 className="text-xl font-bold text-gray-900">{userName}</h1>
           </div>
-          <a
-            href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '56912345678'}?text=Hola%20AVI%2C%20te%20agrego%20al%20grupo%20familiar`}
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            onClick={() => setShowWzp(!showWzp)}
             className="flex items-center gap-1.5 bg-[#25D366] text-white px-3 py-2 rounded-xl text-xs font-semibold active:scale-95 transition-transform"
           >
             <MessageCircle className="h-3.5 w-3.5" />
-            Agregar a WZP
-          </a>
+            AVI en WZP
+          </button>
         </div>
+
+        {showWzp && (
+          <div className="bg-white rounded-2xl shadow-sm p-4 mb-4 border border-green-200">
+            <p className="text-sm font-semibold text-gray-900 mb-2">AVI en tu grupo familiar</p>
+            <div className="space-y-3">
+              <a
+                href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '56912345678'}?text=Hola%20AVI`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 p-3 bg-[#25D366] text-white rounded-xl active:scale-[0.98] transition-transform"
+              >
+                <MessageCircle className="h-5 w-5" />
+                <div>
+                  <p className="text-sm font-semibold">Chatear con AVI 1 a 1</p>
+                  <p className="text-[10px] opacity-80">Habla directo con AVI por WhatsApp</p>
+                </div>
+              </a>
+              <div className="bg-gray-50 rounded-xl p-3">
+                <p className="text-xs font-semibold text-gray-700 mb-1.5">Agregar AVI a tu grupo familiar:</p>
+                <ol className="text-[11px] text-gray-500 space-y-1">
+                  <li>1. Abre tu grupo familiar en WhatsApp</li>
+                  <li>2. Toca "Agregar participante"</li>
+                  <li>3. Agrega el numero: <span className="font-bold text-gray-700">{process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '+56 9 1234 5678'}</span></li>
+                  <li>4. AVI se presentara automaticamente</li>
+                </ol>
+                <p className="text-[10px] text-gray-400 mt-2">Todos los miembros del grupo podran hablar con AVI</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* AVI Search Bar — links to cart-assistant (the AI agent) */}
         <a href="/cart-assistant" className="flex items-center gap-3 bg-white rounded-2xl px-4 py-3.5 mb-5 shadow-sm active:scale-[0.98] transition-transform border border-indigo-100">
