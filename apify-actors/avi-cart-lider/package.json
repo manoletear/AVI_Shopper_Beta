@@ -1,0 +1,18 @@
+{
+  "name": "avi-cart-lider",
+  "version": "1.0.0",
+  "description": "AVI Shopper — Builds shopping cart on super.lider.cl automatically",
+  "type": "module",
+  "scripts": {
+    "start": "node dist/main.js",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "apify": "^3.0.0",
+    "crawlee": "^3.0.0",
+    "playwright": "^1.40.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

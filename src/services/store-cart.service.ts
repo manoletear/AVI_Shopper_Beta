@@ -144,17 +144,56 @@ export async function buildJumboCart(
   email: string,
   password: string
 ): Promise<CartResult> {
-  const session = await jumboLogin(email, password);
+  const apifyToken = process.env.APIFY_API_TOKEN;
 
+  // Try Apify Playwright actor first
+  if (apifyToken && password) {
+    try {
+      const runRes = await fetch(
+        `https://api.apify.com/v2/acts/avi-shopper~avi-cart-jumbo/runs?waitForFinish=120`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apifyToken}` },
+          body: JSON.stringify({
+            email, password,
+            items: items.map((i) => ({ name: i.productName, quantity: i.quantity })),
+          }),
+        }
+      );
+
+      if (runRes.ok) {
+        const run = await runRes.json();
+        const datasetId = run.data?.defaultDatasetId;
+        if (datasetId) {
+          const dataRes = await fetch(
+            `https://api.apify.com/v2/datasets/${datasetId}/items?clean=true`,
+            { headers: { Authorization: `Bearer ${apifyToken}` } }
+          );
+          const results = await dataRes.json();
+          const result = results[0];
+          if (result?.success) {
+            return {
+              success: true, store: 'Jumbo',
+              cartUrl: result.cartUrl || 'https://www.jumbo.cl/checkout',
+              itemsAdded: result.itemsAdded || 0,
+              itemsFailed: result.itemsFailed || [],
+              totalEstimated: result.totalEstimated || 0,
+            };
+          }
+        }
+      }
+    } catch (e: any) {
+      console.error('Jumbo Apify cart error:', e.message);
+    }
+  }
+
+  // Fallback: try old BFF API
+  const session = await jumboLogin(email, password);
   if (!session) {
     return {
-      success: false,
-      store: 'Jumbo',
-      cartUrl: 'https://www.jumbo.cl/checkout',
-      itemsAdded: 0,
-      itemsFailed: items.map((i) => i.productName),
-      totalEstimated: 0,
-      error: 'No se pudo iniciar sesion en Jumbo. Verifica tus credenciales.',
+      success: false, store: 'Jumbo', cartUrl: 'https://www.jumbo.cl/checkout',
+      itemsAdded: 0, itemsFailed: items.map((i) => i.productName), totalEstimated: 0,
+      error: 'No se pudo iniciar sesion en Jumbo.',
     };
   }
 
@@ -163,35 +202,22 @@ export async function buildJumboCart(
   const failed: string[] = [];
 
   for (const item of items) {
-    // Buscar el producto por nombre
     const product = item.sku
       ? { sku: item.sku, name: item.productName, price: item.price || 0 }
       : await jumboSearchProduct(item.productName, session);
 
-    if (!product) {
-      failed.push(item.productName);
-      continue;
-    }
+    if (!product) { failed.push(item.productName); continue; }
 
     const success = await jumboAddToCart(product.sku, item.quantity, session);
-    if (success) {
-      added++;
-      total += product.price * item.quantity;
-    } else {
-      failed.push(item.productName);
-    }
+    if (success) { added++; total += product.price * item.quantity; }
+    else { failed.push(item.productName); }
 
-    // Pausa entre productos
     await new Promise((r) => setTimeout(r, 500));
   }
 
   return {
-    success: added > 0,
-    store: 'Jumbo',
-    cartUrl: 'https://www.jumbo.cl/checkout',
-    itemsAdded: added,
-    itemsFailed: failed,
-    totalEstimated: total,
+    success: added > 0, store: 'Jumbo', cartUrl: 'https://www.jumbo.cl/checkout',
+    itemsAdded: added, itemsFailed: failed, totalEstimated: total,
   };
 }
 
@@ -204,16 +230,56 @@ export async function buildLiderCart(
   email: string,
   password: string
 ): Promise<CartResult> {
-  // Lider Super usa la plataforma Walmart con auth via cookies
-  // Por ahora retornamos deep link al carrito
+  const apifyToken = process.env.APIFY_API_TOKEN;
+  if (!apifyToken || !password) {
+    return {
+      success: false, store: 'Lider', cartUrl: 'https://super.lider.cl',
+      itemsAdded: 0, itemsFailed: items.map((i) => i.productName), totalEstimated: 0,
+      error: 'Credenciales o token de Apify no configurados.',
+    };
+  }
+
+  try {
+    const runRes = await fetch(
+      `https://api.apify.com/v2/acts/avi-shopper~avi-cart-lider/runs?waitForFinish=120`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apifyToken}` },
+        body: JSON.stringify({
+          email, password,
+          items: items.map((i) => ({ name: i.productName, quantity: i.quantity })),
+        }),
+      }
+    );
+
+    if (!runRes.ok) throw new Error('Apify run failed');
+    const run = await runRes.json();
+    const datasetId = run.data?.defaultDatasetId;
+    if (!datasetId) throw new Error('No dataset');
+
+    const dataRes = await fetch(
+      `https://api.apify.com/v2/datasets/${datasetId}/items?clean=true`,
+      { headers: { Authorization: `Bearer ${apifyToken}` } }
+    );
+    const results = await dataRes.json();
+    const result = results[0];
+
+    if (result?.success) {
+      return {
+        success: true, store: 'Lider', cartUrl: result.cartUrl || 'https://super.lider.cl/cart',
+        itemsAdded: result.itemsAdded || 0,
+        itemsFailed: result.itemsFailed || [],
+        totalEstimated: result.totalEstimated || 0,
+      };
+    }
+  } catch (e: any) {
+    console.error('Lider Apify cart error:', e.message);
+  }
+
   return {
-    success: false,
-    store: 'Lider',
-    cartUrl: 'https://super.lider.cl',
-    itemsAdded: 0,
-    itemsFailed: items.map((i) => i.productName),
-    totalEstimated: 0,
-    error: 'Lider Super aun no soporta carrito automatico. Usa los links directos.',
+    success: false, store: 'Lider', cartUrl: 'https://super.lider.cl',
+    itemsAdded: 0, itemsFailed: items.map((i) => i.productName), totalEstimated: 0,
+    error: 'No se pudo armar el carrito en Lider.',
   };
 }
 

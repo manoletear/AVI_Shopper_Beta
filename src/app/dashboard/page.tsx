@@ -91,6 +91,26 @@ const STORE_DEALS = [
     price: 'Cyber Tottus',
     href: '/comparar?q=Lomo+liso%2C+Filete%2C+Carne+vacuno',
   },
+  {
+    store: 'Unimarc',
+    banner: '/banners/unimarc-banner.svg',
+    color: '#6B21A8',
+    emoji: '🫒',
+    product: 'Aceite Chef 1L $2.490',
+    discount: '20% dcto adicional Unipay',
+    price: 'Club Unimarc',
+    href: '/comparar?q=Aceite+Chef%2C+Aceite+vegetal+1L',
+  },
+  {
+    store: 'Unimarc',
+    banner: '/banners/unimarc-banner.svg',
+    color: '#6B21A8',
+    emoji: '🥛',
+    product: 'Lacteos y Quesos hasta 30%',
+    discount: 'Frutas desde $990/kg',
+    price: 'Exclusivo online',
+    href: '/comparar?q=Leche%2C+Queso+gauda%2C+Yogurt%2C+Huevos',
+  },
 ]
 
 export default function DashboardPage() {
