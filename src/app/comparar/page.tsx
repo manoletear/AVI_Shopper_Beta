@@ -389,13 +389,12 @@ function CompararInner() {
       }
     } catch {}
 
-    // Fallback: auto-open store with all products
+    // Fallback: open store search for first product
     setCartBuilding(false)
-    const allNames = items.map((i) => i.name).join(' ')
-    const storeUrl = SEARCH_URLS[primaryStore]?.(allNames) || SEARCH_URLS.Jumbo(allNames)
-
-    window.open(storeUrl, '_blank')
-    setCartResult({ success: false, cartUrl: storeUrl, added: items.length, failed: [] })
+    const urlFn = SEARCH_URLS[primaryStore] || SEARCH_URLS.Jumbo
+    const firstUrl = urlFn(items[0].name)
+    window.open(firstUrl, '_blank')
+    setCartResult({ success: false, cartUrl: firstUrl, added: items.length, failed: [] })
   }
 
   // Calcular opciones de compra con despacho
