@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { requireAuth } from '@/lib/session';
 import { successResponse, errorResponse } from '@/lib/responses';
-import { comparePrices } from '@/services/apify-price.service';
+import { comparePrices, expandQuery } from '@/services/apify-price.service';
 import { matchProducts } from '@/services/typesafe-decision.service';
 import { savePriceObservations, getLatestPrices } from '@/services/price-observation.service';
 
@@ -100,7 +100,8 @@ export async function GET(request: NextRequest) {
 }
 
 function generateDemoResults(query: string) {
-  const q = query.toLowerCase();
+  const expanded = expandQuery(query);
+  const q = expanded.toLowerCase();
   const stores = ['Jumbo', 'Lider', 'Unimarc', 'Tottus'];
   const baseProducts: Record<string, { name: string; basePrice: number }> = {
     leche: { name: 'Leche Entera 1L', basePrice: 1090 },
@@ -130,7 +131,10 @@ function generateDemoResults(query: string) {
     harina: { name: 'Harina 1kg', basePrice: 990 },
   };
 
-  const match = Object.entries(baseProducts).find(([key]) => q.includes(key));
+  const qWords = q.split(/\s+/);
+  const match = Object.entries(baseProducts).find(([key]) =>
+    qWords.some((w) => w.includes(key) || key.includes(w))
+  );
   if (!match) return [];
 
   const [, product] = match;

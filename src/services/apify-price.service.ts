@@ -159,29 +159,101 @@ export async function searchUnimarc(
   }));
 }
 
-/**
- * Calcula la relevancia de un producto respecto a la busqueda.
- * Retorna un score de 0 a 1.
- *
- * Logica:
- * - Extrae palabras clave de la busqueda (>2 chars)
- * - Cuenta cuantas aparecen en el nombre del producto
- * - Score = palabras encontradas / total palabras clave
- * - Bonus si el nombre empieza con la primera palabra clave
- */
-const NON_GROCERY_KEYWORDS = /antitranspirante|desodorante|shampoo|champu|acondicionador|crema facial|maquillaje|labial|esmalte|perfume|colonia|after shave|depilador|cepillo dental|enjuague bucal|pañal adulto|preservativo|toalla femenina|tampón|protector diario/i;
+// ============================================
+// SEMANTIC SEARCH — Dictionary + Negative filter
+// ============================================
+
+const GROCERY_CONTEXT: Record<string, string> = {
+  carbon: 'carbon vegetal parrilla',
+  coca: 'coca cola bebida',
+  pepsi: 'pepsi bebida',
+  fanta: 'fanta bebida',
+  sprite: 'sprite bebida',
+  papel: 'papel higienico',
+  toalla: 'toalla papel cocina',
+  palta: 'palta hass',
+  mantequilla: 'mantequilla',
+  pan: 'pan molde marraqueta',
+  cafe: 'cafe instantaneo nescafe',
+  te: 'te negro verde',
+  agua: 'agua mineral',
+  aceite: 'aceite vegetal cocina',
+  azucar: 'azucar blanca',
+  sal: 'sal mesa',
+  arroz: 'arroz grado',
+  fideos: 'fideos tallarin',
+  harina: 'harina trigo',
+  leche: 'leche entera semidescremada',
+  yogurt: 'yogurt',
+  queso: 'queso laminado',
+  jamon: 'jamon cerdo pavo',
+  pollo: 'pollo entero pechuga',
+  carne: 'carne vacuno molida',
+  cerdo: 'cerdo pulpa chuleta',
+  huevo: 'huevos docena',
+  cerveza: 'cerveza lata pack',
+  vino: 'vino tinto blanco',
+  pisco: 'pisco',
+  cloro: 'cloro limpieza',
+  detergente: 'detergente ropa liquido',
+  lavaloza: 'lavalozas',
+  suavizante: 'suavizante ropa',
+  esponja: 'esponja cocina',
+  basura: 'bolsa basura',
+  servilleta: 'servilletas',
+  endulzante: 'endulzante stevia sucralosa',
+  mayonesa: 'mayonesa',
+  ketchup: 'ketchup',
+  mostaza: 'mostaza',
+  atun: 'atun lata conserva',
+  sopa: 'sopa sobre crema',
+  jugo: 'jugo natur botella',
+  bebida: 'bebida gaseosa',
+  cereal: 'cereal desayuno',
+  galleta: 'galletas',
+  chocolate: 'chocolate tableta',
+  helado: 'helado litro',
+  longaniza: 'longanizas cerdo',
+  choricillo: 'choricillos parrilla',
+  tomate: 'tomate',
+  lechuga: 'lechuga',
+  cebolla: 'cebolla',
+  zanahoria: 'zanahoria',
+  papa: 'papa',
+  limon: 'limon',
+  naranja: 'naranja',
+  manzana: 'manzana',
+  platano: 'platano banana',
+};
+
+const NON_GROCERY_CATEGORIES = /antitranspirante|desodorante|shampoo|champu|acondicionador|crema facial|crema corporal|maquillaje|labial|esmalte|perfume|colonia|after shave|depilador|cepillo dental|enjuague bucal|preservativo|protector diario|protector solar|bloqueador|base liquida|rimel|mascara pestana|sombra ojos|polvo compacto|desmaquillante|tinte pelo|tintura|cera depilatoria|gel fijador|laca pelo|mousse pelo|serum capilar|crema manos|locion corporal|jabon intimo|talco|repelente|insecticida|raticida|vela aromatica|ambientador|incienso|pilas|ampolleta|foco|encendedor|fosforo|carbon activ/i;
+
+const GROCERY_POSITIVE = /leche|queso|yogurt|pan |pan$|huevo|pollo|carne|cerdo|arroz|fideos|aceite|azucar|harina|sal |mantequilla|cafe|te |jugo|agua |bebida|cerveza|vino|pisco|atun|sopa|cereal|galleta|chocolate|helado|mermelada|miel|manjar|mayonesa|ketchup|mostaza|tomate|lechuga|palta|cebolla|papa|zanahoria|limon|naranja|manzana|platano|detergente|cloro|lavaloza|papel hig|servilleta|bolsa basura|esponja|suavizante/i;
+
+function expandQuery(query: string): string {
+  const q = query.toLowerCase().trim();
+  for (const [key, expanded] of Object.entries(GROCERY_CONTEXT)) {
+    if (q === key || q.startsWith(key + ' ')) {
+      return expanded;
+    }
+  }
+  return query;
+}
 
 function calculateRelevance(productName: string, query: string): number {
-  const queryWords = query.toLowerCase().split(/\s+/).filter(w => w.length > 2);
+  const expandedQuery = expandQuery(query);
+  const queryWords = expandedQuery.toLowerCase().split(/\s+/).filter(w => w.length > 2);
   if (queryWords.length === 0) return 1;
 
   const nameLower = productName.toLowerCase();
 
-  if (NON_GROCERY_KEYWORDS.test(nameLower)) {
-    const queryLower = query.toLowerCase();
-    const isIntentionalSearch = NON_GROCERY_KEYWORDS.test(queryLower);
-    if (!isIntentionalSearch) return 0;
+  // Hard reject non-grocery products unless intentionally searched
+  if (NON_GROCERY_CATEGORIES.test(nameLower) && !NON_GROCERY_CATEGORIES.test(query.toLowerCase())) {
+    return 0;
   }
+
+  // Boost if product is clearly grocery
+  const isGrocery = GROCERY_POSITIVE.test(nameLower);
 
   let matches = 0;
   for (const word of queryWords) {
@@ -190,24 +262,34 @@ function calculateRelevance(productName: string, query: string): number {
 
   let score = matches / queryWords.length;
 
-  if (queryWords[0] && nameLower.startsWith(queryWords[0])) {
+  // Bonus: product name starts with the primary search term
+  const primaryWord = query.toLowerCase().split(/\s+/)[0];
+  if (primaryWord && nameLower.startsWith(primaryWord)) {
     score = Math.min(1, score + 0.3);
-  } else if (queryWords[0] && nameLower.includes(queryWords[0])) {
+  } else if (primaryWord && nameLower.includes(primaryWord)) {
+    score = Math.min(1, score + 0.15);
+  }
+
+  // Bonus for clearly grocery products
+  if (isGrocery) {
     score = Math.min(1, score + 0.1);
   }
 
   return score;
 }
 
+export { expandQuery };
+
 export async function comparePrices(
   query: string,
   apiToken: string
 ): Promise<PriceComparison> {
+  const searchTerm = expandQuery(query);
   const [jumboResults, liderResults, unimarcResults, tottusResults] = await Promise.all([
-    searchJumbo(query, apiToken).catch(() => [] as ApifyProduct[]),
-    searchLider(query, apiToken).catch(() => [] as ApifyProduct[]),
-    searchUnimarc(query, apiToken).catch(() => [] as ApifyProduct[]),
-    searchTottus(query, apiToken).catch(() => [] as ApifyProduct[]),
+    searchJumbo(searchTerm, apiToken).catch(() => [] as ApifyProduct[]),
+    searchLider(searchTerm, apiToken).catch(() => [] as ApifyProduct[]),
+    searchUnimarc(searchTerm, apiToken).catch(() => [] as ApifyProduct[]),
+    searchTottus(searchTerm, apiToken).catch(() => [] as ApifyProduct[]),
   ]);
 
   const allRaw = [...jumboResults, ...liderResults, ...unimarcResults, ...tottusResults].filter(
