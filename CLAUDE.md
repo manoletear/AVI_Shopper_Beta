@@ -53,7 +53,9 @@ npx tsx prisma/seed.ts   # poblar con datos demo
 
 | Servicio | Que hace |
 |----------|---------|
-| agent | Agente conversacional con 15 tool_use |
+| agent | Agente conversacional con 17 tool_use |
+| proactive-events | Feriados chilenos, cumpleanos, recordatorios |
+| encryption | AES-256-GCM para credenciales de supermercados |
 | apify-price | Precios reales via Apify actors |
 | super-lider | Scraper de super.lider.cl |
 | openfoodfacts | NutriScore, NOVA, nutrientes |
