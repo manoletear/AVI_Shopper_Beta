@@ -269,8 +269,8 @@ export default function DashboardPage() {
               className="w-full rounded-2xl shadow-md"
             />
           ) : (
-            <div className="rounded-2xl shadow-md p-5 text-white relative overflow-hidden min-h-[120px]" style={{ backgroundColor: STORE_DEALS[promoIndex].color }}>
-              <div className="flex justify-between items-start">
+            <div className="rounded-2xl shadow-md text-white overflow-hidden" style={{ backgroundColor: STORE_DEALS[promoIndex].color }}>
+              <div className="p-5 min-h-[120px] flex justify-between items-start" style={{ background: `linear-gradient(135deg, ${STORE_DEALS[promoIndex].color}, ${STORE_DEALS[promoIndex].color}dd)` }}>
                 <div>
                   <span className="text-xs font-bold bg-white/20 px-2.5 py-1 rounded-full">{STORE_DEALS[promoIndex].store}</span>
                   <h2 className="text-xl font-bold mt-2">{STORE_DEALS[promoIndex].product}</h2>
