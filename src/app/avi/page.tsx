@@ -97,7 +97,7 @@ export default function AviPage() {
                   <button
                     key={s}
                     onClick={() => sendMessage(s)}
-                    className="text-xs px-3 py-2 bg-white border border-gray-200 text-gray-600 rounded-2xl hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all shadow-sm"
+                    className="text-xs px-3 py-2 bg-white border border-gray-200 text-gray-600 rounded-2xl hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition-all shadow-sm"
                   >
                     {s}
                   </button>
@@ -116,7 +116,7 @@ export default function AviPage() {
               <div className="max-w-[80%]">
                 <div className={`px-4 py-2.5 text-sm leading-relaxed ${
                   msg.role === 'user'
-                    ? 'bg-blue-600 text-white rounded-2xl rounded-br-md shadow-sm'
+                    ? 'bg-indigo-600 text-white rounded-2xl rounded-br-md shadow-sm'
                     : 'bg-white border border-gray-200 text-gray-800 rounded-2xl rounded-bl-md shadow-sm'
                 }`}>
                   {msg.content.split('\n').map((line, li) => (
@@ -173,13 +173,13 @@ export default function AviPage() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Escribele a AVI..."
-              className="flex-1 px-4 py-3 bg-gray-100 border-0 rounded-2xl text-sm focus:ring-2 focus:ring-blue-500/20 focus:bg-white focus:border focus:border-blue-200 placeholder:text-gray-400 transition-all"
+              className="flex-1 px-4 py-3 bg-gray-100 border-0 rounded-2xl text-sm focus:ring-2 focus:ring-indigo-500/20 focus:bg-white focus:border focus:border-indigo-200 placeholder:text-gray-400 transition-all"
               disabled={loading}
             />
             <button
               type="submit"
               disabled={!input.trim() || loading}
-              className="w-11 h-11 bg-gradient-to-br from-blue-600 to-indigo-600 text-white rounded-full flex items-center justify-center hover:shadow-lg disabled:opacity-40 transition-all flex-shrink-0"
+              className="w-11 h-11 bg-gradient-to-br from-indigo-600 to-indigo-700 text-white rounded-full flex items-center justify-center hover:shadow-lg disabled:opacity-40 transition-all flex-shrink-0"
             >
               <Send className="h-4 w-4" />
             </button>

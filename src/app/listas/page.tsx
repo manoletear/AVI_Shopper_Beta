@@ -336,7 +336,7 @@ export default function ListasPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <ShoppingCart className="h-8 w-8 text-blue-600 animate-pulse mx-auto" />
+          <ShoppingCart className="h-8 w-8 text-indigo-600 animate-pulse mx-auto" />
           <p className="text-sm text-gray-500 mt-2">Cargando listas...</p>
         </div>
       </div>
@@ -385,12 +385,12 @@ export default function ListasPage() {
                   onChange={(e) => setNewListName(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && createList()}
                   placeholder="Nombre de la lista"
-                  className="flex-1 px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="flex-1 px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 />
                 <button
                   onClick={createList}
                   disabled={creatingList || !newListName.trim()}
-                  className="bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                  className="bg-indigo-600 text-white px-3 py-2 rounded-lg hover:bg-indigo-700 disabled:opacity-50"
                 >
                   <Plus className="h-4 w-4" />
                 </button>
@@ -398,7 +398,7 @@ export default function ListasPage() {
               <div className="flex gap-2 mt-2">
                 <button
                   onClick={() => setShowTemplates(!showTemplates)}
-                  className="flex-1 text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center justify-center gap-1 py-1.5 rounded-lg hover:bg-blue-50 transition-colors"
+                  className="flex-1 text-sm text-indigo-600 hover:text-indigo-700 font-medium flex items-center justify-center gap-1 py-1.5 rounded-lg hover:bg-indigo-50 transition-colors"
                 >
                   <Sparkles className="h-3.5 w-3.5" />
                   Plantilla
@@ -498,7 +498,7 @@ export default function ListasPage() {
                 </div>
 
                 {templatePeople && (
-                  <div className="mt-3 p-3 bg-blue-50 rounded-xl border border-blue-100">
+                  <div className="mt-3 p-3 bg-indigo-50 rounded-xl border border-blue-100">
                     <p className="text-sm font-medium text-blue-900 mb-2">
                       ¿Cuantas personas van al {templatePeople.template.name.toLowerCase()}?
                     </p>
@@ -510,12 +510,12 @@ export default function ListasPage() {
                         value={templatePeople.count}
                         onChange={(e) => setTemplatePeople({ ...templatePeople, count: e.target.value })}
                         placeholder="Ej: 8"
-                        className="flex-1 px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+                        className="flex-1 px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
                       />
                       <button
                         onClick={() => createFromTemplate(templatePeople.template, parseInt(templatePeople.count) || undefined)}
                         disabled={creatingList}
-                        className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
+                        className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50"
                       >
                         Crear
                       </button>
@@ -550,7 +550,7 @@ export default function ListasPage() {
                     onClick={() => setActiveList(list)}
                     className={`avi-card p-4 cursor-pointer transition-all ${
                       isActive
-                        ? 'border-blue-500 ring-2 ring-blue-100'
+                        ? 'border-indigo-500 ring-2 ring-blue-100'
                         : 'hover:border-gray-300'
                     }`}
                   >
@@ -581,7 +581,7 @@ export default function ListasPage() {
                         </button>
                         <button
                           onClick={(e) => { e.stopPropagation(); buyList(list) }}
-                          className="flex-1 flex items-center justify-center gap-1 text-xs font-medium py-1.5 px-2 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors"
+                          className="flex-1 flex items-center justify-center gap-1 text-xs font-medium py-1.5 px-2 rounded-lg bg-indigo-50 text-indigo-700 hover:bg-blue-100 transition-colors"
                         >
                           <ShoppingCart className="h-3 w-3" />
                           Comprar
@@ -618,7 +618,7 @@ export default function ListasPage() {
                       </button>
                       <button
                         onClick={() => buyList(activeList)}
-                        className="flex-1 flex items-center justify-center gap-1.5 text-sm font-medium py-2.5 px-3 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+                        className="flex-1 flex items-center justify-center gap-1.5 text-sm font-medium py-2.5 px-3 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition-colors"
                       >
                         <ShoppingCart className="h-4 w-4" />
                         Comprar
@@ -636,12 +636,12 @@ export default function ListasPage() {
                       onChange={(e) => setNewItemName(e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && addItem()}
                       placeholder="Agregar producto (ej: Leche Colun 1L)"
-                      className="flex-1 px-3 py-2.5 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="flex-1 px-3 py-2.5 border rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                     />
                     <button
                       onClick={addItem}
                       disabled={!newItemName.trim()}
-                      className="bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 disabled:opacity-50 text-sm font-medium"
+                      className="bg-indigo-600 text-white px-4 py-2.5 rounded-lg hover:bg-indigo-700 disabled:opacity-50 text-sm font-medium"
                     >
                       Agregar
                     </button>
@@ -669,7 +669,7 @@ export default function ListasPage() {
                           className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 ${
                             item.checked
                               ? 'bg-green-500 border-green-500'
-                              : 'border-gray-300 hover:border-blue-500'
+                              : 'border-gray-300 hover:border-indigo-500'
                           }`}
                         >
                           {item.checked && <Check className="h-3 w-3 text-white" />}
@@ -720,7 +720,7 @@ export default function ListasPage() {
             </button>
             <button
               onClick={() => buyList(activeList)}
-              className="flex-1 flex items-center justify-center gap-1.5 text-sm font-semibold py-3 rounded-xl bg-blue-600 text-white"
+              className="flex-1 flex items-center justify-center gap-1.5 text-sm font-semibold py-3 rounded-xl bg-indigo-600 text-white"
             >
               <ShoppingCart className="h-4 w-4" />
               Comprar ({activeList.items.filter((i) => !i.checked).length})

@@ -140,7 +140,7 @@ export default function PerfilNutricionalPage() {
             className={`flex items-center space-x-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               saved
                 ? 'bg-green-100 text-green-700'
-                : 'bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50'
+                : 'bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50'
             }`}
           >
             {saving ? (
@@ -157,11 +157,11 @@ export default function PerfilNutricionalPage() {
 
       <main className="max-w-3xl mx-auto px-4 py-6 space-y-6">
         {/* Info */}
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-start space-x-3">
-          <Shield className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+        <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4 flex items-start space-x-3">
+          <Shield className="h-5 w-5 text-indigo-600 mt-0.5 flex-shrink-0" />
           <div>
             <p className="text-sm text-blue-800 font-medium">AVI usa tu perfil para protegerte</p>
-            <p className="text-xs text-blue-600 mt-0.5">
+            <p className="text-xs text-indigo-600 mt-0.5">
               Te alerta cuando un producto contiene alergenos, sugiere alternativas mas saludables
               segun tu dieta, y adapta las recomendaciones a tu familia.
             </p>
@@ -252,7 +252,7 @@ export default function PerfilNutricionalPage() {
               onChange={(e) => setCustomAllergen(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && addCustomAllergen()}
               placeholder="Agregar otra alergia..."
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
             />
             <button
               onClick={addCustomAllergen}
@@ -281,13 +281,13 @@ export default function PerfilNutricionalPage() {
                   onClick={() => toggleGoal(goal.id)}
                   className={`w-full text-left p-3 rounded-lg border-2 transition-all ${
                     isActive
-                      ? 'border-blue-400 bg-blue-50'
+                      ? 'border-blue-400 bg-indigo-50'
                       : 'border-gray-200 hover:border-gray-300'
                   }`}
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium text-gray-900">{goal.label}</span>
-                    {isActive && <Check className="h-4 w-4 text-blue-600" />}
+                    {isActive && <Check className="h-4 w-4 text-indigo-600" />}
                   </div>
                   <p className="text-xs text-gray-500 mt-0.5">{goal.description}</p>
                 </button>
@@ -303,7 +303,7 @@ export default function PerfilNutricionalPage() {
           <div className="flex items-center space-x-4">
             <button
               onClick={() => { setFamilySize(Math.max(1, familySize - 1)); setSaved(false) }}
-              className="w-10 h-10 rounded-full border-2 border-gray-300 flex items-center justify-center text-gray-600 hover:border-blue-500 hover:text-blue-600"
+              className="w-10 h-10 rounded-full border-2 border-gray-300 flex items-center justify-center text-gray-600 hover:border-indigo-500 hover:text-indigo-600"
             >
               -
             </button>
@@ -313,7 +313,7 @@ export default function PerfilNutricionalPage() {
             </div>
             <button
               onClick={() => { setFamilySize(familySize + 1); setSaved(false) }}
-              className="w-10 h-10 rounded-full border-2 border-gray-300 flex items-center justify-center text-gray-600 hover:border-blue-500 hover:text-blue-600"
+              className="w-10 h-10 rounded-full border-2 border-gray-300 flex items-center justify-center text-gray-600 hover:border-indigo-500 hover:text-indigo-600"
             >
               +
             </button>
@@ -325,13 +325,13 @@ export default function PerfilNutricionalPage() {
           <div className="bg-green-50 border border-green-200 rounded-xl p-4">
             <p className="text-sm text-green-800 font-medium mb-2">Perfil guardado</p>
             <div className="flex flex-col gap-2">
-              <a href="/familia" className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1">
+              <a href="/familia" className="text-sm text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1">
                 → Configurar tu familia (alergias, hijos, mascotas)
               </a>
-              <a href="/presupuesto" className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1">
+              <a href="/presupuesto" className="text-sm text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1">
                 → Definir tu presupuesto mensual
               </a>
-              <a href="/listas" className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1">
+              <a href="/listas" className="text-sm text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1">
                 → Crear tu primera lista de compras
               </a>
             </div>

@@ -33,7 +33,7 @@ interface Family {
 
 const ROLE_CONFIG: Record<string, { label: string; icon: typeof User; color: string; bg: string }> = {
   master: { label: 'Administrador', icon: Crown, color: 'text-amber-600', bg: 'bg-amber-100' },
-  adult: { label: 'Adulto', icon: User, color: 'text-blue-600', bg: 'bg-blue-100' },
+  adult: { label: 'Adulto', icon: User, color: 'text-indigo-600', bg: 'bg-blue-100' },
   child: { label: 'Hijo/a', icon: Baby, color: 'text-purple-600', bg: 'bg-purple-100' },
   elder: { label: 'Adulto mayor', icon: Heart, color: 'text-rose-600', bg: 'bg-rose-100' },
   pet: { label: 'Mascota', icon: Dog, color: 'text-orange-600', bg: 'bg-orange-100' },
@@ -140,7 +140,7 @@ export default function FamiliaPage() {
 
   if (loading) return (
     <div className="avi-page flex items-center justify-center min-h-screen">
-      <Loader2 className="h-8 w-8 text-blue-600 animate-spin" />
+      <Loader2 className="h-8 w-8 text-indigo-600 animate-spin" />
     </div>
   )
 
@@ -243,7 +243,7 @@ export default function FamiliaPage() {
                     {copied ? <><Check className="h-4 w-4 text-green-600" /> Copiado</> : <><Copy className="h-4 w-4" /> Copiar link</>}
                   </button>
                   <a href={`mailto:?subject=${encodeURIComponent('Unete a AVI Shopper')}&body=${encodeURIComponent(`Te invito a "${family.name}" en AVI Shopper:\n\n${inviteUrl}`)}`}
-                    className="flex items-center justify-center gap-2 py-2.5 bg-blue-50 text-blue-700 rounded-xl text-sm font-medium hover:bg-blue-100 transition-colors">
+                    className="flex items-center justify-center gap-2 py-2.5 bg-indigo-50 text-indigo-700 rounded-xl text-sm font-medium hover:bg-blue-100 transition-colors">
                     <Mail className="h-4 w-4" /> Email
                   </a>
                   <a href={`sms:?body=${encodeURIComponent(`Unete a AVI Shopper: ${inviteUrl}`)}`}
@@ -403,7 +403,7 @@ export default function FamiliaPage() {
                         {['adult', 'child', 'elder'].map((r) => (
                           <button key={r} onClick={() => setNewRole(r)}
                             className={`flex-1 py-2 rounded-lg text-xs font-medium border-2 ${
-                              newRole === r ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-200 text-gray-500'
+                              newRole === r ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'border-gray-200 text-gray-500'
                             }`}>
                             {r === 'adult' ? 'Adulto' : r === 'child' ? 'Hijo/a' : 'Adulto mayor'}
                           </button>

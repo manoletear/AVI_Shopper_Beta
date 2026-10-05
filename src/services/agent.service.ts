@@ -44,6 +44,25 @@ const TOOLS: Anthropic.Tool[] = [
     },
   },
   {
+    name: 'get_all_lists',
+    description: 'Muestra todas las listas de compras del usuario. Usa cuando dice "mis listas", "que listas tengo", "listas anteriores", "lista del asado".',
+    input_schema: {
+      type: 'object' as const,
+      properties: {},
+    },
+  },
+  {
+    name: 'search_history',
+    description: 'Busca en el historial de compras. Usa cuando dice "cuando compre", "ultima vez que compre", "cuanto gaste en", "donde compre".',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        product: { type: 'string' as const, description: 'Producto a buscar' },
+      },
+      required: ['product'],
+    },
+  },
+  {
     name: 'remove_item',
     description: 'Quita un producto de la lista. Usa cuando dice "quita", "saca", "elimina", "ya no necesito".',
     input_schema: {
@@ -303,6 +322,61 @@ async function executeTool(
 
       await prisma.shoppingItem.delete({ where: { id: item.id } });
       return { success: true, data: { removed: item.name }, message: `${item.name} eliminado de tu lista` };
+    }
+
+    case 'get_all_lists': {
+      const lists = await prisma.shoppingList.findMany({
+        where: { userId },
+        include: { items: true },
+        orderBy: { updatedAt: 'desc' },
+        take: 10,
+      });
+
+      if (lists.length === 0) {
+        return { success: true, data: [], message: 'No tienes listas de compras. ¿Quieres que cree una?' };
+      }
+
+      const summary = lists.map((l) => {
+        const pending = l.items.filter((i) => !i.checked).length;
+        return `• ${l.name} (${pending} pendientes de ${l.items.length})`;
+      }).join('\n');
+
+      return {
+        success: true,
+        data: lists.map((l) => ({ id: l.id, name: l.name, itemCount: l.items.length, pending: l.items.filter((i) => !i.checked).length })),
+        message: `Tienes ${lists.length} lista${lists.length > 1 ? 's' : ''}:\n\n${summary}\n\n¿Quieres ver alguna o crear una nueva?`,
+      };
+    }
+
+    case 'search_history': {
+      const purchases = await prisma.purchaseHistory.findMany({
+        where: {
+          userId,
+          productName: { contains: input.product as string },
+        },
+        orderBy: { purchasedAt: 'desc' },
+        take: 5,
+      });
+
+      if (purchases.length === 0) {
+        return { success: true, data: [], message: `No encontre compras de "${input.product}" en tu historial.` };
+      }
+
+      const lines = purchases.map((p) => {
+        const date = new Date(p.purchasedAt).toLocaleDateString('es-CL', { day: 'numeric', month: 'short' });
+        const price = p.price ? `$${p.price.toLocaleString('es-CL')}` : '';
+        return `• ${p.productName} ${price} en ${p.storeName || '?'} (${date})`;
+      });
+
+      const avgPrice = purchases.filter((p) => p.price).length > 0
+        ? Math.round(purchases.filter((p) => p.price).reduce((s, p) => s + (p.price || 0), 0) / purchases.filter((p) => p.price).length)
+        : null;
+
+      return {
+        success: true,
+        data: purchases,
+        message: `Encontre ${purchases.length} compras de "${input.product}":\n\n${lines.join('\n')}${avgPrice ? `\n\nPrecio promedio: $${avgPrice.toLocaleString('es-CL')}` : ''}`,
+      };
     }
 
     case 'get_list': {

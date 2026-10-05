@@ -22,7 +22,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-700 flex flex-col justify-center px-4">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-600 via-indigo-600 to-violet-700 flex flex-col justify-center px-4">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center mb-6">
           <div className="w-16 h-16 bg-white/10 backdrop-blur-sm rounded-2xl flex items-center justify-center overflow-hidden border border-white/20">
@@ -62,7 +62,7 @@ export default function LoginPage() {
             </div>
 
             <button type="submit" disabled={loading}
-              className="w-full flex items-center justify-center bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-xl font-semibold hover:shadow-lg disabled:opacity-50 transition-all">
+              className="w-full flex items-center justify-center bg-gradient-to-r from-indigo-600 to-indigo-700 text-white py-3 rounded-xl font-semibold hover:shadow-lg disabled:opacity-50 transition-all">
               {loading ? (
                 <span className="flex gap-1"><span className="w-2 h-2 bg-white rounded-full animate-bounce"></span><span className="w-2 h-2 bg-white rounded-full animate-bounce" style={{animationDelay:'150ms'}}></span><span className="w-2 h-2 bg-white rounded-full animate-bounce" style={{animationDelay:'300ms'}}></span></span>
               ) : (
@@ -72,11 +72,11 @@ export default function LoginPage() {
           </form>
 
           <div className="mt-3 text-center">
-            <a href="/recuperar" className="text-sm text-gray-400 hover:text-blue-500">¿Olvidaste tu contrasena?</a>
+            <a href="/recuperar" className="text-sm text-gray-400 hover:text-indigo-500">¿Olvidaste tu contrasena?</a>
           </div>
 
           <p className="mt-3 text-center text-sm text-gray-500">
-            ¿No tienes cuenta? <a href="/registro" className="font-medium text-blue-600 hover:text-blue-500">Registrate gratis</a>
+            ¿No tienes cuenta? <a href="/registro" className="font-medium text-indigo-600 hover:text-indigo-500">Registrate gratis</a>
           </p>
 
           <div className="mt-4 pt-4 border-t">
