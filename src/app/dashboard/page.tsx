@@ -261,7 +261,7 @@ export default function DashboardPage() {
         )}
 
         {/* Promo Banner */}
-        <a href={STORE_DEALS[promoIndex].href} className="block mb-4 active:scale-[0.98] transition-transform">
+        <a href={STORE_DEALS[promoIndex].href} className="block mb-4 active:scale-[0.98] transition-transform relative z-10">
           {STORE_DEALS[promoIndex].banner ? (
             <img
               src={STORE_DEALS[promoIndex].banner}
