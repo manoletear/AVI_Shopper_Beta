@@ -20,14 +20,14 @@ interface DashboardData {
 }
 
 const CATEGORIES = [
-  { href: '/comparar', label: 'Mejor Precio', icon: Zap, bg: 'bg-amber-500', text: 'text-white' },
-  { href: '/listas', label: 'Listas', icon: ListChecks, bg: 'bg-indigo-500', text: 'text-white' },
-  { href: '/reposicion', label: 'Reponer', icon: Repeat, bg: 'bg-teal-500', text: 'text-white' },
-  { href: '/salud', label: 'Salud', icon: Heart, bg: 'bg-rose-500', text: 'text-white' },
-  { href: '/familia', label: 'Familia', icon: Users, bg: 'bg-violet-500', text: 'text-white' },
-  { href: '/presupuesto', label: 'Gastos', icon: Wallet, bg: 'bg-emerald-500', text: 'text-white' },
-  { href: '/perfil', label: 'Perfil', icon: User, bg: 'bg-slate-500', text: 'text-white' },
-  { href: '/configuracion/cuentas', label: 'Supers', icon: Store, bg: 'bg-orange-500', text: 'text-white' },
+  { href: '/comparar', label: 'Mejor Precio', emoji: '⚡', bg: 'bg-amber-100' },
+  { href: '/listas', label: 'Listas', emoji: '📋', bg: 'bg-indigo-100' },
+  { href: '/reposicion', label: 'Reponer', emoji: '📦', bg: 'bg-teal-100' },
+  { href: '/salud', label: 'Salud', emoji: '💚', bg: 'bg-green-100' },
+  { href: '/familia', label: 'Familia', emoji: '👨‍👩‍👧', bg: 'bg-violet-100' },
+  { href: '/presupuesto', label: 'Gastos', emoji: '💰', bg: 'bg-emerald-100' },
+  { href: '/historial', label: 'Historial', emoji: '🧾', bg: 'bg-slate-100' },
+  { href: '/configuracion/cuentas', label: 'Supers', emoji: '🏪', bg: 'bg-orange-100' },
 ]
 
 const STORE_DEALS = [
@@ -280,18 +280,15 @@ export default function DashboardPage() {
         </a>
 
         {/* Category Icons */}
-        <div className="grid grid-cols-4 gap-3 mb-5">
-          {CATEGORIES.map((cat) => {
-            const Icon = cat.icon
-            return (
-              <a key={cat.href} href={cat.href} className="flex flex-col items-center gap-1.5 py-1 group">
-                <div className={`${cat.bg} rounded-2xl flex items-center justify-center shadow-md group-active:scale-90 transition-transform`} style={{ width: 52, height: 52 }}>
-                  <Icon className={`h-5 w-5 ${cat.text} stroke-[1.8]`} />
-                </div>
-                <span className="text-[11px] font-semibold text-gray-600">{cat.label}</span>
-              </a>
-            )
-          })}
+        <div className="grid grid-cols-4 gap-2 mb-5">
+          {CATEGORIES.map((cat) => (
+            <a key={cat.href} href={cat.href} className="flex flex-col items-center gap-1 py-1 group">
+              <div className={`w-14 h-14 ${cat.bg} rounded-full flex items-center justify-center group-active:scale-90 transition-transform`}>
+                <span className="text-2xl">{cat.emoji}</span>
+              </div>
+              <span className="text-[10px] font-medium text-gray-600 text-center leading-tight">{cat.label}</span>
+            </a>
+          ))}
         </div>
 
         {/* Onboarding */}

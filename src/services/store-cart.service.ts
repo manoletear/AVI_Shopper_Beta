@@ -292,14 +292,64 @@ export async function buildUnimarcCart(
   email: string,
   password: string
 ): Promise<CartResult> {
+  return buildWithApifyActor('avi-shopper~avi-cart-unimarc', 'Unimarc', 'https://www.unimarc.cl', items, email, password);
+}
+
+export async function buildTottusCart(
+  items: CartItem[],
+  email: string,
+  password: string
+): Promise<CartResult> {
+  return buildWithApifyActor('avi-shopper~avi-cart-tottus', 'Tottus', 'https://www.tottus.cl', items, email, password);
+}
+
+async function buildWithApifyActor(
+  actorId: string, storeName: string, fallbackUrl: string,
+  items: CartItem[], email: string, password: string
+): Promise<CartResult> {
+  const apifyToken = process.env.APIFY_API_TOKEN;
+  if (!apifyToken || !password) {
+    return {
+      success: false, store: storeName, cartUrl: fallbackUrl,
+      itemsAdded: 0, itemsFailed: items.map((i) => i.productName), totalEstimated: 0,
+      error: 'Credenciales o token no configurados.',
+    };
+  }
+
+  try {
+    const runRes = await fetch(
+      `https://api.apify.com/v2/acts/${actorId}/runs?waitForFinish=120`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apifyToken}` },
+        body: JSON.stringify({ email, password, items: items.map((i) => ({ name: i.productName, quantity: i.quantity })) }),
+      }
+    );
+    if (!runRes.ok) throw new Error('Run failed');
+    const run = await runRes.json();
+    const datasetId = run.data?.defaultDatasetId;
+    if (!datasetId) throw new Error('No dataset');
+
+    const dataRes = await fetch(
+      `https://api.apify.com/v2/datasets/${datasetId}/items?clean=true`,
+      { headers: { Authorization: `Bearer ${apifyToken}` } }
+    );
+    const results = await dataRes.json();
+    const result = results[0];
+    if (result?.success) {
+      return {
+        success: true, store: storeName, cartUrl: result.cartUrl || fallbackUrl,
+        itemsAdded: result.itemsAdded || 0, itemsFailed: result.itemsFailed || [],
+        totalEstimated: result.totalEstimated || 0,
+      };
+    }
+  } catch (e: any) {
+    console.error(`${storeName} Apify cart error:`, e.message);
+  }
+
   return {
-    success: false,
-    store: 'Unimarc',
-    cartUrl: 'https://www.unimarc.cl',
-    itemsAdded: 0,
-    itemsFailed: items.map((i) => i.productName),
-    totalEstimated: 0,
-    error: 'Unimarc aun no soporta carrito automatico. Usa los links directos.',
+    success: false, store: storeName, cartUrl: fallbackUrl,
+    itemsAdded: 0, itemsFailed: items.map((i) => i.productName), totalEstimated: 0,
   };
 }
 
@@ -319,6 +369,8 @@ export async function buildCart(
       return buildLiderCart(items, credentials.email, credentials.password);
     case 'unimarc':
       return buildUnimarcCart(items, credentials.email, credentials.password);
+    case 'tottus':
+      return buildTottusCart(items, credentials.email, credentials.password);
     default:
       return {
         success: false,
