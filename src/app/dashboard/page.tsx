@@ -71,6 +71,26 @@ const STORE_DEALS = [
     price: 'Cyber Lider',
     href: '/comparar?q=Panales+Huggies%2C+Panales+Pampers%2C+Toallitas+bebe',
   },
+  {
+    store: 'Tottus',
+    banner: '/banners/tottus-banner.svg',
+    color: '#2D5F2D',
+    emoji: '🥛',
+    product: 'Leche Soprole $750',
+    discount: 'Cyber Monday 44% dcto',
+    price: 'Cyber Tottus',
+    href: '/comparar?q=Leche+Soprole%2C+Queso+Gauda%2C+Yogurt',
+  },
+  {
+    store: 'Tottus',
+    banner: '/banners/tottus-banner.svg',
+    color: '#2D5F2D',
+    emoji: '🥩',
+    product: 'Carnes desde $12.490/kg',
+    discount: 'Cyber Monday 27% dcto',
+    price: 'Cyber Tottus',
+    href: '/comparar?q=Lomo+liso%2C+Filete%2C+Carne+vacuno',
+  },
 ]
 
 export default function DashboardPage() {
