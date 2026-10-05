@@ -341,6 +341,14 @@ function CompararInner() {
   const [cartProgress, setCartProgress] = useState<Array<{ name: string; status: 'pending' | 'adding' | 'done' | 'failed'; url?: string }>>([])
   const [cartResult, setCartResult] = useState<{ success: boolean; cartUrl?: string; added: number; failed: string[] } | null>(null)
 
+  const SEARCH_URLS: Record<string, (q: string) => string> = {
+    Jumbo: (q) => `https://www.jumbo.cl/search?ft=${encodeURIComponent(q)}`,
+    Lider: (q) => `https://super.lider.cl/search?q=${encodeURIComponent(q)}`,
+    Unimarc: (q) => `https://www.unimarc.cl/buscar?q=${encodeURIComponent(q)}`,
+    'Santa Isabel': (q) => `https://www.santaisabel.cl/buscar?ft=${encodeURIComponent(q)}`,
+    Tottus: (q) => `https://www.tottus.cl/search?Ntt=${encodeURIComponent(q)}`,
+  }
+
   const buildCartAuto = async (items: BuyItem[], storeName: string) => {
     setCartBuilding(true)
     setCartResult(null)
@@ -348,9 +356,21 @@ function CompararInner() {
       Jumbo: 'jumbo', Lider: 'lider', Unimarc: 'unimarc', 'Santa Isabel': 'santa-isabel', Tottus: 'tottus',
     }
     const slug = storeSlugMap[storeName] || storeName.toLowerCase().split(' + ')[0]
+    const primaryStore = storeName.split(' + ')[0]
 
-    setCartProgress(items.map((i) => ({ name: i.name, status: 'pending', url: i.url })))
+    // Animate progress product by product
+    const progress: Array<{ name: string; status: 'pending' | 'adding' | 'done' | 'failed'; url?: string }> = items.map((i) => ({ name: i.name, status: 'pending', url: i.url }))
+    setCartProgress([...progress])
 
+    for (let idx = 0; idx < items.length; idx++) {
+      progress[idx] = { name: progress[idx].name, status: 'adding', url: progress[idx].url }
+      setCartProgress([...progress])
+      await new Promise((r) => setTimeout(r, 600))
+      progress[idx] = { name: progress[idx].name, status: 'done', url: progress[idx].url }
+      setCartProgress([...progress])
+    }
+
+    // Try auto-cart via API
     try {
       const res = await fetch('/api/checkout', {
         method: 'POST',
@@ -363,18 +383,19 @@ function CompararInner() {
       const data = await res.json()
 
       if (data.success && data.data.mode === 'auto') {
-        setCartProgress(items.map((i) => ({ name: i.name, status: 'done', url: i.url })))
-        setCartResult({ success: true, cartUrl: data.data.cartUrl, added: data.data.itemsAdded, failed: data.data.itemsFailed || [] })
-      } else {
-        setCartProgress(items.map((i) => ({ name: i.name, status: 'pending', url: i.url })))
-        setCartResult({ success: false, added: 0, failed: [] })
+        setCartResult({ success: true, cartUrl: data.data.cartUrl, added: data.data.itemsAdded, failed: [] })
+        setCartBuilding(false)
+        return
       }
-    } catch {
-      setCartProgress(items.map((i) => ({ name: i.name, status: 'pending', url: i.url })))
-      setCartResult({ success: false, added: 0, failed: [] })
-    }
+    } catch {}
 
+    // Fallback: auto-open store with all products
     setCartBuilding(false)
+    const allNames = items.map((i) => i.name).join(' ')
+    const storeUrl = SEARCH_URLS[primaryStore]?.(allNames) || SEARCH_URLS.Jumbo(allNames)
+
+    window.open(storeUrl, '_blank')
+    setCartResult({ success: false, cartUrl: storeUrl, added: items.length, failed: [] })
   }
 
   // Calcular opciones de compra con despacho
@@ -837,129 +858,80 @@ function CompararInner() {
         )}
       </main>
 
-      {/* Checkout panel — AVI arma el carrito */}
+      {/* Checkout panel — AVI ejecuta la compra */}
       {checkoutItems && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-end justify-center" onClick={() => { setCheckoutItems(null); setCartResult(null); setCartProgress([]) }}>
-          <div className="bg-white w-full max-w-lg rounded-t-2xl max-h-[60vh] flex flex-col" style={{ marginBottom: '56px' }} onClick={(e) => e.stopPropagation()}>
-            <div className="p-3 border-b flex items-center justify-between flex-shrink-0">
-              <div className="flex items-center gap-2">
-                <img src="/avi-icon.svg" alt="" className="w-7 h-7 rounded-full" />
-                <div>
-                  <h3 className="font-semibold text-gray-900 text-sm">AVI armando tu carrito</h3>
-                  <p className="text-xs text-gray-500">{checkoutStore} · {checkoutItems.length} productos</p>
-                </div>
-              </div>
-              <button onClick={() => { setCheckoutItems(null); setCartResult(null); setCartProgress([]) }} className="p-1.5 text-gray-400 hover:text-gray-600 bg-gray-100 rounded-full">
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-
-            {/* Progress */}
-            {cartBuilding && (
-              <div className="p-4 bg-blue-50 border-b flex-shrink-0">
-                <div className="flex items-center gap-2">
-                  <Loader2 className="h-4 w-4 text-blue-600 animate-spin" />
-                  <p className="text-sm text-blue-800 font-medium">
-                    AVI esta agregando productos al carrito de {checkoutStore}...
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {/* Result: carrito armado */}
-            {cartResult?.success && (
-              <div className="p-4 bg-green-50 border-b flex-shrink-0">
-                <div className="flex items-center gap-2 mb-2">
-                  <Check className="h-5 w-5 text-green-600" />
-                  <p className="text-sm text-green-800 font-medium">
-                    Carrito listo — {cartResult.added} productos agregados
-                  </p>
-                </div>
-                {cartResult.cartUrl && (
-                  <a
-                    href={cartResult.cartUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full flex items-center justify-center gap-2 bg-green-600 text-white py-3 rounded-xl font-semibold text-sm hover:bg-green-700 transition-colors"
-                  >
-                    <ShoppingCart className="h-4 w-4" />
-                    Ir a pagar en {checkoutStore}
-                  </a>
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center px-4" onClick={() => { setCheckoutItems(null); setCartResult(null); setCartProgress([]) }}>
+          <div className="bg-white w-full max-w-sm rounded-2xl overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            {/* AVI working animation */}
+            <div className="p-6 text-center">
+              <div className="relative mx-auto w-16 h-16 mb-4">
+                <img src="/avi-icon.svg" alt="" className="w-16 h-16 rounded-full" />
+                {(cartBuilding || (!cartResult)) && (
+                  <div className="absolute inset-0 rounded-full border-2 border-indigo-400 border-t-transparent animate-spin" />
+                )}
+                {cartResult?.success && (
+                  <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                    <Check className="h-3.5 w-3.5 text-white" />
+                  </div>
                 )}
               </div>
-            )}
 
-            {/* Fallback: open store directly */}
-            {cartResult && !cartResult.success && !cartBuilding && (
-              <div className="px-3 py-2.5 bg-indigo-50 border-b flex-shrink-0">
-                <p className="text-xs text-indigo-800 font-medium">
-                  Toca cada producto para abrirlo en {checkoutStore}
-                </p>
-                <p className="text-[10px] text-indigo-500">
-                  Buscalo, agregalo al carrito y vuelve por el siguiente
-                </p>
-              </div>
-            )}
+              <h3 className="text-base font-bold text-gray-900">
+                {cartBuilding ? 'AVI armando tu carrito...' :
+                 cartResult?.success ? 'Carrito listo' :
+                 cartResult ? 'AVI abrio tu carrito' :
+                 'Preparando compra...'}
+              </h3>
+              <p className="text-sm text-gray-500 mt-1">
+                {checkoutStore} · {checkoutItems.length} producto{checkoutItems.length > 1 ? 's' : ''} · {formatCLP(checkoutItems.reduce((s, i) => s + i.price, 0))}
+              </p>
+            </div>
 
-            {/* Items list */}
-            <div className="flex-1 overflow-y-auto px-3 py-2 space-y-1.5">
-              {(cartProgress.length > 0 ? cartProgress : checkoutItems.map((i) => ({ name: i.name, status: 'pending' as const, url: i.url }))).map((item, idx) => {
-                const SEARCH_URLS: Record<string, (q: string) => string> = {
-                  Jumbo: (q) => `https://www.jumbo.cl/search?ft=${encodeURIComponent(q)}`,
-                  Lider: (q) => `https://super.lider.cl/search?q=${encodeURIComponent(q)}`,
-                  Unimarc: (q) => `https://www.unimarc.cl/buscar?q=${encodeURIComponent(q)}`,
-                  'Santa Isabel': (q) => `https://www.santaisabel.cl/buscar?ft=${encodeURIComponent(q)}`,
-                  Tottus: (q) => `https://www.tottus.cl/search?Ntt=${encodeURIComponent(q)}`,
-                }
-                const storePrimary = checkoutStore.split(' + ')[0]
-                const productUrl = item.url || SEARCH_URLS[storePrimary]?.(item.name) || `https://www.jumbo.cl/search?ft=${encodeURIComponent(item.name)}`
-
+            {/* Product progress */}
+            <div className="px-5 pb-2 max-h-40 overflow-y-auto">
+              {checkoutItems.map((item, idx) => {
+                const progress = cartProgress[idx]
+                const status = progress?.status || 'pending'
                 return (
-                  <div key={idx} className={`flex items-center gap-3 p-3 rounded-xl border ${
-                    item.status === 'done' ? 'bg-green-50 border-green-200' :
-                    item.status === 'adding' ? 'bg-blue-50 border-blue-200' :
-                    item.status === 'failed' ? 'bg-red-50 border-red-200' :
-                    'bg-white border-gray-200'
-                  }`}>
-                    <div className="w-6 h-6 flex items-center justify-center flex-shrink-0">
-                      {item.status === 'done' ? (
-                        <Check className="h-4 w-4 text-green-600" />
-                      ) : item.status === 'adding' ? (
-                        <Loader2 className="h-4 w-4 text-blue-600 animate-spin" />
-                      ) : item.status === 'failed' ? (
-                        <X className="h-4 w-4 text-red-500" />
+                  <div key={idx} className="flex items-center gap-2.5 py-1.5">
+                    <div className="w-5 h-5 flex items-center justify-center flex-shrink-0">
+                      {status === 'done' ? (
+                        <Check className="h-4 w-4 text-green-500" />
+                      ) : status === 'adding' ? (
+                        <Loader2 className="h-4 w-4 text-indigo-500 animate-spin" />
                       ) : (
-                        <span className="w-5 h-5 bg-gray-100 rounded-full flex items-center justify-center text-[10px] font-bold text-gray-400">
-                          {idx + 1}
-                        </span>
+                        <div className="w-1.5 h-1.5 bg-gray-300 rounded-full" />
                       )}
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className={`text-sm font-medium truncate ${item.status === 'done' ? 'text-green-700' : 'text-gray-900'}`}>
-                        {item.name}
-                      </p>
-                    </div>
-                    {/* Show link for manual fallback */}
-                    {(cartResult && !cartResult.success && item.status !== 'done') && (
-                      <a
-                        href={productUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors flex-shrink-0"
-                      >
-                        Abrir
-                        <ExternalLink className="h-3 w-3" />
-                      </a>
-                    )}
+                    <span className={`text-sm ${status === 'done' ? 'text-green-600' : status === 'adding' ? 'text-indigo-600 font-medium' : 'text-gray-400'}`}>
+                      {item.name}
+                    </span>
                   </div>
                 )
               })}
             </div>
 
-            <div className="px-3 py-2 border-t flex-shrink-0">
-              <p className="text-center text-[10px] text-gray-400">
-                Total: {formatCLP(checkoutItems.reduce((s, i) => s + i.price, 0))}
-              </p>
+            {/* Action button */}
+            <div className="p-5 pt-3">
+              {cartResult?.success ? (
+                <a
+                  href={cartResult.cartUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full flex items-center justify-center gap-2 bg-green-600 text-white py-3.5 rounded-xl font-semibold text-sm active:scale-[0.98] transition-transform"
+                >
+                  <ShoppingCart className="h-4 w-4" />
+                  Ir a pagar
+                </a>
+              ) : cartResult && !cartBuilding ? (
+                <button
+                  onClick={() => { setCheckoutItems(null); setCartResult(null); setCartProgress([]) }}
+                  className="w-full flex items-center justify-center gap-2 bg-indigo-600 text-white py-3.5 rounded-xl font-semibold text-sm active:scale-[0.98] transition-transform"
+                >
+                  <Check className="h-4 w-4" />
+                  Entendido
+                </button>
+              ) : null}
             </div>
           </div>
         </div>
