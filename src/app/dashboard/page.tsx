@@ -73,9 +73,9 @@ const STORE_DEALS = [
   },
   {
     store: 'Tottus',
-    banner: '/banners/tottus-banner.svg',
+    banner: '',
     color: '#2D5F2D',
-    emoji: '🥛',
+    emoji: '🥛🧀',
     product: 'Leche Soprole $750',
     discount: 'Cyber Monday 44% dcto',
     price: 'Cyber Tottus',
@@ -83,9 +83,9 @@ const STORE_DEALS = [
   },
   {
     store: 'Tottus',
-    banner: '/banners/tottus-banner.svg',
+    banner: '',
     color: '#2D5F2D',
-    emoji: '🥩',
+    emoji: '🥩🔥',
     product: 'Carnes desde $12.490/kg',
     discount: 'Cyber Monday 27% dcto',
     price: 'Cyber Tottus',
@@ -93,9 +93,9 @@ const STORE_DEALS = [
   },
   {
     store: 'Unimarc',
-    banner: '/banners/unimarc-banner.svg',
+    banner: '',
     color: '#6B21A8',
-    emoji: '🫒',
+    emoji: '🫒🍳',
     product: 'Aceite Chef 1L $2.490',
     discount: '20% dcto adicional Unipay',
     price: 'Club Unimarc',
@@ -103,9 +103,9 @@ const STORE_DEALS = [
   },
   {
     store: 'Unimarc',
-    banner: '/banners/unimarc-banner.svg',
+    banner: '',
     color: '#6B21A8',
-    emoji: '🥛',
+    emoji: '🥛🧈',
     product: 'Lacteos y Quesos hasta 30%',
     discount: 'Frutas desde $990/kg',
     price: 'Exclusivo online',
@@ -260,13 +260,27 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* Promo Banner — Supermarket ads with SVG banners */}
+        {/* Promo Banner */}
         <a href={STORE_DEALS[promoIndex].href} className="block mb-4 active:scale-[0.98] transition-transform">
-          <img
-            src={STORE_DEALS[promoIndex].banner}
-            alt={`${STORE_DEALS[promoIndex].store} — ${STORE_DEALS[promoIndex].product}`}
-            className="w-full rounded-2xl shadow-md"
-          />
+          {STORE_DEALS[promoIndex].banner ? (
+            <img
+              src={STORE_DEALS[promoIndex].banner}
+              alt={`${STORE_DEALS[promoIndex].store} — ${STORE_DEALS[promoIndex].product}`}
+              className="w-full rounded-2xl shadow-md"
+            />
+          ) : (
+            <div className="rounded-2xl shadow-md p-5 text-white relative overflow-hidden min-h-[120px]" style={{ backgroundColor: STORE_DEALS[promoIndex].color }}>
+              <div className="flex justify-between items-start">
+                <div>
+                  <span className="text-xs font-bold bg-white/20 px-2.5 py-1 rounded-full">{STORE_DEALS[promoIndex].store}</span>
+                  <h2 className="text-xl font-bold mt-2">{STORE_DEALS[promoIndex].product}</h2>
+                  <p className="text-sm text-white/80 mt-0.5">{STORE_DEALS[promoIndex].discount}</p>
+                  <p className="text-xs text-white/60 mt-1">{STORE_DEALS[promoIndex].price}</p>
+                </div>
+                <span className="text-4xl">{STORE_DEALS[promoIndex].emoji}</span>
+              </div>
+            </div>
+          )}
           <div className="flex justify-center gap-1.5 mt-2.5">
             {STORE_DEALS.map((deal, i) => (
               <button
