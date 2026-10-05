@@ -52,7 +52,7 @@ const STORE_CONFIG: Record<string, {
   },
   unimarc: {
     name: 'Unimarc',
-    searchUrlTemplate: (q) => `https://www.unimarc.cl/category?search=${encodeURIComponent(q)}`,
+    searchUrlTemplate: (q) => `https://www.google.com/search?q=${encodeURIComponent(q + ' site:unimarc.cl')}`,
     deliveryFee: 2790,
     color: '#ea580c',
   },

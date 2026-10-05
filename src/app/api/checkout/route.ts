@@ -9,7 +9,7 @@ import { recordMultiplePurchases } from '@/services/purchase-learning.service';
 const STORE_SEARCH_URLS: Record<string, (q: string) => string> = {
   jumbo: (q) => `https://www.jumbo.cl/search?ft=${encodeURIComponent(q)}`,
   lider: (q) => `https://super.lider.cl/search?q=${encodeURIComponent(q)}`,
-  unimarc: (q) => `https://www.unimarc.cl/category?search=${encodeURIComponent(q)}`,
+  unimarc: (q) => `https://www.google.com/search?q=${encodeURIComponent(q + ' site:unimarc.cl')}`,
   'santa-isabel': (q) => `https://www.santaisabel.cl/buscar?ft=${encodeURIComponent(q)}`,
   tottus: (q) => `https://www.google.com/search?q=${encodeURIComponent(q + ' site:tottus.cl')}`,
 };
