@@ -152,7 +152,7 @@ export default function DashboardPage() {
             <p className="text-sm font-semibold text-gray-900 mb-2">AVI en tu grupo familiar</p>
             <div className="space-y-3">
               <a
-                href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '56912345678'}?text=Hola%20AVI`}
+                href={`https://wa.me/${process.env.NEXT_PUBLIC_WA_NUMBER || '56900000000'}?text=Hola%20AVI`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-3 p-3 bg-[#25D366] text-white rounded-xl active:scale-[0.98] transition-transform"
@@ -168,7 +168,7 @@ export default function DashboardPage() {
                 <ol className="text-[11px] text-gray-500 space-y-1">
                   <li>1. Abre tu grupo familiar en WhatsApp</li>
                   <li>2. Toca "Agregar participante"</li>
-                  <li>3. Agrega el numero: <span className="font-bold text-gray-700">{process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '+56 9 1234 5678'}</span></li>
+                  <li>3. Agrega el numero: <span className="font-bold text-gray-700">{process.env.NEXT_PUBLIC_WA_NUMBER ? `+${process.env.NEXT_PUBLIC_WA_NUMBER}` : '+56 9 0000 0000'}</span></li>
                   <li>4. AVI se presentara automaticamente</li>
                 </ol>
                 <p className="text-[10px] text-gray-400 mt-2">Todos los miembros del grupo podran hablar con AVI</p>

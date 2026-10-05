@@ -344,9 +344,9 @@ function CompararInner() {
   const SEARCH_URLS: Record<string, (q: string) => string> = {
     Jumbo: (q) => `https://www.jumbo.cl/search?ft=${encodeURIComponent(q)}`,
     Lider: (q) => `https://super.lider.cl/search?q=${encodeURIComponent(q)}`,
-    Unimarc: (q) => `https://www.unimarc.cl/buscar?q=${encodeURIComponent(q)}`,
+    Unimarc: (q) => `https://www.unimarc.cl/category?search=${encodeURIComponent(q)}`,
     'Santa Isabel': (q) => `https://www.santaisabel.cl/buscar?ft=${encodeURIComponent(q)}`,
-    Tottus: (q) => `https://www.tottus.cl/search?Ntt=${encodeURIComponent(q)}`,
+    Tottus: (q) => `https://www.google.com/search?q=${encodeURIComponent(q + ' site:tottus.cl')}`,
   }
 
   const buildCartAuto = async (items: BuyItem[], storeName: string) => {

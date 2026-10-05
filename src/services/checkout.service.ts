@@ -52,7 +52,7 @@ const STORE_CONFIG: Record<string, {
   },
   unimarc: {
     name: 'Unimarc',
-    searchUrlTemplate: (q) => `https://www.unimarc.cl/buscar?q=${encodeURIComponent(q)}`,
+    searchUrlTemplate: (q) => `https://www.unimarc.cl/category?search=${encodeURIComponent(q)}`,
     deliveryFee: 2790,
     color: '#ea580c',
   },
@@ -64,7 +64,7 @@ const STORE_CONFIG: Record<string, {
   },
   tottus: {
     name: 'Tottus',
-    searchUrlTemplate: (q) => `https://www.tottus.cl/search?Ntt=${encodeURIComponent(q)}`,
+    searchUrlTemplate: (q) => `https://www.google.com/search?q=${encodeURIComponent(q + ' site:tottus.cl')}`,
     deliveryFee: 2990,
     color: '#0d9488',
   },
