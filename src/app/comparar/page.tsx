@@ -350,6 +350,13 @@ function CompararInner() {
   }
 
   const [currentProductIdx, setCurrentProductIdx] = useState(-1)
+  const cartWindowRef = useRef<Window | null>(null)
+
+  const getProductUrl = (item: BuyItem, storeName: string) => {
+    if (item.url && !item.url.includes('google.com/search')) return item.url
+    const urlFn = SEARCH_URLS[storeName] || SEARCH_URLS.Jumbo
+    return urlFn(item.name)
+  }
 
   const buildCartAuto = async (items: BuyItem[], storeName: string) => {
     setCartBuilding(true)
@@ -359,10 +366,8 @@ function CompararInner() {
     const progress: Array<{ name: string; status: 'pending' | 'adding' | 'done' | 'failed'; url?: string }> = items.map((i) => ({ name: i.name, status: 'pending', url: i.url }))
     setCartProgress([...progress])
 
-    // Open first product immediately
-    const urlFn = SEARCH_URLS[primaryStore] || SEARCH_URLS.Jumbo
-    const firstUrl = items[0].url || urlFn(items[0].name)
-    window.open(firstUrl, '_blank')
+    const firstUrl = getProductUrl(items[0], primaryStore)
+    cartWindowRef.current = window.open(firstUrl, 'avi-cart')
 
     progress[0] = { name: progress[0].name, status: 'adding', url: progress[0].url }
     setCartProgress([...progress])
@@ -374,21 +379,23 @@ function CompararInner() {
   const openNextProduct = () => {
     if (!checkoutItems || currentProductIdx < 0) return
     const primaryStore = checkoutStore.split(' + ')[0]
-    const urlFn = SEARCH_URLS[primaryStore] || SEARCH_URLS.Jumbo
 
-    // Mark current as done
     const progress = [...cartProgress]
     progress[currentProductIdx] = { ...progress[currentProductIdx], status: 'done' }
 
     const nextIdx = currentProductIdx + 1
     if (nextIdx < checkoutItems.length) {
-      // Open next product
-      const nextUrl = checkoutItems[nextIdx].url || urlFn(checkoutItems[nextIdx].name)
-      window.open(nextUrl, '_blank')
+      const nextUrl = getProductUrl(checkoutItems[nextIdx], primaryStore)
+      // Reuse the same tab
+      if (cartWindowRef.current && !cartWindowRef.current.closed) {
+        cartWindowRef.current.location.href = nextUrl
+        cartWindowRef.current.focus()
+      } else {
+        cartWindowRef.current = window.open(nextUrl, 'avi-cart')
+      }
       progress[nextIdx] = { ...progress[nextIdx], status: 'adding' }
       setCurrentProductIdx(nextIdx)
     } else {
-      // All done
       setCurrentProductIdx(-1)
     }
     setCartProgress(progress)
