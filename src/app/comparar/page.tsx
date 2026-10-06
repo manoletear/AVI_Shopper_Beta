@@ -352,10 +352,20 @@ function CompararInner() {
   const [currentProductIdx, setCurrentProductIdx] = useState(-1)
   const cartWindowRef = useRef<Window | null>(null)
 
+  useEffect(() => {
+    const handler = (e: MessageEvent) => {
+      if (e.data?.type === 'AVI_PRODUCT_ADDED') {
+        openNextProduct()
+      }
+    }
+    window.addEventListener('message', handler)
+    return () => window.removeEventListener('message', handler)
+  }, [currentProductIdx, checkoutItems, checkoutStore, cartProgress])
+
   const getProductUrl = (item: BuyItem, storeName: string) => {
-    if (item.url && !item.url.includes('google.com/search')) return item.url
-    const urlFn = SEARCH_URLS[storeName] || SEARCH_URLS.Jumbo
-    return urlFn(item.name)
+    let url = item.url && !item.url.includes('google.com/search') ? item.url : SEARCH_URLS[storeName]?.(item.name) || SEARCH_URLS.Jumbo(item.name)
+    const separator = url.includes('?') ? '&' : '?'
+    return `${url}${separator}avi_add=1`
   }
 
   const buildCartAuto = async (items: BuyItem[], storeName: string) => {
