@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, Suspense } from 'react'
 import { useSession } from 'next-auth/react'
 import { useSearchParams } from 'next/navigation'
 import {
-  ArrowLeft, Search, ShoppingCart, Plus, X, Loader2,
+  ArrowLeft, ArrowRight, Search, ShoppingCart, Plus, X, Loader2,
   DollarSign, TrendingDown, Heart, AlertTriangle,
   Check, Store, Zap, Trash2, Settings, Shield, ExternalLink,
   Camera,
@@ -349,52 +349,49 @@ function CompararInner() {
     Tottus: (q) => `https://www.google.com/search?q=${encodeURIComponent(q + ' site:tottus.cl')}`,
   }
 
+  const [currentProductIdx, setCurrentProductIdx] = useState(-1)
+
   const buildCartAuto = async (items: BuyItem[], storeName: string) => {
     setCartBuilding(true)
     setCartResult(null)
-    const storeSlugMap: Record<string, string> = {
-      Jumbo: 'jumbo', Lider: 'lider', Unimarc: 'unimarc', 'Santa Isabel': 'santa-isabel', Tottus: 'tottus',
-    }
-    const slug = storeSlugMap[storeName] || storeName.toLowerCase().split(' + ')[0]
     const primaryStore = storeName.split(' + ')[0]
 
-    // Animate progress product by product
     const progress: Array<{ name: string; status: 'pending' | 'adding' | 'done' | 'failed'; url?: string }> = items.map((i) => ({ name: i.name, status: 'pending', url: i.url }))
     setCartProgress([...progress])
 
-    for (let idx = 0; idx < items.length; idx++) {
-      progress[idx] = { name: progress[idx].name, status: 'adding', url: progress[idx].url }
-      setCartProgress([...progress])
-      await new Promise((r) => setTimeout(r, 600))
-      progress[idx] = { name: progress[idx].name, status: 'done', url: progress[idx].url }
-      setCartProgress([...progress])
-    }
-
-    // Try auto-cart via API
-    try {
-      const res = await fetch('/api/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          storeSlug: slug,
-          items: items.map((i) => ({ productName: i.name, quantity: 1, productUrl: i.url })),
-        }),
-      })
-      const data = await res.json()
-
-      if (data.success && data.data.mode === 'auto') {
-        setCartResult({ success: true, cartUrl: data.data.cartUrl, added: data.data.itemsAdded, failed: [] })
-        setCartBuilding(false)
-        return
-      }
-    } catch {}
-
-    // Fallback: open store search for first product
-    setCartBuilding(false)
+    // Open first product immediately
     const urlFn = SEARCH_URLS[primaryStore] || SEARCH_URLS.Jumbo
-    const firstUrl = urlFn(items[0].name)
+    const firstUrl = items[0].url || urlFn(items[0].name)
     window.open(firstUrl, '_blank')
-    setCartResult({ success: false, cartUrl: firstUrl, added: items.length, failed: [] })
+
+    progress[0] = { name: progress[0].name, status: 'adding', url: progress[0].url }
+    setCartProgress([...progress])
+    setCurrentProductIdx(0)
+    setCartBuilding(false)
+    setCartResult({ success: false, cartUrl: firstUrl, added: 0, failed: [] })
+  }
+
+  const openNextProduct = () => {
+    if (!checkoutItems || currentProductIdx < 0) return
+    const primaryStore = checkoutStore.split(' + ')[0]
+    const urlFn = SEARCH_URLS[primaryStore] || SEARCH_URLS.Jumbo
+
+    // Mark current as done
+    const progress = [...cartProgress]
+    progress[currentProductIdx] = { ...progress[currentProductIdx], status: 'done' }
+
+    const nextIdx = currentProductIdx + 1
+    if (nextIdx < checkoutItems.length) {
+      // Open next product
+      const nextUrl = checkoutItems[nextIdx].url || urlFn(checkoutItems[nextIdx].name)
+      window.open(nextUrl, '_blank')
+      progress[nextIdx] = { ...progress[nextIdx], status: 'adding' }
+      setCurrentProductIdx(nextIdx)
+    } else {
+      // All done
+      setCurrentProductIdx(-1)
+    }
+    setCartProgress(progress)
   }
 
   // Calcular opciones de compra con despacho
@@ -877,12 +874,15 @@ function CompararInner() {
 
               <h3 className="text-base font-bold text-gray-900">
                 {cartBuilding ? 'AVI armando tu carrito...' :
-                 cartResult?.success ? 'Carrito listo' :
-                 cartResult ? 'AVI abrio tu carrito' :
+                 currentProductIdx >= 0 ? `Agrega en ${checkoutStore}` :
+                 cartProgress.every((p) => p.status === 'done') ? 'Carrito completo' :
                  'Preparando compra...'}
               </h3>
               <p className="text-sm text-gray-500 mt-1">
-                {checkoutStore} · {checkoutItems.length} producto{checkoutItems.length > 1 ? 's' : ''} · {formatCLP(checkoutItems.reduce((s, i) => s + i.price, 0))}
+                {currentProductIdx >= 0
+                  ? `Producto ${currentProductIdx + 1} de ${checkoutItems.length} — agrega y vuelve`
+                  : `${checkoutStore} · ${checkoutItems.length} producto${checkoutItems.length > 1 ? 's' : ''} · ${formatCLP(checkoutItems.reduce((s, i) => s + i.price, 0))}`
+                }
               </p>
             </div>
 
@@ -910,25 +910,34 @@ function CompararInner() {
               })}
             </div>
 
-            {/* Action button */}
-            <div className="p-5 pt-3">
-              {cartResult?.success ? (
-                <a
-                  href={cartResult.cartUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full flex items-center justify-center gap-2 bg-green-600 text-white py-3.5 rounded-xl font-semibold text-sm active:scale-[0.98] transition-transform"
-                >
-                  <ShoppingCart className="h-4 w-4" />
-                  Ir a pagar
-                </a>
-              ) : cartResult && !cartBuilding ? (
+            {/* Action buttons */}
+            <div className="p-4 pt-2 space-y-2">
+              {currentProductIdx >= 0 && currentProductIdx < (checkoutItems?.length || 0) - 1 ? (
                 <button
-                  onClick={() => { setCheckoutItems(null); setCartResult(null); setCartProgress([]) }}
+                  onClick={openNextProduct}
                   className="w-full flex items-center justify-center gap-2 bg-indigo-600 text-white py-3.5 rounded-xl font-semibold text-sm active:scale-[0.98] transition-transform"
                 >
+                  <ArrowRight className="h-4 w-4" />
+                  Ya agregue — siguiente producto
+                </button>
+              ) : currentProductIdx >= 0 ? (
+                <button
+                  onClick={() => {
+                    openNextProduct()
+                    setTimeout(() => { setCheckoutItems(null); setCartResult(null); setCartProgress([]); setCurrentProductIdx(-1) }, 500)
+                  }}
+                  className="w-full flex items-center justify-center gap-2 bg-green-600 text-white py-3.5 rounded-xl font-semibold text-sm active:scale-[0.98] transition-transform"
+                >
                   <Check className="h-4 w-4" />
-                  Entendido
+                  Ya agregue — ir al carrito
+                </button>
+              ) : cartProgress.every((p) => p.status === 'done') ? (
+                <button
+                  onClick={() => { setCheckoutItems(null); setCartResult(null); setCartProgress([]); setCurrentProductIdx(-1) }}
+                  className="w-full flex items-center justify-center gap-2 bg-green-600 text-white py-3.5 rounded-xl font-semibold text-sm active:scale-[0.98] transition-transform"
+                >
+                  <Check className="h-4 w-4" />
+                  Listo
                 </button>
               ) : null}
             </div>
