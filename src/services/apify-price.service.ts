@@ -23,6 +23,7 @@ interface ApifyProduct {
   url?: string;
   imageUrl?: string;
   categories?: string;
+  sku?: string;
 }
 
 interface PriceComparison {
@@ -146,17 +147,23 @@ export async function searchUnimarc(
     apiToken
   );
 
-  return items.map((item: any) => ({
+  return items.map((item: any) => {
+    const sku = item.sku || item.product_id || item.id || '';
+    const cartUrl = sku
+      ? `https://www.unimarc.cl/checkout/cart/add?sku=${sku}&qty=1&seller=1&sc=1`
+      : `https://www.unimarc.cl/search?q=${encodeURIComponent(item.name)}`;
+    return {
     name: item.name,
     brand: item.brand || '',
     price: item.price,
     listPrice: item.list_price,
     inStock: (item.available_quantity ?? 1) > 0,
     store: 'Unimarc',
-    url: item.url,
+    sku,
+    url: cartUrl,
     imageUrl: item.image,
     categories: item.categories,
-  }));
+  }});
 }
 
 // ============================================

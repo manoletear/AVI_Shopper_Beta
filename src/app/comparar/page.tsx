@@ -344,7 +344,7 @@ function CompararInner() {
   const SEARCH_URLS: Record<string, (q: string) => string> = {
     Jumbo: (q) => `https://www.jumbo.cl/search?ft=${encodeURIComponent(q)}`,
     Lider: (q) => `https://super.lider.cl/search?q=${encodeURIComponent(q)}`,
-    Unimarc: (q) => `https://www.google.com/search?q=${encodeURIComponent(q + ' site:unimarc.cl')}`,
+    Unimarc: (q) => `https://www.unimarc.cl/search?q=${encodeURIComponent(q)}`,
     'Santa Isabel': (q) => `https://www.santaisabel.cl/buscar?ft=${encodeURIComponent(q)}`,
     Tottus: (q) => `https://www.google.com/search?q=${encodeURIComponent(q + ' site:tottus.cl')}`,
   }
