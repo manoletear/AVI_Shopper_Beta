@@ -263,11 +263,14 @@ export default function DashboardPage() {
         {/* Promo Banner */}
         <a href={STORE_DEALS[promoIndex].href} className="block mb-4 active:scale-[0.98] transition-transform relative z-10">
           {STORE_DEALS[promoIndex].banner ? (
-            <img
-              src={STORE_DEALS[promoIndex].banner}
-              alt={`${STORE_DEALS[promoIndex].store} — ${STORE_DEALS[promoIndex].product}`}
-              className="w-full rounded-2xl shadow-md"
-            />
+            <div className="rounded-2xl shadow-md overflow-hidden" style={{ backgroundColor: STORE_DEALS[promoIndex].color, minHeight: 120 }}>
+              <img
+                src={STORE_DEALS[promoIndex].banner}
+                alt={`${STORE_DEALS[promoIndex].store} — ${STORE_DEALS[promoIndex].product}`}
+                className="w-full block"
+                loading="eager"
+              />
+            </div>
           ) : (
             <div className="rounded-2xl shadow-md text-white overflow-hidden" style={{ backgroundColor: STORE_DEALS[promoIndex].color }}>
               <div className="p-5 min-h-[120px] flex justify-between items-start" style={{ background: `linear-gradient(135deg, ${STORE_DEALS[promoIndex].color}, ${STORE_DEALS[promoIndex].color}dd)` }}>
