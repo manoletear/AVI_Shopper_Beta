@@ -5,11 +5,13 @@
   const url = window.location.href;
   const params = new URLSearchParams(window.location.search);
   const aviAutoAdd = params.get('avi_add') === '1';
+  const aviProductName = params.get('avi_product') || '';
+  const isProductPage = url.includes('/ip/') || url.includes('/p?') || url.includes('/product/');
+  const isSearchPage = url.includes('/search') || url.includes('/buscar') || url.includes('/busca');
 
-  // Only auto-add if AVI sent the user here
   if (!aviAutoAdd) return;
 
-  console.log('[AVI] Auto-add mode active');
+  console.log('[AVI] Auto-add mode active, product:', aviProductName, 'isProductPage:', isProductPage);
 
   function waitForElement(selector, timeout = 10000) {
     return new Promise((resolve) => {
@@ -36,7 +38,22 @@
 
     // Lider (super.lider.cl)
     if (url.includes('super.lider.cl')) {
-      addButton = await waitForElement('[data-automation-id="add-to-cart"], [data-automation-id="atc"]');
+      if (isProductPage) {
+        // Product page — direct add button
+        addButton = await waitForElement('[data-automation-id="add-to-cart"], [data-automation-id="atc"]');
+      } else if (isSearchPage) {
+        // Search page — find the first product's add button
+        addButton = await waitForElement('[data-automation-id="add-to-cart"]');
+        if (!addButton) {
+          const btns = document.querySelectorAll('button');
+          for (const btn of btns) {
+            if (btn.textContent?.trim().match(/^\+?\s*Agregar$/i)) {
+              addButton = btn;
+              break;
+            }
+          }
+        }
+      }
     }
 
     // Jumbo (jumbo.cl)

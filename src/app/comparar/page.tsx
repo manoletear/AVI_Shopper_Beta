@@ -365,7 +365,7 @@ function CompararInner() {
   const getProductUrl = (item: BuyItem, storeName: string) => {
     let url = item.url && !item.url.includes('google.com/search') ? item.url : SEARCH_URLS[storeName]?.(item.name) || SEARCH_URLS.Jumbo(item.name)
     const separator = url.includes('?') ? '&' : '?'
-    return `${url}${separator}avi_add=1`
+    return `${url}${separator}avi_add=1&avi_product=${encodeURIComponent(item.name)}`
   }
 
   const buildCartAuto = async (items: BuyItem[], storeName: string) => {
