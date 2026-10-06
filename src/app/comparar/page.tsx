@@ -863,8 +863,16 @@ function CompararInner() {
 
       {/* Checkout panel — AVI ejecuta la compra */}
       {checkoutItems && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center px-4" onClick={() => { setCheckoutItems(null); setCartResult(null); setCartProgress([]) }}>
-          <div className="bg-white w-full max-w-sm rounded-2xl overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center px-4" onClick={() => { setCheckoutItems(null); setCartResult(null); setCartProgress([]); setCurrentProductIdx(-1) }}>
+          <div className="bg-white w-full max-w-sm rounded-2xl overflow-hidden shadow-2xl relative" onClick={(e) => e.stopPropagation()}>
+            {/* Close button */}
+            <button
+              onClick={() => { setCheckoutItems(null); setCartResult(null); setCartProgress([]); setCurrentProductIdx(-1) }}
+              className="absolute top-3 right-3 p-1.5 bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 z-10"
+            >
+              <X className="h-4 w-4" />
+            </button>
+
             {/* AVI working animation */}
             <div className="p-6 text-center">
               <div className="relative mx-auto w-16 h-16 mb-4">
@@ -887,10 +895,13 @@ function CompararInner() {
               </h3>
               <p className="text-sm text-gray-500 mt-1">
                 {currentProductIdx >= 0
-                  ? `Producto ${currentProductIdx + 1} de ${checkoutItems.length} — agrega y vuelve`
+                  ? `Producto ${currentProductIdx + 1} de ${checkoutItems.length}`
                   : `${checkoutStore} · ${checkoutItems.length} producto${checkoutItems.length > 1 ? 's' : ''} · ${formatCLP(checkoutItems.reduce((s, i) => s + i.price, 0))}`
                 }
               </p>
+              {currentProductIdx === 0 && (
+                <p className="text-xs text-amber-600 mt-1">Agrega el producto en la pestana del super y vuelve aqui</p>
+              )}
             </div>
 
             {/* Product progress */}
