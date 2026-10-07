@@ -418,13 +418,14 @@ function CompararInner() {
       }
       const checkoutUrl = CHECKOUT_URLS[primaryStore] || CHECKOUT_URLS.Jumbo
 
-      // Navigate the same tab to checkout
+      // Navigate the same tab to checkout with avi_add flag
+      const checkoutWithAvi = `${checkoutUrl}${checkoutUrl.includes('?') ? '&' : '?'}avi_add=1`
       setTimeout(() => {
         if (cartWindowRef.current && !cartWindowRef.current.closed) {
-          cartWindowRef.current.location.href = checkoutUrl
+          cartWindowRef.current.location.href = checkoutWithAvi
           cartWindowRef.current.focus()
         } else {
-          window.open(checkoutUrl, 'avi-cart')
+          window.open(checkoutWithAvi, 'avi-cart')
         }
       }, 1500)
     }

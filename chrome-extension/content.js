@@ -156,5 +156,56 @@
     setTimeout(() => div.remove(), 4000);
   }
 
-  autoAdd();
+  // Also handle checkout pages — auto-click "Continuar" and advance steps
+  async function autoCheckout() {
+    if (!url.includes('/cart') && !url.includes('/checkout')) return;
+    if (!aviAutoAdd) return;
+
+    await new Promise((r) => setTimeout(r, 2000));
+
+    // Lider cart page — click "Continuar"
+    if (url.includes('super.lider.cl/cart')) {
+      const continueBtn = document.querySelector('[data-automation-id="checkout-btn"], button.checkout-btn');
+      if (!continueBtn) {
+        const btns = document.querySelectorAll('button');
+        for (const btn of btns) {
+          if (btn.textContent?.trim() === 'Continuar') {
+            console.log('[AVI] Clicking Continuar on cart page');
+            btn.click();
+            showAviNotification('AVI avanzando al checkout...');
+            return;
+          }
+        }
+      } else {
+        continueBtn.click();
+        showAviNotification('AVI avanzando al checkout...');
+      }
+    }
+
+    // Generic checkout — look for common "next step" buttons
+    if (url.includes('/checkout')) {
+      const btns = document.querySelectorAll('button, a');
+      for (const btn of btns) {
+        const text = btn.textContent?.trim() || '';
+        if (text.match(/^(Continuar|Siguiente|Pagar|Confirmar pedido|Finalizar compra)$/i)) {
+          console.log('[AVI] Found checkout button:', text);
+          showAviNotification('AVI encontro: ' + text + '. Revisa y confirma.');
+          // Don't auto-click payment — let the user review and confirm
+          btn.style.outline = '3px solid #4F46E5';
+          btn.style.outlineOffset = '4px';
+          btn.style.animation = 'pulse 1.5s infinite';
+          const style = document.createElement('style');
+          style.textContent = '@keyframes pulse { 0%,100% { outline-color: #4F46E5; } 50% { outline-color: #22c55e; } }';
+          document.head.appendChild(style);
+          break;
+        }
+      }
+    }
+  }
+
+  if (isProductPage || isSearchPage) {
+    autoAdd();
+  } else {
+    autoCheckout();
+  }
 })();

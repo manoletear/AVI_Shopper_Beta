@@ -16,13 +16,19 @@
       "matches": [
         "https://super.lider.cl/ip/*",
         "https://super.lider.cl/search*",
+        "https://super.lider.cl/cart*",
+        "https://super.lider.cl/checkout*",
         "https://www.jumbo.cl/*/p",
         "https://www.jumbo.cl/search*",
+        "https://www.jumbo.cl/checkout*",
+        "https://www.jumbo.cl/mi-carro*",
         "https://www.unimarc.cl/product/*",
         "https://www.unimarc.cl/search*",
+        "https://www.unimarc.cl/checkout*",
         "https://www.tottus.cl/*",
         "https://www.santaisabel.cl/*/p",
-        "https://www.santaisabel.cl/buscar*"
+        "https://www.santaisabel.cl/buscar*",
+        "https://www.santaisabel.cl/checkout*"
       ],
       "js": ["content.js"],
       "run_at": "document_idle"
