@@ -31,26 +31,28 @@
   }
 
   async function autoAdd() {
+    // Prevent double execution
+    if (document.querySelector('[data-avi-done]')) return;
+    const marker = document.createElement('div');
+    marker.setAttribute('data-avi-done', '1');
+    marker.style.display = 'none';
+    document.body.appendChild(marker);
+
     // Wait for page to fully load
-    await new Promise((r) => setTimeout(r, 2000));
+    await new Promise((r) => setTimeout(r, 3000));
 
     let addButton = null;
 
     // Lider (super.lider.cl)
     if (url.includes('super.lider.cl')) {
-      if (isProductPage) {
-        // Product page — direct add button
-        addButton = await waitForElement('[data-automation-id="add-to-cart"], [data-automation-id="atc"]');
-      } else if (isSearchPage) {
-        // Search page — find the first product's add button
-        addButton = await waitForElement('[data-automation-id="add-to-cart"]');
-        if (!addButton) {
-          const btns = document.querySelectorAll('button');
-          for (const btn of btns) {
-            if (btn.textContent?.trim().match(/^\+?\s*Agregar$/i)) {
-              addButton = btn;
-              break;
-            }
+      // Always look for the FIRST "Agregar" button only
+      addButton = await waitForElement('[data-automation-id="add-to-cart"]');
+      if (!addButton) {
+        const btns = document.querySelectorAll('button');
+        for (const btn of btns) {
+          if (btn.textContent?.trim().match(/^\+?\s*Agregar$/i)) {
+            addButton = btn;
+            break;
           }
         }
       }
