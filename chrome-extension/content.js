@@ -156,56 +156,81 @@
     setTimeout(() => div.remove(), 4000);
   }
 
-  // Also handle checkout pages — auto-click "Continuar" and advance steps
   async function autoCheckout() {
-    if (!url.includes('/cart') && !url.includes('/checkout')) return;
     if (!aviAutoAdd) return;
+    if (!url.includes('/cart') && !url.includes('/checkout')) return;
+    if (document.querySelector('[data-avi-checkout-done]')) return;
 
-    await new Promise((r) => setTimeout(r, 2000));
+    const marker2 = document.createElement('div');
+    marker2.setAttribute('data-avi-checkout-done', '1');
+    marker2.style.display = 'none';
+    document.body.appendChild(marker2);
 
-    // Lider cart page — click "Continuar"
-    if (url.includes('super.lider.cl/cart')) {
-      const continueBtn = document.querySelector('[data-automation-id="checkout-btn"], button.checkout-btn');
-      if (!continueBtn) {
-        const btns = document.querySelectorAll('button');
-        for (const btn of btns) {
-          if (btn.textContent?.trim() === 'Continuar') {
-            console.log('[AVI] Clicking Continuar on cart page');
-            btn.click();
-            showAviNotification('AVI avanzando al checkout...');
-            return;
-          }
-        }
-      } else {
-        continueBtn.click();
-        showAviNotification('AVI avanzando al checkout...');
+    await new Promise((r) => setTimeout(r, 3000));
+
+    console.log('[AVI] Checkout page detected:', url);
+
+    // Find ANY button that advances the checkout
+    const allButtons = document.querySelectorAll('button, a[role="button"], a.btn, [class*="checkout"] button');
+    let targetBtn = null;
+    let targetAction = '';
+
+    for (const btn of allButtons) {
+      const text = (btn.textContent || '').trim();
+      if (!text) continue;
+
+      // Payment/confirm buttons — highlight but DON'T click
+      if (text.match(/^(Pagar|Confirmar pedido|Finalizar compra|Realizar pedido|Confirmar y pagar)$/i)) {
+        console.log('[AVI] Payment button found:', text);
+        showAviNotification('AVI llego al pago. Revisa y confirma: ' + text);
+        btn.style.outline = '4px solid #4F46E5';
+        btn.style.outlineOffset = '4px';
+        btn.style.animation = 'aviPulse 1.5s infinite';
+        const style = document.createElement('style');
+        style.textContent = '@keyframes aviPulse { 0%,100% { outline-color: #4F46E5; } 50% { outline-color: #22c55e; } }';
+        document.head.appendChild(style);
+        btn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+
+      // Navigation buttons — auto-click
+      if (text.match(/^(Continuar|Siguiente|Continuar al pago|Ir al pago|Continuar compra)$/i)) {
+        targetBtn = btn;
+        targetAction = text;
+        break;
       }
     }
 
-    // Generic checkout — look for common "next step" buttons
-    if (url.includes('/checkout')) {
-      const btns = document.querySelectorAll('button, a');
-      for (const btn of btns) {
-        const text = btn.textContent?.trim() || '';
-        if (text.match(/^(Continuar|Siguiente|Pagar|Confirmar pedido|Finalizar compra)$/i)) {
-          console.log('[AVI] Found checkout button:', text);
-          showAviNotification('AVI encontro: ' + text + '. Revisa y confirma.');
-          // Don't auto-click payment — let the user review and confirm
-          btn.style.outline = '3px solid #4F46E5';
-          btn.style.outlineOffset = '4px';
-          btn.style.animation = 'pulse 1.5s infinite';
-          const style = document.createElement('style');
-          style.textContent = '@keyframes pulse { 0%,100% { outline-color: #4F46E5; } 50% { outline-color: #22c55e; } }';
-          document.head.appendChild(style);
-          break;
-        }
-      }
+    if (targetBtn) {
+      console.log('[AVI] Clicking checkout button:', targetAction);
+      showAviNotification('AVI avanzando: ' + targetAction);
+      targetBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      await new Promise((r) => setTimeout(r, 500));
+      targetBtn.click();
+    } else {
+      console.log('[AVI] No checkout button found, waiting...');
+      // Retry after page updates (SPAs change content without reload)
+      setTimeout(() => {
+        document.querySelector('[data-avi-checkout-done]')?.remove();
+        autoCheckout();
+      }, 3000);
     }
   }
 
   if (isProductPage || isSearchPage) {
     autoAdd();
-  } else {
+  } else if (url.includes('/cart') || url.includes('/checkout')) {
     autoCheckout();
+
+    // Watch for SPA page changes (Lider is a SPA)
+    const observer = new MutationObserver(() => {
+      const newUrl = window.location.href;
+      if (newUrl !== url && (newUrl.includes('/checkout') || newUrl.includes('/cart'))) {
+        console.log('[AVI] Page changed to:', newUrl);
+        document.querySelector('[data-avi-checkout-done]')?.remove();
+        setTimeout(autoCheckout, 2000);
+      }
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
   }
 })();
