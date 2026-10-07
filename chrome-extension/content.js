@@ -122,10 +122,9 @@
 
       console.log('[AVI] Product added to cart!');
 
-      // Show confirmation
-      showAviNotification('AVI agrego el producto al carrito');
+      showAviNotification('Producto agregado al carrito');
 
-      // Notify the opener window
+      // Notify the AVI window to advance to next product
       if (window.opener) {
         window.opener.postMessage({ type: 'AVI_PRODUCT_ADDED', url }, '*');
       }

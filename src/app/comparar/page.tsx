@@ -406,7 +406,27 @@ function CompararInner() {
       progress[nextIdx] = { ...progress[nextIdx], status: 'adding' }
       setCurrentProductIdx(nextIdx)
     } else {
+      // All products added — go to checkout
       setCurrentProductIdx(-1)
+
+      const CHECKOUT_URLS: Record<string, string> = {
+        Jumbo: 'https://www.jumbo.cl/checkout',
+        Lider: 'https://super.lider.cl/cart',
+        Unimarc: 'https://www.unimarc.cl/checkout',
+        Tottus: 'https://www.tottus.cl/tottus-cl/checkout',
+        'Santa Isabel': 'https://www.santaisabel.cl/checkout',
+      }
+      const checkoutUrl = CHECKOUT_URLS[primaryStore] || CHECKOUT_URLS.Jumbo
+
+      // Navigate the same tab to checkout
+      setTimeout(() => {
+        if (cartWindowRef.current && !cartWindowRef.current.closed) {
+          cartWindowRef.current.location.href = checkoutUrl
+          cartWindowRef.current.focus()
+        } else {
+          window.open(checkoutUrl, 'avi-cart')
+        }
+      }, 1500)
     }
     setCartProgress(progress)
   }
@@ -952,21 +972,25 @@ function CompararInner() {
                 <button
                   onClick={() => {
                     openNextProduct()
-                    setTimeout(() => { setCheckoutItems(null); setCartResult(null); setCartProgress([]); setCurrentProductIdx(-1) }, 500)
                   }}
                   className="w-full flex items-center justify-center gap-2 bg-green-600 text-white py-3.5 rounded-xl font-semibold text-sm active:scale-[0.98] transition-transform"
                 >
-                  <Check className="h-4 w-4" />
-                  Ya agregue — ir al carrito
+                  <ShoppingCart className="h-4 w-4" />
+                  Ya agregue — ir a pagar
                 </button>
               ) : cartProgress.every((p) => p.status === 'done') ? (
-                <button
-                  onClick={() => { setCheckoutItems(null); setCartResult(null); setCartProgress([]); setCurrentProductIdx(-1) }}
-                  className="w-full flex items-center justify-center gap-2 bg-green-600 text-white py-3.5 rounded-xl font-semibold text-sm active:scale-[0.98] transition-transform"
-                >
-                  <Check className="h-4 w-4" />
-                  Listo
-                </button>
+                <>
+                  <p className="text-center text-sm text-green-700 font-medium mb-2">
+                    Todos los productos estan en tu carrito. AVI te llevo al checkout.
+                  </p>
+                  <button
+                    onClick={() => { setCheckoutItems(null); setCartResult(null); setCartProgress([]); setCurrentProductIdx(-1) }}
+                    className="w-full flex items-center justify-center gap-2 bg-green-600 text-white py-3.5 rounded-xl font-semibold text-sm active:scale-[0.98] transition-transform"
+                  >
+                    <Check className="h-4 w-4" />
+                    Cerrar
+                  </button>
+                </>
               ) : null}
             </div>
           </div>
