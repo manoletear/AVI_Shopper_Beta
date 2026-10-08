@@ -137,12 +137,16 @@ function generateDemoResults(query: string) {
   );
   if (!match) return [];
 
-  const [, product] = match;
+  const [matchedKey, product] = match;
+  const brandWords = qWords.filter((w) => w !== matchedKey && w.length > 2);
+  const brand = brandWords.length > 0 ? brandWords.map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : '';
+  const fullName = brand ? `${product.name} ${brand}` : product.name;
+
   return stores.map((store) => {
     const variation = 0.85 + Math.random() * 0.3;
     const price = Math.round(product.basePrice * variation / 10) * 10;
     return {
-      name: product.name, brand: '', store, price,
+      name: fullName, brand, store, price,
       inStock: true, url: undefined, imageUrl: undefined,
     };
   });

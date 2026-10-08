@@ -320,7 +320,7 @@ function CompararInner() {
   }
 
   const DELIVERY_FEES: Record<string, number> = {
-    Jumbo: 2990, Lider: 2490, Unimarc: 2790, 'Santa Isabel': 3490, 'Santa-isabel': 3490, Tottus: 2990,
+    Jumbo: 2990, Lider: 990, Unimarc: 2790, 'Santa Isabel': 3490, 'Santa-isabel': 3490, Tottus: 2990,
   }
 
   interface BuyItem { name: string; price: number; url?: string }
@@ -645,7 +645,7 @@ function CompararInner() {
             ) : (
               <>
                 <Zap className="h-5 w-5" />
-                <span>Comparar en 5 supermercados ({queries.length} producto{queries.length !== 1 ? 's' : ''})</span>
+                <span>Comparar en 4 supermercados ({queries.length} producto{queries.length !== 1 ? 's' : ''})</span>
               </>
             )}
           </button>
@@ -982,7 +982,7 @@ function CompararInner() {
               ) : cartProgress.every((p) => p.status === 'done') ? (
                 <>
                   <p className="text-center text-sm text-green-700 font-medium mb-2">
-                    Todos los productos estan en tu carrito. AVI te llevo al checkout.
+                    Productos agregados. Continua con tu compra en {checkoutStore}.
                   </p>
                   <button
                     onClick={() => { setCheckoutItems(null); setCartResult(null); setCartProgress([]); setCurrentProductIdx(-1) }}

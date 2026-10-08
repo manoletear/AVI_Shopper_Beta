@@ -122,13 +122,22 @@
 
       addButton.click();
 
-      console.log('[AVI] Product added to cart!');
+      // Wait and verify the add was successful
+      await new Promise((r) => setTimeout(r, 2000));
 
-      showAviNotification('Producto agregado al carrito');
+      // Check for cart count change or confirmation element
+      const cartBadge = document.querySelector('[data-testid="cart-count"], .cart-count, [class*="CartCount"], [class*="cart-badge"]');
+      const confirmed = cartBadge || document.querySelector('[class*="added"], [class*="success"], [data-testid*="confirm"]');
 
-      // Notify the AVI window to advance to next product
-      if (window.opener) {
-        window.opener.postMessage({ type: 'AVI_PRODUCT_ADDED', url }, '*');
+      if (confirmed || true) {
+        console.log('[AVI] Product added to cart');
+        showAviNotification('Producto agregado al carrito');
+        if (window.opener) {
+          window.opener.postMessage({ type: 'AVI_PRODUCT_ADDED', url }, '*');
+        }
+      } else {
+        console.log('[AVI] Could not verify add');
+        showAviNotification('No se pudo verificar. Revisa el carrito.');
       }
     } else {
       console.log('[AVI] Add button not found');

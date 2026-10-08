@@ -47,7 +47,7 @@ const STORE_CONFIG: Record<string, {
   lider: {
     name: 'Lider',
     searchUrlTemplate: (q) => `https://super.lider.cl/search?q=${encodeURIComponent(q)}`,
-    deliveryFee: 2490,
+    deliveryFee: 990,
     color: '#dc2626',
   },
   unimarc: {

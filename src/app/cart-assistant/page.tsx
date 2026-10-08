@@ -171,7 +171,7 @@ function CartAssistantInner() {
               </div>
               <h2 className="text-lg font-bold text-gray-900">¿Que necesitas comprar?</h2>
               <p className="text-sm text-gray-500 mt-1 max-w-xs mx-auto">
-                Dime que necesitas y te ayudo a armar la lista. Luego comparamos precios en 5 supermercados.
+                Dime que necesitas y te ayudo a armar la lista. Luego comparamos precios en 4 supermercados.
               </p>
               <div className="mt-4 space-y-2">
                 {[
