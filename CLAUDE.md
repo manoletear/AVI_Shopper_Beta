@@ -1,20 +1,29 @@
 # AVI Shopper
 
 Asistente inteligente de compras familiares para Chile.
-Compara precios en 5 supermercados (Jumbo, Lider, Santa Isabel, Unimarc, Tottus),
-analiza nutricion, predice reposicion, controla presupuesto, y compra por ti.
+Compara precios en 4 supermercados (Jumbo, Lider, Unimarc, Tottus),
+analiza nutricion, predice reposicion, controla presupuesto.
+Con extension de Chrome, agrega productos al carrito automaticamente.
 
 ## Stack
 
 - Next.js 14 (App Router) + TypeScript + Tailwind CSS
 - Prisma ORM + PostgreSQL (Supabase soc-chile, schema public)
 - NextAuth (credentials, JWT)
-- Apify (scraping de precios reales en 5 supermercados)
-- TypeSafe (decisiones inteligentes: matching, salud, alergenos)
+- Apify (scraping de precios reales en 4 supermercados)
+- Claude API — Haiku (cart chat) + Sonnet (agent con 17 tools + vision)
 - Open Food Facts (NutriScore, NOVA, datos nutricionales)
-- Claude API + tool_use (agente conversacional con 12 tools)
 - WhatsApp Cloud API (Meta)
 - Flow.cl (pasarela de pagos)
+- Chrome Extension (auto-agregar al carrito de supermercados)
+
+## Paleta de marca
+
+- Primary: #4F46E5 (Indigo) — inteligencia, premium
+- Accent: #0D9488 (Teal) — ahorro, frescura
+- CTA: #F59E0B (Amber) — urgencia, promociones
+- Background: #F8FAFC — fondo app
+- Text: #0F172A — titulos
 
 ## Comandos
 
@@ -24,30 +33,28 @@ npm run build            # build de produccion
 npm run test             # tests Playwright
 npx prisma generate      # generar cliente Prisma
 npx prisma db push       # aplicar schema a DB
-npx tsx prisma/seed.ts   # poblar con datos demo
+npx tsx prisma/seed-manu.ts  # seed con datos de Manuel
 ```
 
 ## Estructura
 
-- `src/app/` — 16 paginas + 32 API routes
-- `src/services/` — 16 servicios de negocio
-- `src/components/` — BottomNav, SmartAlerts
-- `src/lib/` — auth, prisma, validaciones, family resolver
-- `prisma/` — schema (18 modelos) y seed
-- `public/` — avi-icon.svg (Warm Assistant)
+- `src/app/` — 20+ paginas + 35+ API routes
+- `src/services/` — 19 servicios de negocio
+- `src/components/` — BottomNav, SmartAlerts, OnboardingWizard, AdBanner
+- `src/lib/` — auth, prisma, validaciones, family resolver, encryption
+- `prisma/` — schema (19 modelos) y seeds
+- `public/` — avi-icon.svg, banners de supermercados
+- `chrome-extension/` — extension para compra automatica
 - `tests/` — tests E2E con Playwright
 
 ## Convenciones
 
 - Todo texto UI en español chileno
 - Precios en CLP (enteros, no centavos)
-- Validacion con Zod (usar error.issues, no error.errors)
+- Paleta indigo (no blue-600)
 - API responses via successResponse/errorResponse
 - Auth: requireAuth() retorna userId
 - Multi-familia: usar familyWhere(userId) en queries compartidas
-- No commitear .env — solo .env.example
-- Prisma en postgresql para produccion, sqlite para dev local
-- CI cambia provider a sqlite con sed en el workflow
 
 ## Servicios
 
@@ -55,30 +62,27 @@ npx tsx prisma/seed.ts   # poblar con datos demo
 |----------|---------|
 | agent | Agente conversacional con 17 tool_use |
 | proactive-events | Feriados chilenos, cumpleanos, recordatorios |
-| encryption | AES-256-GCM para credenciales de supermercados |
-| apify-price | Precios reales via Apify actors |
+| encryption | AES-256-GCM para credenciales |
+| apify-price | Precios reales + demo fallback + busqueda semantica |
 | super-lider | Scraper de super.lider.cl |
 | openfoodfacts | NutriScore, NOVA, nutrientes |
-| typesafe-decision | Matching, salud, alergenos, urgencia |
-| health-intelligence | Alertas, alternativas, prediccion |
 | replenishment | Prediccion de reposicion |
-| price-observation | Historico de precios con timestamp |
+| price-observation | Historico de precios |
 | purchase-learning | Aprende marcas, tiendas, patrones |
 | checkout | Deep links + carrito automatico |
-| store-cart | Login y carrito en supermercados |
+| store-cart | Apify actors para carrito en supermercados |
 | whatsapp | WhatsApp Cloud API |
 | flow-payment | Pasarela de pagos Flow.cl |
-| cart | Comparacion y split cart |
-| nutrition | Score nutricional |
-| analytics | Metricas de uso |
+| monthly-nutrition | Analisis nutricional mensual |
 
 ## Deploy
 
 - Produccion: Vercel (avi-shopper-beta.vercel.app)
-- DB: Supabase soc-chile (sa-east-1, schema public, RLS activo)
+- DB: Supabase soc-chile (sa-east-1, schema public)
 - CI: GitHub Actions (typecheck + build + tests)
-- WhatsApp: webhook en /api/whatsapp
+- WhatsApp: +56 9 9489 3097
 
-## Credenciales demo
+## Credenciales
 
-Email: demo@avishopper.cl / Password: demo123456
+- Demo: demo@avishopper.cl / demo123456
+- Manuel: manuel.aravenal@gmail.com (seed en prisma/seed-manu.ts)

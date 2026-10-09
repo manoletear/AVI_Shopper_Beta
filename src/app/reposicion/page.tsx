@@ -29,7 +29,7 @@ interface Plan {
 const URGENCY_CONFIG = {
   add_now: { label: 'Agregar ahora', bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-700', badge: 'bg-red-100 text-red-700', icon: AlertTriangle },
   add_soon: { label: 'Agregar pronto', bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700', badge: 'bg-amber-100 text-amber-700', icon: Clock },
-  monitor: { label: 'Monitorear', bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-700', badge: 'bg-blue-100 text-blue-700', icon: TrendingUp },
+  monitor: { label: 'Monitorear', bg: 'bg-indigo-50', border: 'border-indigo-200', text: 'text-indigo-700', badge: 'bg-indigo-100 text-indigo-700', icon: TrendingUp },
 }
 
 export default function ReposicionPage() {
@@ -128,7 +128,7 @@ export default function ReposicionPage() {
                 <p className="text-xs text-gray-500">Por acabarse</p>
               </div>
               <div className="avi-card p-4 text-center">
-                <p className="text-2xl font-bold text-blue-600">{plan.summary.monitoring}</p>
+                <p className="text-2xl font-bold text-indigo-600">{plan.summary.monitoring}</p>
                 <p className="text-xs text-gray-500">Monitoreando</p>
               </div>
             </div>
@@ -179,7 +179,7 @@ export default function ReposicionPage() {
                   </a>
                   <a
                     href={`/cart-assistant?products=${encodeURIComponent(addedItems.join(', '))}`}
-                    className="flex items-center gap-1.5 text-sm font-medium py-2 px-3 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors"
+                    className="flex items-center gap-1.5 text-sm font-medium py-2 px-3 rounded-lg bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-colors"
                   >
                     <ShoppingCart className="h-4 w-4" />
                     Comprar ahora
@@ -222,7 +222,7 @@ export default function ReposicionPage() {
                             <div className="flex gap-2 mt-3">
                               <a
                                 href={`/cart-assistant?products=${encodeURIComponent(alert.productName)}`}
-                                className="flex items-center gap-1 text-xs font-medium py-1.5 px-2.5 rounded-lg bg-white/80 border border-gray-200 text-gray-700 hover:bg-white hover:border-blue-300 hover:text-blue-700 transition-colors"
+                                className="flex items-center gap-1 text-xs font-medium py-1.5 px-2.5 rounded-lg bg-white/80 border border-gray-200 text-gray-700 hover:bg-white hover:border-indigo-300 hover:text-indigo-700 transition-colors"
                               >
                                 <ShoppingCart className="h-3 w-3" />
                                 Comprar
@@ -254,7 +254,7 @@ export default function ReposicionPage() {
                   <a href="/avi" className="avi-btn-primary text-sm flex items-center justify-center gap-2">
                     Hablar con AVI
                   </a>
-                  <a href="/listas" className="text-sm text-blue-600 hover:text-blue-700 font-medium">
+                  <a href="/listas" className="text-sm text-indigo-600 hover:text-indigo-700 font-medium">
                     Crear una lista de compras
                   </a>
                 </div>

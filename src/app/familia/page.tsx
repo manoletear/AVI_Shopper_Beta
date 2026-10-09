@@ -33,7 +33,7 @@ interface Family {
 
 const ROLE_CONFIG: Record<string, { label: string; icon: typeof User; color: string; bg: string }> = {
   master: { label: 'Administrador', icon: Crown, color: 'text-amber-600', bg: 'bg-amber-100' },
-  adult: { label: 'Adulto', icon: User, color: 'text-indigo-600', bg: 'bg-blue-100' },
+  adult: { label: 'Adulto', icon: User, color: 'text-indigo-600', bg: 'bg-indigo-100' },
   child: { label: 'Hijo/a', icon: Baby, color: 'text-purple-600', bg: 'bg-purple-100' },
   elder: { label: 'Adulto mayor', icon: Heart, color: 'text-rose-600', bg: 'bg-rose-100' },
   pet: { label: 'Mascota', icon: Dog, color: 'text-orange-600', bg: 'bg-orange-100' },
@@ -243,7 +243,7 @@ export default function FamiliaPage() {
                     {copied ? <><Check className="h-4 w-4 text-green-600" /> Copiado</> : <><Copy className="h-4 w-4" /> Copiar link</>}
                   </button>
                   <a href={`mailto:?subject=${encodeURIComponent('Unete a AVI Shopper')}&body=${encodeURIComponent(`Te invito a "${family.name}" en AVI Shopper:\n\n${inviteUrl}`)}`}
-                    className="flex items-center justify-center gap-2 py-2.5 bg-indigo-50 text-indigo-700 rounded-xl text-sm font-medium hover:bg-blue-100 transition-colors">
+                    className="flex items-center justify-center gap-2 py-2.5 bg-indigo-50 text-indigo-700 rounded-xl text-sm font-medium hover:bg-indigo-100 transition-colors">
                     <Mail className="h-4 w-4" /> Email
                   </a>
                   <a href={`sms:?body=${encodeURIComponent(`Unete a AVI Shopper: ${inviteUrl}`)}`}

@@ -10,7 +10,7 @@ export default async function InvitePage({ params }: { params: { code: string } 
 
   if (!family) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-700 flex items-center justify-center px-4">
+      <div className="min-h-screen bg-gradient-to-br from-indigo-600 via-indigo-600 to-violet-700 flex items-center justify-center px-4">
         <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl p-8 max-w-md text-center">
           <div className="text-4xl mb-4">😕</div>
           <h1 className="text-xl font-bold text-gray-900">Invitacion no valida</h1>
@@ -25,7 +25,7 @@ export default async function InvitePage({ params }: { params: { code: string } 
   const petCount = family.members.filter((m) => m.type === 'pet').length;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-700 flex flex-col items-center justify-center px-4 py-12">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-600 via-indigo-600 to-violet-700 flex flex-col items-center justify-center px-4 py-12">
       {/* Logo */}
       <div className="w-16 h-16 bg-white/10 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-6 border border-white/20">
         <img src="/avi-icon.svg" alt="AVI" className="w-12 h-12" />
@@ -57,8 +57,8 @@ export default async function InvitePage({ params }: { params: { code: string } 
             const Icon = b.icon;
             return (
               <div key={b.text} className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Icon className="h-4 w-4 text-blue-600" />
+                <div className="w-8 h-8 bg-indigo-50 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Icon className="h-4 w-4 text-indigo-600" />
                 </div>
                 <span className="text-sm text-gray-700">{b.text}</span>
               </div>
@@ -69,7 +69,7 @@ export default async function InvitePage({ params }: { params: { code: string } 
         {/* CTA */}
         <div className="space-y-3">
           <a href={`/registro?invite=${params.code}`}
-            className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-all">
+            className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 to-indigo-600 text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-all">
             Crear cuenta y unirme
             <ArrowRight className="h-4 w-4" />
           </a>
@@ -80,7 +80,7 @@ export default async function InvitePage({ params }: { params: { code: string } 
         </div>
       </div>
 
-      <p className="text-xs text-blue-200 mt-6 text-center max-w-sm">
+      <p className="text-xs text-indigo-200 mt-6 text-center max-w-sm">
         AVI Shopper es un asistente de compras con IA que ayuda a tu familia a comprar mejor, mas barato y mas sano.
       </p>
     </div>

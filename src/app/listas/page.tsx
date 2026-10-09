@@ -498,7 +498,7 @@ export default function ListasPage() {
                 </div>
 
                 {templatePeople && (
-                  <div className="mt-3 p-3 bg-indigo-50 rounded-xl border border-blue-100">
+                  <div className="mt-3 p-3 bg-indigo-50 rounded-xl border border-indigo-100">
                     <p className="text-sm font-medium text-blue-900 mb-2">
                       ¿Cuantas personas van al {templatePeople.template.name.toLowerCase()}?
                     </p>
@@ -550,7 +550,7 @@ export default function ListasPage() {
                     onClick={() => setActiveList(list)}
                     className={`avi-card p-4 cursor-pointer transition-all ${
                       isActive
-                        ? 'border-indigo-500 ring-2 ring-blue-100'
+                        ? 'border-indigo-500 ring-2 ring-indigo-100'
                         : 'hover:border-gray-300'
                     }`}
                   >
@@ -581,7 +581,7 @@ export default function ListasPage() {
                         </button>
                         <button
                           onClick={(e) => { e.stopPropagation(); buyList(list) }}
-                          className="flex-1 flex items-center justify-center gap-1 text-xs font-medium py-1.5 px-2 rounded-lg bg-indigo-50 text-indigo-700 hover:bg-blue-100 transition-colors"
+                          className="flex-1 flex items-center justify-center gap-1 text-xs font-medium py-1.5 px-2 rounded-lg bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-colors"
                         >
                           <ShoppingCart className="h-3 w-3" />
                           Comprar

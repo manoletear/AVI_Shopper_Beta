@@ -42,7 +42,7 @@ interface HealthReport {
 const SEVERITY_CONFIG = {
   critical: { icon: AlertTriangle, bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-700', badge: 'bg-red-100 text-red-700' },
   warn: { icon: AlertCircle, bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700', badge: 'bg-amber-100 text-amber-700' },
-  info: { icon: Info, bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-700', badge: 'bg-blue-100 text-blue-700' },
+  info: { icon: Info, bg: 'bg-indigo-50', border: 'border-indigo-200', text: 'text-indigo-700', badge: 'bg-indigo-100 text-indigo-700' },
 }
 
 export default function SaludPage() {
@@ -220,7 +220,7 @@ export default function SaludPage() {
                                   <div className="flex gap-2 mt-2">
                                     <button
                                       onClick={() => addToCart(alt.suggestedProduct)}
-                                      className="flex items-center gap-1 px-2 py-1 rounded-md bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors font-medium"
+                                      className="flex items-center gap-1 px-2 py-1 rounded-md bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-colors font-medium"
                                     >
                                       <ShoppingCart className="h-3 w-3" />
                                       Comprar alternativa
@@ -265,7 +265,7 @@ export default function SaludPage() {
                 </ul>
                 <a
                   href="/perfil"
-                  className="mt-4 flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 font-medium"
+                  className="mt-4 flex items-center gap-2 text-sm text-indigo-600 hover:text-indigo-700 font-medium"
                 >
                   <User className="h-4 w-4" />
                   Ajustar perfil nutricional
@@ -303,7 +303,7 @@ export default function SaludPage() {
                           </div>
                           <button
                             onClick={() => addToCart(pred.product)}
-                            className="p-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"
+                            className="p-1.5 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-colors"
                             title="Comprar"
                           >
                             <ShoppingCart className="h-3.5 w-3.5" />
@@ -328,7 +328,7 @@ export default function SaludPage() {
                   <a href="/avi" className="avi-btn-primary text-sm flex items-center justify-center gap-2">
                     <Heart className="h-4 w-4" /> Hablar con AVI
                   </a>
-                  <a href="/perfil" className="text-sm text-blue-600 hover:text-blue-700 font-medium">
+                  <a href="/perfil" className="text-sm text-indigo-600 hover:text-indigo-700 font-medium">
                     Configurar perfil nutricional
                   </a>
                 </div>

@@ -568,13 +568,13 @@ function CompararInner() {
                   }
                 }}
                 placeholder="Escribe o pega tu lista de productos"
-                className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               />
             </div>
             <button
               onClick={() => addProducts(inputValue)}
               disabled={!inputValue.trim()}
-              className="bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 disabled:opacity-50 text-sm font-medium"
+              className="bg-indigo-600 text-white px-4 py-2.5 rounded-lg hover:bg-indigo-700 disabled:opacity-50 text-sm font-medium"
             >
               <Plus className="h-4 w-4" />
             </button>
@@ -619,7 +619,7 @@ function CompararInner() {
               {queries.map((q) => (
                 <span
                   key={q}
-                  className="inline-flex items-center space-x-1 bg-blue-50 text-blue-700 text-sm px-3 py-1.5 rounded-full border border-blue-200"
+                  className="inline-flex items-center space-x-1 bg-indigo-50 text-indigo-700 text-sm px-3 py-1.5 rounded-full border border-indigo-200"
                 >
                   <ShoppingCart className="h-3 w-3" />
                   <span>{q}</span>
@@ -640,7 +640,7 @@ function CompararInner() {
             {isComparing ? (
               <>
                 <Loader2 className="h-5 w-5 animate-spin" />
-                <span>Buscando en Jumbo, Lider, Santa Isabel, Unimarc y Tottus... ({completedCount}/{queries.length})</span>
+                <span>Buscando en Jumbo, Lider, Unimarc y Tottus... ({completedCount}/{queries.length})</span>
               </>
             ) : (
               <>
@@ -672,7 +672,7 @@ function CompararInner() {
             {!isComparing && getBuyOptions().length > 0 && (
               <div className="space-y-3 mb-6">
                 <div className="flex items-center space-x-2">
-                  <Store className="h-5 w-5 text-blue-600" />
+                  <Store className="h-5 w-5 text-indigo-600" />
                   <h3 className="font-semibold text-gray-900">Opciones de compra</h3>
                 </div>
 
@@ -767,7 +767,7 @@ function CompararInner() {
                         <ShoppingCart className="h-4 w-4 text-gray-500" />
                         <span className="font-medium text-sm text-gray-900">{query}</span>
                       </div>
-                      {comp.loading && <Loader2 className="h-4 w-4 animate-spin text-blue-500" />}
+                      {comp.loading && <Loader2 className="h-4 w-4 animate-spin text-indigo-500" />}
                       {comp.cheapest && (
                         <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
                           Mejor: {comp.cheapest.store} {formatCLP(comp.cheapest.price)}
@@ -886,7 +886,7 @@ function CompararInner() {
             <ShoppingCart className="h-12 w-12 text-gray-300 mx-auto mb-3" />
             <p className="text-gray-500 font-medium">Agrega productos para comparar</p>
             <p className="text-sm text-gray-400 mt-1">
-              AVI busca en Jumbo, Lider, Santa Isabel, Unimarc y Tottus para encontrar los mejores precios
+              AVI busca en Jumbo, Lider, Unimarc y Tottus para encontrar los mejores precios
             </p>
           </div>
         )}

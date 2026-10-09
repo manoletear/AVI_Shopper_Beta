@@ -10,7 +10,7 @@ import {
 const AVAILABLE_STORES = [
   { id: 'jumbo', name: 'Jumbo', logo: '🟢', color: 'bg-green-500', bgLight: 'bg-green-50', textColor: 'text-green-700', borderColor: 'border-green-200' },
   { id: 'lider', name: 'Lider', logo: '🔴', color: 'bg-red-500', bgLight: 'bg-red-50', textColor: 'text-red-700', borderColor: 'border-red-200' },
-  { id: 'santa-isabel', name: 'Santa Isabel', logo: '🔵', color: 'bg-blue-500', bgLight: 'bg-blue-50', textColor: 'text-blue-700', borderColor: 'border-blue-200' },
+  { id: 'santa-isabel', name: 'Santa Isabel', logo: '🔵', color: 'bg-indigo-500', bgLight: 'bg-indigo-50', textColor: 'text-indigo-700', borderColor: 'border-indigo-200' },
   { id: 'unimarc', name: 'Unimarc', logo: '🟠', color: 'bg-orange-500', bgLight: 'bg-orange-50', textColor: 'text-orange-700', borderColor: 'border-orange-200' },
   { id: 'tottus', name: 'Tottus', logo: '🟢', color: 'bg-teal-500', bgLight: 'bg-teal-50', textColor: 'text-teal-700', borderColor: 'border-teal-200' },
 ]
@@ -190,7 +190,7 @@ export default function CuentasSupermercadoPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Loader2 className="h-8 w-8 text-blue-500 animate-spin" />
+        <Loader2 className="h-8 w-8 text-indigo-500 animate-spin" />
       </div>
     )
   }
@@ -202,7 +202,7 @@ export default function CuentasSupermercadoPage() {
           <a href="/dashboard" className="text-gray-400 hover:text-gray-600">
             <ArrowLeft className="h-5 w-5" />
           </a>
-          <ShoppingCart className="h-6 w-6 text-blue-600" />
+          <ShoppingCart className="h-6 w-6 text-indigo-600" />
           <h1 className="text-lg font-semibold">Mis Supermercados</h1>
         </div>
       </header>
@@ -216,13 +216,13 @@ export default function CuentasSupermercadoPage() {
           </div>
         )}
 
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6 flex items-start space-x-3">
-          <Shield className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+        <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4 mb-6 flex items-start space-x-3">
+          <Shield className="h-5 w-5 text-indigo-600 mt-0.5 flex-shrink-0" />
           <div>
             <p className="text-sm text-blue-800 font-medium">
               Vincula tus cuentas para comprar directo desde AVI
             </p>
-            <p className="text-xs text-blue-600 mt-1">
+            <p className="text-xs text-indigo-600 mt-1">
               Con tu cuenta vinculada, AVI abre tus productos directamente en el supermercado
               para que los agregues al carrito y pagues. Sin cuenta, puedes comprar como invitado.
             </p>
@@ -266,7 +266,7 @@ export default function CuentasSupermercadoPage() {
                       </div>
                       {!isEditing && (
                         <div className="flex items-center space-x-1">
-                          <button onClick={() => startEditing(account)} className="p-1 text-gray-400 hover:text-blue-600">
+                          <button onClick={() => startEditing(account)} className="p-1 text-gray-400 hover:text-indigo-600">
                             <Edit3 className="h-3.5 w-3.5" />
                           </button>
                           <button onClick={() => handleRemoveAccount(account.id)} className="p-1 text-gray-400 hover:text-red-600">
@@ -280,18 +280,18 @@ export default function CuentasSupermercadoPage() {
                       {isEditing ? (
                         <div className="space-y-2">
                           <input type="email" value={formEmail} onChange={(e) => setFormEmail(e.target.value)}
-                            placeholder="Email" className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500" />
+                            placeholder="Email" className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-indigo-500" />
                           <div className="grid grid-cols-2 gap-2">
                             <input type="text" value={formName} onChange={(e) => setFormName(e.target.value)}
-                              placeholder="Nombre" className="px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500" />
+                              placeholder="Nombre" className="px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-indigo-500" />
                             <input type="text" value={formPhone} onChange={(e) => setFormPhone(e.target.value)}
-                              placeholder="Telefono" className="px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500" />
+                              placeholder="Telefono" className="px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-indigo-500" />
                           </div>
                           <input type="text" value={formLoyalty} onChange={(e) => setFormLoyalty(e.target.value)}
-                            placeholder="Tarjeta fidelidad (opcional)" className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500" />
+                            placeholder="Tarjeta fidelidad (opcional)" className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-indigo-500" />
                           <div className="flex space-x-2">
                             <button onClick={() => handleUpdateAccount(account.id)} disabled={saving}
-                              className="bg-blue-600 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50">
+                              className="bg-indigo-600 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50">
                               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Guardar'}
                             </button>
                             <button onClick={resetForm} className="border px-3 py-2 rounded-lg text-sm hover:bg-gray-50">Cancelar</button>
@@ -335,19 +335,19 @@ export default function CuentasSupermercadoPage() {
                     <div className="space-y-2">
                       <input type="email" placeholder="Email de tu cuenta" value={formEmail}
                         onChange={(e) => setFormEmail(e.target.value)}
-                        className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500" />
+                        className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-indigo-500" />
                       <input type="password" placeholder="Contrasena del supermercado" value={formPassword}
                         onChange={(e) => setFormPassword(e.target.value)}
-                        className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500" />
+                        className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-indigo-500" />
                       <p className="text-[10px] text-gray-400 flex items-center gap-1">
                         <Shield className="h-3 w-3" /> Se almacena encriptada (AES-256). AVI la usa para armar tu carrito.
                       </p>
                       <input type="text" placeholder="Nombre (opcional)" value={formName}
                         onChange={(e) => setFormName(e.target.value)}
-                        className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500" />
+                        className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-indigo-500" />
                       <div className="flex space-x-2">
                         <button onClick={handleLinkAccount} disabled={!formEmail || saving}
-                          className="flex-1 bg-blue-600 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-1">
+                          className="flex-1 bg-indigo-600 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 flex items-center justify-center gap-1">
                           {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Check className="h-4 w-4" /> Vincular</>}
                         </button>
                         <button onClick={resetForm} className="px-3 py-2 border rounded-lg text-sm hover:bg-gray-50">
@@ -359,7 +359,7 @@ export default function CuentasSupermercadoPage() {
                     <div className="space-y-2">
                       <button
                         onClick={() => { setShowLinkForm(true); setSelectedStore(store.id) }}
-                        className="w-full flex items-center justify-center px-3 py-2 border-2 border-dashed border-gray-300 rounded-lg text-sm font-medium text-gray-600 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 transition-colors gap-1"
+                        className="w-full flex items-center justify-center px-3 py-2 border-2 border-dashed border-gray-300 rounded-lg text-sm font-medium text-gray-600 hover:border-indigo-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors gap-1"
                       >
                         <Plus className="h-4 w-4" /> Ya tengo cuenta
                       </button>

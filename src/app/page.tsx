@@ -7,12 +7,10 @@ export default function HomePage() {
       <header className="avi-header">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <div className="w-9 h-9 bg-gradient-to-br from-indigo-600 to-indigo-700 rounded-xl flex items-center justify-center">
-              <ShoppingCart className="h-5 w-5 text-white" />
-            </div>
-            <span className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-indigo-700 bg-clip-text text-transparent">AVI</span>
+            <img src="/avi-icon.svg" alt="AVI" className="w-9 h-9 rounded-xl" />
+            <span className="text-2xl font-bold text-indigo-700">AVI</span>
             <span className="text-xl font-semibold text-gray-800">Shopper</span>
-            <span className="bg-blue-100 text-indigo-700 text-xs px-2 py-0.5 rounded-full font-medium">Beta</span>
+            <span className="bg-indigo-100 text-indigo-700 text-xs px-2 py-0.5 rounded-full font-medium">Beta</span>
           </div>
           <div className="flex items-center space-x-4">
             <a href="/demo" className="text-sm text-gray-500 hover:text-indigo-600 transition-colors">Demo</a>

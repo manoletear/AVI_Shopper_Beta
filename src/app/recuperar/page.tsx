@@ -59,7 +59,7 @@ export default function RecuperarPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-700 flex flex-col justify-center px-4">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-600 via-indigo-600 to-violet-700 flex flex-col justify-center px-4">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center mb-6">
           <div className="w-16 h-16 bg-white/10 backdrop-blur-sm rounded-2xl flex items-center justify-center overflow-hidden border border-white/20">
@@ -88,7 +88,7 @@ export default function RecuperarPage() {
               </div>
 
               <button onClick={sendCode} disabled={loading || !email.trim()}
-                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-xl font-semibold disabled:opacity-50">
+                className="w-full bg-gradient-to-r from-indigo-600 to-indigo-600 text-white py-3 rounded-xl font-semibold disabled:opacity-50">
                 {loading ? 'Enviando...' : 'Enviar codigo'}
               </button>
             </>
@@ -116,7 +116,7 @@ export default function RecuperarPage() {
               </div>
 
               <button onClick={resetPassword} disabled={loading || !code.trim() || !newPassword.trim()}
-                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-xl font-semibold disabled:opacity-50">
+                className="w-full bg-gradient-to-r from-indigo-600 to-indigo-600 text-white py-3 rounded-xl font-semibold disabled:opacity-50">
                 {loading ? 'Cambiando...' : 'Cambiar contrasena'}
               </button>
 
@@ -132,7 +132,7 @@ export default function RecuperarPage() {
               <Check className="h-12 w-12 text-green-500 mx-auto mb-3" />
               <h2 className="text-xl font-bold text-gray-900 mb-1">Contrasena cambiada</h2>
               <p className="text-sm text-gray-500 mb-6">Ya puedes iniciar sesion con tu nueva contrasena</p>
-              <a href="/login" className="inline-block bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 px-8 rounded-xl font-semibold">
+              <a href="/login" className="inline-block bg-gradient-to-r from-indigo-600 to-indigo-600 text-white py-3 px-8 rounded-xl font-semibold">
                 Ir a iniciar sesion
               </a>
             </div>
@@ -140,7 +140,7 @@ export default function RecuperarPage() {
 
           {step !== 'done' && (
             <p className="mt-4 text-center text-sm text-gray-500">
-              <a href="/login" className="font-medium text-blue-600 hover:text-blue-500">Volver al login</a>
+              <a href="/login" className="font-medium text-indigo-600 hover:text-indigo-500">Volver al login</a>
             </p>
           )}
         </div>
