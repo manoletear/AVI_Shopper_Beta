@@ -81,6 +81,29 @@ const LIST_TEMPLATES: ListTemplate[] = [
     description: 'Productos de limpieza del hogar',
     items: ['Lavalozas', 'Detergente ropa', 'Suavizante', 'Cloro', 'Limpia pisos', 'Esponja', 'Bolsas de basura', 'Papel higienico', 'Toalla de papel', 'Desinfectante'],
   },
+  {
+    name: 'Navidad',
+    icon: PartyPopper,
+    color: 'bg-red-500',
+    description: 'Cena de navidad chilena',
+    askPeople: true,
+    items: ['Pan de pascua', 'Cola de mono', 'Pavo', 'Pollo', 'Ensalada rusa', 'Papas mayo', 'Lechuga', 'Tomate', 'Palta', 'Helados', 'Fruta de estacion', 'Champagne', 'Vino blanco', 'Bebidas', 'Servilletas'],
+  },
+  {
+    name: 'Vuelta a clases',
+    icon: Briefcase,
+    color: 'bg-indigo-500',
+    description: 'Colaciones y lonchera',
+    items: ['Yogurt', 'Fruta', 'Cereal en barra', 'Jugos individuales', 'Galletas', 'Pan molde', 'Jamon', 'Queso', 'Leche individual', 'Frutos secos'],
+  },
+  {
+    name: 'Fiestas Patrias',
+    icon: Flame,
+    color: 'bg-red-600',
+    description: '18 de septiembre',
+    askPeople: true,
+    items: ['Carbon vegetal', 'Carne para asado', 'Longanizas', 'Choricillos', 'Empanadas de pino', 'Vino tinto', 'Chicha', 'Pisco', 'Mote con huesillo', 'Pebre', 'Pan amasado', 'Ensalada chilena', 'Bebidas', 'Hielo'],
+  },
 ]
 
 export default function ListasPage() {

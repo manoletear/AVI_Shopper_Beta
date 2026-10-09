@@ -22,6 +22,10 @@ const CHILEAN_HOLIDAYS = [
   { name: 'Vuelta a Clases', month: 3, day: 1, remind: 10, type: 'seasonal', products: ['Yogurt', 'Fruta para lonchera', 'Cereal', 'Jugos individuales', 'Galletas', 'Pan molde', 'Jamon', 'Queso'] },
   { name: 'Inicio Invierno', month: 6, day: 1, remind: 7, type: 'seasonal', products: ['Legumbres', 'Sopas', 'Te', 'Chocolate', 'Miel', 'Cafe'] },
   { name: 'Inicio Verano', month: 12, day: 1, remind: 5, type: 'seasonal', products: ['Protector solar', 'Agua mineral', 'Frutas', 'Helados', 'Jugos', 'Bebidas'] },
+  { name: 'San Valentin', month: 2, day: 14, remind: 5, type: 'cultural', products: ['Chocolate', 'Vino', 'Queso', 'Galletas', 'Fruta'] },
+  { name: 'Dia del Nino', month: 8, day: 10, remind: 7, type: 'cultural', products: ['Dulces', 'Torta', 'Jugos', 'Snacks', 'Helados', 'Galletas'] },
+  { name: 'Ano Nuevo (preparacion)', month: 12, day: 30, remind: 3, type: 'national_holiday', products: ['Champagne', 'Carne para asado', 'Ensaladas', 'Fruta', 'Hielo', 'Bebidas', 'Carbon'] },
+  { name: 'Cyber Monday', month: 10, day: 5, remind: 3, type: 'seasonal', products: ['Revisar ofertas en Jumbo', 'Revisar ofertas en Lider', 'Aprovecha descuentos en Unimarc'] },
 ];
 
 export async function seedNationalEvents(familyId: string): Promise<number> {
