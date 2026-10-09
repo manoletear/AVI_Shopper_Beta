@@ -231,61 +231,90 @@ const GROCERY_CONTEXT: Record<string, string> = {
   naranja: 'naranja',
   manzana: 'manzana',
   platano: 'platano banana',
-  // Panaderia
+  // --- Bebidas ---
+  nectar: 'nectar jugo fruta botella',
+  energetica: 'bebida energetica lata',
+  isotonica: 'bebida isotonica gatorade powerade',
+  gatorade: 'gatorade bebida isotonica',
+  monster: 'monster bebida energetica lata',
+  'te frio': 'te frio botella',
+  ron: 'ron licor botella',
+  vodka: 'vodka licor botella',
+  whisky: 'whisky licor botella',
+  // --- Panaderia ---
   hallulla: 'hallulla pan',
   marraqueta: 'marraqueta pan',
-  // Snacks
-  ramitas: 'ramitas snack',
+  dobladita: 'dobladita pan',
+  coliza: 'coliza pan',
+  queque: 'queque bizcocho',
+  // --- Snacks ---
+  ramitas: 'ramitas snack evercrisp',
   doritos: 'doritos snack',
-  // Condimentos
+  snack: 'snack papas fritas ramitas',
+  mani: 'mani tostado salado',
+  almendra: 'almendras frutos secos',
+  'papas fritas': 'papas fritas snack bolsa',
+  'galletas de agua': 'galletas de agua',
+  'galletas de vino': 'galletas de vino',
+  // --- Condimentos ---
   oregano: 'oregano especias',
   comino: 'comino especias',
-  pimienta: 'pimienta negra',
-  canela: 'canela molida',
-  merken: 'merken condimento',
-  aji: 'aji pasta',
-  // Salsas
+  pimienta: 'pimienta negra molida',
+  canela: 'canela molida especia',
+  merken: 'merken aji ahumado mapuche',
+  aji: 'aji pasta chile',
+  vinagre: 'vinagre',
+  laurel: 'laurel hoja especia',
+  // --- Pastas y salsas ---
+  tallarines: 'tallarines pasta',
+  spaghetti: 'spaghetti pasta',
   salsa: 'salsa de tomate',
-  ketchup: 'ketchup',
-  mostaza: 'mostaza',
   soya: 'salsa de soya',
-  // Conservas
-  atun: 'atun en lata conserva',
-  durazno: 'durazno en conserva',
-  arveja: 'arvejitas en lata',
-  choclo: 'choclo en lata',
-  // Congelados
+  'pasta de tomate': 'pasta de tomate concentrada',
+  // --- Conservas ---
+  durazno: 'durazno en conserva lata',
+  arveja: 'arvejitas en lata conserva',
+  choclo: 'choclo en lata conserva',
+  palmito: 'palmito lata conserva',
+  // --- Congelados ---
   pizza: 'pizza congelada',
   empanada: 'empanadas congeladas',
   nugget: 'nuggets pollo congelado',
-  // Bebe
+  'papas congeladas': 'papas fritas congeladas',
+  // --- Bebe ---
   panal: 'panales bebe',
+  panales: 'panales bebe',
   formula: 'formula lactea bebe',
   compota: 'compota bebe fruta',
-  // Mascotas
-  'alimento perro': 'alimento perro adulto',
-  'alimento gato': 'alimento gato adulto',
+  mamadera: 'mamadera bebe biberon',
+  // --- Mascotas ---
+  'alimento perro': 'alimento perro adulto croquetas',
+  'alimento gato': 'alimento gato adulto croquetas',
   arena: 'arena sanitaria gato',
-  // Aseo personal (SI son grocery)
-  jabon: 'jabon tocador',
-  'pasta dientes': 'pasta de dientes',
-  // Chileno
-  manjar: 'manjar colun',
-  mote: 'mote con huesillo',
-  huesillo: 'huesillo deshidratado',
+  // --- Aseo personal (SI son grocery) ---
+  jabon: 'jabon tocador barra',
+  'pasta dientes': 'pasta de dientes dental',
+  desodorante: 'desodorante spray roll on',
+  dentifrico: 'pasta dientes dental',
+  // --- Chileno ---
+  manjar: 'manjar dulce de leche colun',
+  mote: 'mote trigo',
+  huesillo: 'huesillo durazno deshidratado',
   sopaipilla: 'mezcla sopaipilla harina',
   'harina tostada': 'harina tostada',
   chancho: 'chancho en piedra salsa',
-  // Lacteos extras
+  tostada: 'harina tostada',
+  // --- Lacteos extras ---
   crema: 'crema de leche',
   margarina: 'margarina',
   quesillo: 'quesillo',
   ricotta: 'ricotta queso',
-  // Bebidas
-  energetica: 'bebida energetica',
-  isotonica: 'bebida isotonica gatorade',
-  nectar: 'nectar jugo',
-  'te frio': 'te frio botella',
+  // --- Extras ---
+  mermelada: 'mermelada fruta',
+  miel: 'miel abeja',
+  avena: 'avena hojuela',
+  granola: 'granola cereal',
+  caldo: 'caldo cubos concentrado',
 };
 
 const NON_GROCERY_CATEGORIES = /antitranspirante|desodorante|shampoo|champu|acondicionador|crema facial|crema corporal|maquillaje|labial|esmalte|perfume|colonia|after shave|depilador|cepillo dental|enjuague bucal|preservativo|protector diario|protector solar|bloqueador|base liquida|rimel|mascara pestana|sombra ojos|polvo compacto|desmaquillante|tinte pelo|tintura|cera depilatoria|gel fijador|laca pelo|mousse pelo|serum capilar|crema manos|locion corporal|jabon intimo|talco|repelente|insecticida|raticida|vela aromatica|ambientador|incienso|pilas|ampolleta|foco|encendedor|fosforo|carbon activ/i;
