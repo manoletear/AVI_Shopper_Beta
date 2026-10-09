@@ -267,7 +267,7 @@ export default function PerfilNutricionalPage() {
         {/* Objetivos de Salud */}
         <div className="avi-card p-5">
           <div className="flex items-center space-x-2 mb-1">
-            <Settings className="h-5 w-5 text-blue-500" />
+            <Settings className="h-5 w-5 text-indigo-500" />
             <h2 className="font-semibold text-gray-900">Objetivos de Salud</h2>
           </div>
           <p className="text-xs text-gray-500 mb-4">AVI adapta las alertas y recomendaciones segun tus objetivos</p>

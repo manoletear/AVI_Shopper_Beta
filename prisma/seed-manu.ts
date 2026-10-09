@@ -5,7 +5,8 @@ const prisma = new PrismaClient();
 
 async function main() {
   const email = 'manuel.aravenal@gmail.com';
-  const password = await bcrypt.hash('Ma311233.,', 12);
+  const rawPassword = process.env.SEED_PASSWORD || 'AviDemo2026!';
+  const password = await bcrypt.hash(rawPassword, 12);
 
   // Create or update user
   const user = await prisma.user.upsert({
@@ -184,7 +185,7 @@ async function main() {
 
   console.log('\nDone! Login with:');
   console.log('Email: manuel.aravenal@gmail.com');
-  console.log('Password: Ma311233.,');
+  console.log('Password: (set via SEED_PASSWORD env var)');
 }
 
 main()

@@ -67,7 +67,7 @@ export default function AviPage() {
           <a href="/dashboard" className="text-gray-400 hover:text-gray-600">
             <ArrowLeft className="h-5 w-5" />
           </a>
-          <div className="w-9 h-9 bg-gradient-to-br from-blue-500 via-indigo-500 to-violet-500 rounded-full flex items-center justify-center shadow-sm overflow-hidden">
+          <div className="w-9 h-9 bg-gradient-to-br from-indigo-500 via-indigo-500 to-violet-500 rounded-full flex items-center justify-center shadow-sm overflow-hidden">
             <img src="/avi-icon.svg" alt="AVI" className="w-7 h-7" />
           </div>
           <div>
@@ -109,7 +109,7 @@ export default function AviPage() {
           {messages.map((msg, i) => (
             <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} gap-2`}>
               {msg.role === 'assistant' && (
-                <div className="w-7 h-7 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-full flex items-center justify-center flex-shrink-0 mt-1 overflow-hidden">
+                <div className="w-7 h-7 bg-gradient-to-br from-indigo-500 to-indigo-500 rounded-full flex items-center justify-center flex-shrink-0 mt-1 overflow-hidden">
                   <img src="/avi-icon.svg" alt="" className="w-5 h-5" />
                 </div>
               )}
@@ -146,7 +146,7 @@ export default function AviPage() {
 
           {loading && (
             <div className="flex gap-2">
-              <div className="w-7 h-7 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-full flex items-center justify-center overflow-hidden">
+              <div className="w-7 h-7 bg-gradient-to-br from-indigo-500 to-indigo-500 rounded-full flex items-center justify-center overflow-hidden">
                 <img src="/avi-icon.svg" alt="" className="w-5 h-5" />
               </div>
               <div className="bg-white border border-gray-200 px-4 py-3 rounded-2xl rounded-bl-md shadow-sm">

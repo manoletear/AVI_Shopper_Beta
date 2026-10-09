@@ -45,7 +45,7 @@ function RegistroForm() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-700 flex flex-col justify-center px-4">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-600 via-indigo-600 to-violet-700 flex flex-col justify-center px-4">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center mb-6">
           <div className="w-16 h-16 bg-white/10 backdrop-blur-sm rounded-2xl flex items-center justify-center overflow-hidden border border-white/20">
@@ -95,7 +95,7 @@ function RegistroForm() {
             </div>
 
             <button type="submit" disabled={loading}
-              className="w-full flex items-center justify-center bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-xl font-semibold hover:shadow-lg disabled:opacity-50 transition-all">
+              className="w-full flex items-center justify-center bg-gradient-to-r from-indigo-600 to-indigo-600 text-white py-3 rounded-xl font-semibold hover:shadow-lg disabled:opacity-50 transition-all">
               {loading ? (
                 <span className="flex gap-1"><span className="w-2 h-2 bg-white rounded-full animate-bounce"></span><span className="w-2 h-2 bg-white rounded-full animate-bounce" style={{animationDelay:'150ms'}}></span><span className="w-2 h-2 bg-white rounded-full animate-bounce" style={{animationDelay:'300ms'}}></span></span>
               ) : (
@@ -116,7 +116,7 @@ function RegistroForm() {
           </div>
 
           <p className="mt-4 text-center text-sm text-gray-500">
-            ¿Ya tienes cuenta? <a href="/login" className="font-medium text-blue-600 hover:text-blue-500">Inicia sesion</a>
+            ¿Ya tienes cuenta? <a href="/login" className="font-medium text-indigo-600 hover:text-indigo-500">Inicia sesion</a>
           </p>
         </div>
       </div>
