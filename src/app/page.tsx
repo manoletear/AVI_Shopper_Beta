@@ -52,29 +52,19 @@ export default function HomePage() {
         <div className="max-w-6xl mx-auto px-4">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
-              <style dangerouslySetInnerHTML={{__html: `
-                @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-                @keyframes fadeInRight { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
-                @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-                .animate-fadeInUp { animation: fadeInUp 0.6s ease-out forwards; }
-                .animate-fadeInUp2 { animation: fadeInUp 0.6s ease-out 0.2s forwards; opacity: 0; }
-                .animate-fadeInUp3 { animation: fadeInUp 0.6s ease-out 0.4s forwards; opacity: 0; }
-                .animate-fadeInUp4 { animation: fadeInUp 0.6s ease-out 0.6s forwards; opacity: 0; }
-                .animate-float { animation: float 3s ease-in-out infinite; }
-              `}} />
-              <div className="animate-fadeInUp inline-flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-full px-4 py-1.5 mb-6">
+              <div className="anim-1 inline-flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-full px-4 py-1.5 mb-6">
                 <Zap className="h-4 w-4 text-amber-500" />
                 <span className="text-sm font-medium text-amber-700">Asistente de compras con IA</span>
               </div>
-              <h1 className="animate-fadeInUp2 text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
+              <h1 className="anim-2 text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
                 Tu compra del super,
                 <span className="text-indigo-600"> resuelta.</span>
               </h1>
-              <p className="animate-fadeInUp3 text-lg text-gray-500 mt-5 leading-relaxed max-w-lg">
+              <p className="anim-3 text-lg text-gray-500 mt-5 leading-relaxed max-w-lg">
                 Dile a AVI que necesitas. El compara precios en 4 supermercados,
                 arma tu carrito y te ahorra hasta un 45%.
               </p>
-              <div className="animate-fadeInUp4 flex flex-col sm:flex-row gap-3 mt-8">
+              <div className="anim-4 flex flex-col sm:flex-row gap-3 mt-8">
                 <a href="/registro" className="bg-indigo-600 text-white px-7 py-3.5 rounded-full font-semibold text-base hover:bg-indigo-700 flex items-center justify-center gap-2 shadow-lg shadow-indigo-200 hover:shadow-xl transition-all">
                   Comenzar gratis
                   <ArrowRight className="h-5 w-5" />
@@ -102,8 +92,8 @@ export default function HomePage() {
                 </div>
               </div>
             </div>
-            <div className="relative hidden md:block animate-fadeInUp3">
-              <div className="bg-gradient-to-br from-indigo-100 to-violet-100 rounded-3xl p-8 relative animate-float">
+            <div className="relative hidden md:block anim-3">
+              <div className="bg-gradient-to-br from-indigo-100 to-violet-100 rounded-3xl p-8 relative anim-float">
                 <div className="bg-white rounded-2xl shadow-xl p-5 mb-4">
                   <div className="flex items-center gap-3 mb-4">
                     <img src="/avi-icon.svg" alt="" className="w-10 h-10 rounded-xl" />
