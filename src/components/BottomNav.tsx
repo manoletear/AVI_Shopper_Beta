@@ -3,13 +3,13 @@
 import { usePathname } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import {
-  Home, ListChecks, Zap, Bot, User,
+  Home, ListChecks, ShoppingCart, Bot, User,
 } from 'lucide-react'
 
 const NAV_ITEMS = [
   { href: '/dashboard', label: 'Inicio', icon: Home },
   { href: '/listas', label: 'Listas', icon: ListChecks },
-  { href: '/comparar', label: 'Mejor Precio', icon: Zap, isCenter: true },
+  { href: '/comprar', label: 'Comprar', icon: ShoppingCart, isCenter: true },
   { href: '/avi', label: 'AVI', icon: Bot },
   { href: '/perfil', label: 'Perfil', icon: User },
 ]

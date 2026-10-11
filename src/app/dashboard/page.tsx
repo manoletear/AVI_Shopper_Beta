@@ -20,14 +20,14 @@ interface DashboardData {
 }
 
 const CATEGORIES = [
+  { href: '/comprar', label: 'Comprar', emoji: '🛒', bg: 'bg-indigo-100' },
   { href: '/comparar', label: 'Mejor Precio', emoji: '⚡', bg: 'bg-amber-100' },
-  { href: '/listas', label: 'Listas', emoji: '📋', bg: 'bg-indigo-100' },
+  { href: '/listas', label: 'Listas', emoji: '📋', bg: 'bg-indigo-50' },
   { href: '/reposicion', label: 'Reponer', emoji: '📦', bg: 'bg-teal-100' },
   { href: '/salud', label: 'Salud', emoji: '💚', bg: 'bg-green-100' },
   { href: '/familia', label: 'Familia', emoji: '👨‍👩‍👧', bg: 'bg-violet-100' },
   { href: '/presupuesto', label: 'Gastos', emoji: '💰', bg: 'bg-emerald-100' },
   { href: '/historial', label: 'Historial', emoji: '🧾', bg: 'bg-slate-100' },
-  { href: '/configuracion/cuentas', label: 'Supers', emoji: '🏪', bg: 'bg-orange-100' },
 ]
 
 const STORE_DEALS = [
