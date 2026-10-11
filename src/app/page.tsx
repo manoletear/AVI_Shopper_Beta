@@ -47,8 +47,17 @@ export default function HomePage() {
       </header>
 
       {/* Hero */}
-      <section className="pt-24 pb-16 md:pt-32 md:pb-24 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-indigo-50 to-transparent hidden md:block" />
+      <section className="pt-24 pb-16 md:pt-32 md:pb-24 relative overflow-hidden bg-gradient-to-br from-white via-indigo-50/40 to-violet-50/30">
+        {/* Decorative background elements */}
+        <div className="absolute top-20 left-10 w-72 h-72 bg-indigo-200/20 rounded-full blur-3xl" />
+        <div className="absolute bottom-10 right-10 w-96 h-96 bg-violet-200/20 rounded-full blur-3xl" />
+        <div className="absolute top-40 right-1/4 w-40 h-40 bg-amber-200/15 rounded-full blur-2xl" />
+        <div className="absolute top-10 right-20 w-3 h-3 bg-indigo-400 rounded-full opacity-40 anim-float" />
+        <div className="absolute top-32 left-1/4 w-2 h-2 bg-teal-400 rounded-full opacity-30 anim-float" style={{animationDelay: '1s'}} />
+        <div className="absolute bottom-20 left-20 w-4 h-4 bg-amber-400 rounded-full opacity-20 anim-float" style={{animationDelay: '2s'}} />
+        <div className="absolute top-1/2 right-10 w-2.5 h-2.5 bg-rose-400 rounded-full opacity-25 anim-float" style={{animationDelay: '1.5s'}} />
+        {/* Grid pattern */}
+        <div className="absolute inset-0 opacity-[0.03]" style={{backgroundImage: 'radial-gradient(circle, #4F46E5 1px, transparent 1px)', backgroundSize: '32px 32px'}} />
         <div className="max-w-6xl mx-auto px-4">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
