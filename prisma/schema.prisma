@@ -428,3 +428,15 @@ model FamilyEvent {
   @@index([familyId, month, day])
   @@map("family_events")
 }
+
+model Lead {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  phone     String?
+  message   String?
+  source    String   @default("landing")
+  createdAt DateTime @default(now())
+
+  @@map("leads")
+}

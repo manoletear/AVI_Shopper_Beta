@@ -1,6 +1,27 @@
-import { ArrowRight, ShoppingCart, DollarSign, Heart, Shield, Sparkles, Zap, Users, Bot, Clock, ChevronRight, MessageCircle, Star } from 'lucide-react'
+'use client'
+
+import { useState } from 'react'
+import { ArrowRight, ShoppingCart, DollarSign, Heart, Shield, Sparkles, Zap, Users, Bot, Clock, ChevronRight, MessageCircle, Star, Send, Check, Loader2 } from 'lucide-react'
 
 export default function HomePage() {
+  const [formData, setFormData] = useState({ name: '', email: '', phone: '', message: '' })
+  const [formSent, setFormSent] = useState(false)
+  const [formLoading, setFormLoading] = useState(false)
+
+  const submitForm = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!formData.name || !formData.email) return
+    setFormLoading(true)
+    try {
+      await fetch('/api/leads', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      })
+      setFormSent(true)
+    } catch {}
+    setFormLoading(false)
+  }
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
@@ -31,19 +52,29 @@ export default function HomePage() {
         <div className="max-w-6xl mx-auto px-4">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
-              <div className="inline-flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-full px-4 py-1.5 mb-6">
+              <style dangerouslySetInnerHTML={{__html: `
+                @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+                @keyframes fadeInRight { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+                @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+                .animate-fadeInUp { animation: fadeInUp 0.6s ease-out forwards; }
+                .animate-fadeInUp2 { animation: fadeInUp 0.6s ease-out 0.2s forwards; opacity: 0; }
+                .animate-fadeInUp3 { animation: fadeInUp 0.6s ease-out 0.4s forwards; opacity: 0; }
+                .animate-fadeInUp4 { animation: fadeInUp 0.6s ease-out 0.6s forwards; opacity: 0; }
+                .animate-float { animation: float 3s ease-in-out infinite; }
+              `}} />
+              <div className="animate-fadeInUp inline-flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-full px-4 py-1.5 mb-6">
                 <Zap className="h-4 w-4 text-amber-500" />
                 <span className="text-sm font-medium text-amber-700">Asistente de compras con IA</span>
               </div>
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
+              <h1 className="animate-fadeInUp2 text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
                 Tu compra del super,
                 <span className="text-indigo-600"> resuelta.</span>
               </h1>
-              <p className="text-lg text-gray-500 mt-5 leading-relaxed max-w-lg">
+              <p className="animate-fadeInUp3 text-lg text-gray-500 mt-5 leading-relaxed max-w-lg">
                 Dile a AVI que necesitas. El compara precios en 4 supermercados,
                 arma tu carrito y te ahorra hasta un 45%.
               </p>
-              <div className="flex flex-col sm:flex-row gap-3 mt-8">
+              <div className="animate-fadeInUp4 flex flex-col sm:flex-row gap-3 mt-8">
                 <a href="/registro" className="bg-indigo-600 text-white px-7 py-3.5 rounded-full font-semibold text-base hover:bg-indigo-700 flex items-center justify-center gap-2 shadow-lg shadow-indigo-200 hover:shadow-xl transition-all">
                   Comenzar gratis
                   <ArrowRight className="h-5 w-5" />
@@ -71,8 +102,8 @@ export default function HomePage() {
                 </div>
               </div>
             </div>
-            <div className="relative hidden md:block">
-              <div className="bg-gradient-to-br from-indigo-100 to-violet-100 rounded-3xl p-8 relative">
+            <div className="relative hidden md:block animate-fadeInUp3">
+              <div className="bg-gradient-to-br from-indigo-100 to-violet-100 rounded-3xl p-8 relative animate-float">
                 <div className="bg-white rounded-2xl shadow-xl p-5 mb-4">
                   <div className="flex items-center gap-3 mb-4">
                     <img src="/avi-icon.svg" alt="" className="w-10 h-10 rounded-xl" />
@@ -216,25 +247,58 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* CTA Final */}
-      <section className="py-20 bg-indigo-600 relative overflow-hidden">
+      {/* Contact Form + CTA */}
+      <section id="contacto" className="py-20 bg-indigo-600 relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,255,255,0.1),transparent_70%)]" />
-        <div className="max-w-3xl mx-auto px-4 text-center relative z-10">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            Tu proxima compra, mas barata.
-          </h2>
-          <p className="text-lg text-indigo-200 mb-8 max-w-xl mx-auto">
-            Gratis. Sin tarjeta. Solo dile a AVI que necesitas comprar.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="/registro" className="bg-white text-indigo-700 px-8 py-4 rounded-full font-semibold text-base hover:bg-indigo-50 shadow-xl transition-all flex items-center justify-center gap-2">
-              Crear cuenta gratis
-              <ArrowRight className="h-5 w-5" />
-            </a>
-            <a href="https://wa.me/56994893097?text=Hola%20AVI" target="_blank" className="border border-white/30 text-white px-8 py-4 rounded-full font-medium hover:bg-white/10 transition-all flex items-center justify-center gap-2">
-              <MessageCircle className="h-5 w-5" />
-              Hablar con AVI por WhatsApp
-            </a>
+        <div className="max-w-4xl mx-auto px-4 relative z-10">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div className="text-center md:text-left">
+              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+                Empieza a ahorrar hoy
+              </h2>
+              <p className="text-lg text-indigo-200 mb-6">
+                Dejanos tus datos y te contactamos. O empieza ahora mismo.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <a href="/registro" className="bg-white text-indigo-700 px-7 py-3.5 rounded-full font-semibold hover:bg-indigo-50 shadow-xl transition-all flex items-center justify-center gap-2">
+                  Crear cuenta gratis <ArrowRight className="h-5 w-5" />
+                </a>
+                <a href="https://wa.me/56994893097?text=Hola%20AVI" target="_blank" className="border border-white/30 text-white px-7 py-3.5 rounded-full font-medium hover:bg-white/10 transition-all flex items-center justify-center gap-2">
+                  <MessageCircle className="h-5 w-5" /> WhatsApp
+                </a>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl p-6 shadow-2xl">
+              {formSent ? (
+                <div className="text-center py-8">
+                  <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <Check className="h-7 w-7 text-green-600" />
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900">Gracias!</h3>
+                  <p className="text-sm text-gray-500 mt-1">Te contactaremos pronto.</p>
+                </div>
+              ) : (
+                <form onSubmit={submitForm}>
+                  <h3 className="text-lg font-bold text-gray-900 mb-4">Contactanos</h3>
+                  <div className="space-y-3">
+                    <input type="text" required value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})}
+                      placeholder="Tu nombre" className="w-full px-4 py-3 bg-gray-100 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/20 focus:bg-white transition-all" />
+                    <input type="email" required value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})}
+                      placeholder="Email" className="w-full px-4 py-3 bg-gray-100 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/20 focus:bg-white transition-all" />
+                    <input type="tel" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                      placeholder="Telefono (opcional)" className="w-full px-4 py-3 bg-gray-100 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/20 focus:bg-white transition-all" />
+                    <textarea value={formData.message} onChange={(e) => setFormData({...formData, message: e.target.value})}
+                      placeholder="Mensaje (opcional)" rows={2} className="w-full px-4 py-3 bg-gray-100 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500/20 focus:bg-white transition-all resize-none" />
+                    <button type="submit" disabled={formLoading || !formData.name || !formData.email}
+                      className="w-full bg-indigo-600 text-white py-3.5 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 hover:bg-indigo-700 disabled:opacity-50 transition-colors">
+                      {formLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                      {formLoading ? 'Enviando...' : 'Enviar'}
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
           </div>
         </div>
       </section>
