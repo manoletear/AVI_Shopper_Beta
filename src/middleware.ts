@@ -20,5 +20,7 @@ export const config = {
     '/presupuesto/:path*',
     '/configuracion/:path*',
     '/historial/:path*',
+    '/comprar/:path*',
+    '/instalar/:path*',
   ],
 };
