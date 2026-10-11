@@ -58,9 +58,9 @@ test.describe('Dashboard (authenticated)', () => {
   });
 
   test('category icons are visible', async ({ page }) => {
-    await expect(page.locator('text=Mejor Precio')).toBeVisible();
-    await expect(page.locator('text=Listas')).toBeVisible();
-    await expect(page.locator('text=Salud')).toBeVisible();
+    await expect(page.locator('text=Mejor Precio').first()).toBeVisible();
+    await expect(page.locator('text=Listas').first()).toBeVisible();
+    await expect(page.locator('text=Salud').first()).toBeVisible();
   });
 
   test('AVI search bar links to cart-assistant', async ({ page }) => {
