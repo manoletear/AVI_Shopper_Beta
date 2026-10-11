@@ -1,7 +1,8 @@
 import { NextRequest } from 'next/server';
 import { requireAuth } from '@/lib/session';
 import { successResponse, errorResponse } from '@/lib/responses';
-import Anthropic from '@anthropic-ai/sdk';
+
+const WORKER_AI_URL = 'https://avi-shopper-ai.manuel-aravenal.workers.dev';
 
 const SYSTEM = `Eres AVI, asistente de compras de supermercado chileno. Ayudas a familias a armar su lista conversando.
 
@@ -46,28 +47,19 @@ export async function POST(request: NextRequest) {
       return errorResponse('Messages requeridos', 400);
     }
 
-    const apiKey = process.env.ANTHROPIC_API_KEY;
-    if (!apiKey) {
-      return errorResponse('API no configurada', 500);
-    }
-
-    const client = new Anthropic({ apiKey });
-    const response = await client.messages.create({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 1024,
-      system: SYSTEM,
-      messages: messages.map((m: any) => ({
-        role: m.role === 'user' ? 'user' : 'assistant',
-        content: m.text,
-      })),
+    // Use Cloudflare Workers AI (free) instead of Claude Haiku (paid)
+    const workerRes = await fetch(`${WORKER_AI_URL}/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages }),
     });
 
-    const block = response.content.find((b) => b.type === 'text');
-    if (!block || block.type !== 'text') {
-      return successResponse({ reply: 'No pude procesar tu mensaje.', products: null });
+    if (!workerRes.ok) {
+      return errorResponse('Error en Workers AI', 500);
     }
 
-    const text = block.text;
+    const workerData = await workerRes.json() as any;
+    const text = workerData.reply || '';
     const listMatch = text.match(/---LISTA---\s*\n?\s*(\[[\s\S]*\])/);
 
     if (listMatch) {
