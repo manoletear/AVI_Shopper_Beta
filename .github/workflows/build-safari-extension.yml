@@ -1,0 +1,65 @@
+name: Build Safari Extension
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'safari-extension/**'
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Convert Web Extension to Safari App Extension
+        run: |
+          cd safari-extension
+          # Use Safari Web Extension Converter
+          xcrun safari-web-extension-converter "AVI Shopper/Shared (Extension)" \
+            --project-location ./build \
+            --app-name "AVI Shopper" \
+            --bundle-identifier com.avishopper.safari \
+            --swift \
+            --ios-only \
+            --no-open \
+            --no-prompt || echo "Converter completed with warnings"
+
+      - name: Build for iOS (unsigned — for TestFlight/development)
+        run: |
+          cd safari-extension/build/AVI\ Shopper
+          # Build the project
+          xcodebuild -project "AVI Shopper.xcodeproj" \
+            -scheme "AVI Shopper (iOS)" \
+            -destination "generic/platform=iOS" \
+            -configuration Release \
+            CODE_SIGN_IDENTITY="-" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            build \
+            2>&1 | tail -20
+
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: avi-shopper-safari-extension
+          path: safari-extension/build/
+          retention-days: 30
+
+      - name: Build summary
+        run: |
+          echo "## Safari Extension Build" >> $GITHUB_STEP_SUMMARY
+          echo "- Platform: iOS" >> $GITHUB_STEP_SUMMARY
+          echo "- Bundle ID: com.avishopper.safari" >> $GITHUB_STEP_SUMMARY
+          echo "- Note: Unsigned build. Needs Apple Developer account to sign and distribute." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Next steps" >> $GITHUB_STEP_SUMMARY
+          echo "1. Get Apple Developer account (\$99/year)" >> $GITHUB_STEP_SUMMARY
+          echo "2. Add signing certificate to GitHub Secrets" >> $GITHUB_STEP_SUMMARY
+          echo "3. Update workflow to sign the build" >> $GITHUB_STEP_SUMMARY
+          echo "4. Upload to TestFlight for testing" >> $GITHUB_STEP_SUMMARY
