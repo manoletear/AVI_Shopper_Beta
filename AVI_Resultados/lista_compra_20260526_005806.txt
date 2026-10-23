@@ -1,0 +1,20 @@
+﻿AVI SHOPPER - LISTA DE COMPRA SEMANAL
+Generado: 05/26/2026 00:58:06
+Hogar: 5 adultos, 2 niños
+Presupuesto: 250000 CLP
+Total estimado: 174510 CLP
+Supermercado favorito: jumbo
+
+PRODUCTOS:
+[ ] 10 litro de leche entera líquida - 12000 CLP (Fuente: Referencial)
+[ ] 8 bolsa de pan de molde sin corteza - 16800 CLP (Fuente: Referencial)
+[ ] 50 unidad de huevos grandes - 41650 CLP (Fuente: Knasta Real)
+[ ] 3 kg de arroz grano largo - 5070 CLP (Fuente: Knasta Real)
+[ ] 2 paquete de fideos tallarines - 2000 CLP (Fuente: Referencial)
+[ ] 4 bandeja de pechuga de pollo sin piel - 29920 CLP (Fuente: Knasta Real)
+[ ] 7 kg de tomates perita - 9100 CLP (Fuente: Referencial)
+[ ] 7 unidad de lechuga escarola - 9240 CLP (Fuente: Knasta Real)
+[ ] 7 manojo de plátanos verdes - 27930 CLP (Fuente: Knasta Real)
+[ ] 4 bolsa de leche en polvo entera 800g - 20800 CLP (Fuente: Referencial)
+
+Nota: Los precios Knasta son en tiempo real (solo Santa Isabel/Falabella). Los referenciales son estáticos (mayo 2026).

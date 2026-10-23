@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { requireAuth } from '@/lib/session';
 import { successResponse, errorResponse } from '@/lib/responses';
 
+const XAI_API_KEY = process.env.XAI_API_KEY;
 const WORKER_AI_URL = 'https://avi-shopper-ai.manuel-aravenal.workers.dev';
 
 const SYSTEM = `Eres AVI, asistente de compras de supermercado chileno. Ayudas a familias a armar su lista conversando.
@@ -47,11 +48,47 @@ export async function POST(request: NextRequest) {
       return errorResponse('Messages requeridos', 400);
     }
 
-    // Use Cloudflare Workers AI (free) instead of Claude Haiku (paid)
-    const workerRes = await fetch(`${WORKER_AI_URL}/chat`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages }),
+        let text = '';
+
+    // Try Grok (xAI) first
+    if (XAI_API_KEY) {
+      try {
+        const grokRes = await fetch('https://api.x.ai/v1/chat/completions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${XAI_API_KEY}` },
+          body: JSON.stringify({
+            model: 'grok-4.7',
+            messages: [
+              { role: 'system', content: SYSTEM },
+              ...messages.map((m: any) => ({ role: m.role === 'user' ? 'user' : 'assistant', content: m.text || m.content })),
+            ],
+          }),
+        });
+        const grokData = await grokRes.json() as any;
+        if (grokData.choices?.[0]?.message?.content) {
+          text = grokData.choices[0].message.content;
+        }
+      } catch {}
+    }
+
+    // Fallback: Cloudflare Workers AI
+    if (!text) {
+      try {
+        const workerRes = await fetch(`${WORKER_AI_URL}/chat`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ messages }),
+        });
+        if (workerRes.ok) {
+          const workerData = await workerRes.json() as any;
+          text = workerData.reply || '';
+        }
+      } catch {}
+    }
+
+    if (!text) {
+      return errorResponse('No se pudo procesar tu mensaje', 500);
+    },
     });
 
     if (!workerRes.ok) {

@@ -1,0 +1,2173 @@
+﻿{
+    "q":  "arroz",
+    "order":  "relevance",
+    "k":  0,
+    "count":  485,
+    "total_pages":  16,
+    "page":  1,
+    "page_size":  32,
+    "products":  [
+                     {
+                         "kid":  "santaisabel#278",
+                         "product_id":  "278",
+                         "title":  "Arroz Especial Tucapel Preparado Curry Champiñón Sobre 210 g",
+                         "percent":  0,
+                         "price":  "$ 970",
+                         "price_value":  970.0,
+                         "images":  "https://santaisabel.vteximg.com.br/arquivos/ids/184942-250-250/Arroz-Especial-Tucapel-Sobre-210-g-Preparado-Curry-Champi%C3%B1on.jpg?v=637704239617370000",
+                         "prev_price":  null,
+                         "price_tm":  null,
+                         "ktype":  0,
+                         "retail_label":  "Santa Isabel",
+                         "retail":  "santaisabel",
+                         "brand":  "",
+                         "brandtitle":  "",
+                         "url":  "https://www.santaisabel.cl/arroz-especial-tucapel-sobre-210-g-preparado-curry-champinon/p",
+                         "is_premium":  1,
+                         "category":  "160009"
+                     },
+                     {
+                         "kid":  "lider#00078724238888",
+                         "product_id":  "00078724238888",
+                         "title":  "Bothyi - Olla Eléctrica Para Cocinar Al Vapor, Olla Para Cocinar Ramen, Para Arroz Frito, Color Gris Y Verde",
+                         "percent":  0,
+                         "price":  "$ 54.990",
+                         "price_value":  54990.0,
+                         "images":  "https://i5.walmartimages.cl/asr/1856a3e7-502d-41ed-9699-cb67e4efadc2.fde02cbf9dd487b0da6bc8643fe6c82f.jpeg?odnHeight=480\u0026odnWidth=480\u0026odnBg=ffffff",
+                         "prev_price":  null,
+                         "price_tm":  null,
+                         "ktype":  0,
+                         "retail_label":  "Lider Electrohogar",
+                         "retail":  "lider",
+                         "brand":  "",
+                         "brandtitle":  "",
+                         "url":  "https://www.lider.cl/ip/electrodomesticos-cocina/olla-electrica-para-cocinar-al-vapor-olla-para-cocinar-ramen-para-arroz-frito-color-gris-y-verde/00078724238888?channable=05f25469640030303037383732343233383838382c\u0026utm_campaign=affiliates\u0026utm_content=\u0026utm_source=knasta\u0026utm_medium=affiliates\u0026utm_term=00078724238888",
+                         "is_premium":  1,
+                         "category":  "50122"
+                     },
+                     {
+                         "kid":  "lider#00064192017401",
+                         "product_id":  "00064192017401",
+                         "title":  "Genérico - Set 3 Desmaquillante Agua De Arroz Remueve Maquillaje Lau",
+                         "percent":  0,
+                         "price":  "$ 27.990",
+                         "price_value":  27990.0,
+                         "images":  "https://i5.walmartimages.cl/asr/0a2acf0c-9716-4d96-af81-00c996f6dda9.51a72f804bbc581ff908a106f38b8da3.jpeg?odnHeight=480\u0026odnWidth=480\u0026odnBg=ffffff",
+                         "prev_price":  null,
+                         "price_tm":  null,
+                         "ktype":  0,
+                         "retail_label":  "Lider Electrohogar",
+                         "retail":  "lider",
+                         "brand":  "",
+                         "brandtitle":  "",
+                         "url":  "https://www.lider.cl/ip/cuidado-de-la-piel/set-3-desmaquillante-agua-de-arroz-remueve-maquillaje-lau/00064192017401?channable=05f254696400303030363431393230313734303150\u0026utm_campaign=affiliates\u0026utm_content=\u0026utm_source=knasta\u0026utm_medium=affiliates\u0026utm_term=00064192017401",
+                         "is_premium":  1,
+                         "category":  "90043"
+                     },
+                     {
+                         "kid":  "lider#00078724241586",
+                         "product_id":  "00078724241586",
+                         "title":  "Bothyi - Lavadora De Frutas, Utensilio De Cocina Para Frutas, Arroz, Frijoles, Carne, Cocina, Estilo Picnic A",
+                         "percent":  0,
+                         "price":  "$ 46.990",
+                         "price_value":  46990.0,
+                         "images":  "https://i5.walmartimages.cl/asr/83930b12-6331-4ada-9dba-45fc71f08cc7.3969b6142450cfc1dbd668367c3ef26d.jpeg?odnHeight=480\u0026odnWidth=480\u0026odnBg=ffffff",
+                         "prev_price":  null,
+                         "price_tm":  null,
+                         "ktype":  0,
+                         "retail_label":  "Lider Electrohogar",
+                         "retail":  "lider",
+                         "brand":  "",
+                         "brandtitle":  "",
+                         "url":  "https://www.lider.cl/ip/menaje-cocina/lavadora-de-frutas-utensilio-de-cocina-para-frutas-arroz-frijoles-carne-cocina-estilo-picnic-a/00078724241586?channable=05f254696400303030373837323432343135383659\u0026utm_campaign=affiliates\u0026utm_content=\u0026utm_source=knasta\u0026utm_medium=affiliates\u0026utm_term=00078724241586",
+                         "is_premium":  1,
+                         "category":  "50124"
+                     },
+                     {
+                         "kid":  "lider#00078724383911",
+                         "product_id":  "00078724383911",
+                         "title":  "Bothyi - Cesta De Colador De Arroz Cesta De Drenaje De Lavado De Frutas Y Verduras Herramienta De Drenaje Cocina Dorada",
+                         "percent":  0,
+                         "price":  "$ 35.990",
+                         "price_value":  35990.0,
+                         "images":  "https://i5.walmartimages.cl/asr/86651a44-b135-4e4c-a1a7-cc07dc0b24cc.1a6ff85c57781fbf781bcc8a94cd26f7.jpeg?odnHeight=480\u0026odnWidth=480\u0026odnBg=ffffff",
+                         "prev_price":  null,
+                         "price_tm":  null,
+                         "ktype":  0,
+                         "retail_label":  "Lider Electrohogar",
+                         "retail":  "lider",
+                         "brand":  "",
+                         "brandtitle":  "",
+                         "url":  "https://www.lider.cl/ip/decoracion/cesta-de-colador-de-arroz-cesta-de-drenaje-de-lavado-de-frutas-y-verduras-herramienta-de-drenaje-cocina-dorada/00078724383911?channable=05f25469640030303037383732343338333931317a\u0026utm_campaign=affiliates\u0026utm_content=\u0026utm_source=knasta\u0026utm_medium=affiliates\u0026utm_term=00078724383911",
+                         "is_premium":  1,
+                         "category":  "50385"
+                     },
+                     {
+                         "kid":  "lider#00081000286691",
+                         "product_id":  "00081000286691",
+                         "title":  "Hervidor De Arroz Gourmia, Capacidad De 5 Litros, 20 Tazas Con 6 Preajustes De Acero Inoxidable",
+                         "percent":  -1,
+                         "price":  "$ 188.990",
+                         "price_value":  188990.0,
+                         "images":  "https://i5.walmartimages.cl/asr/0ada5747-36d9-4923-8ea9-94fa97038f28.1fdb695be69b5144b9795fb069e127e6.jpeg?odnHeight=480\u0026odnWidth=480\u0026odnBg=ffffff",
+                         "prev_price":  "$ 190.990",
+                         "price_tm":  119990.0,
+                         "ktype":  7,
+                         "retail_label":  "Lider Electrohogar",
+                         "retail":  "lider",
+                         "brand":  "",
+                         "brandtitle":  "",
+                         "url":  "https://www.lider.cl/ip/menaje-comedor/hervidor-de-arroz-gourmia-capacidad-de-5-litros-20-tazas-con-6-preajustes-de-acero-inoxidable/00081000286691?channable=05f254696400303030383130303032383636393141\u0026utm_campaign=affiliates\u0026utm_content=\u0026utm_source=knasta\u0026utm_medium=affiliates\u0026utm_term=00081000286691",
+                         "is_premium":  1,
+                         "category":  "50256"
+                     },
+                     {
+                         "kid":  "lider_supermercado#00780012075558",
+                         "product_id":  "00780012075558",
+                         "title":  "Arroz Preparado Curry Bolsa 210 G Miraflores",
+                         "percent":  0,
+                         "price":  "$ 1.090",
+                         "price_value":  1090.0,
+                         "images":  "https://i5.walmartimages.cl/asr/18fcf81f-d22d-463e-8c8a-c9f203b3ade7.6b88f807cf6dd8e10478909a71f301b0.jpeg?odnHeight=400\u0026odnWidth=400",
+                         "prev_price":  null,
+                         "price_tm":  null,
+                         "ktype":  0,
+                         "retail_label":  "Lider Supermercado",
+                         "retail":  "lider_supermercado",
+                         "brand":  "",
+                         "brandtitle":  "",
+                         "url":  "https://super.lider.cl/ip/arroz-y-legumbres/arroz-preparado-curry-bolsa/00780012075558",
+                         "is_premium":  1,
+                         "category":  "160009"
+                     },
+                     {
+                         "kid":  "lider#03315262637422",
+                         "product_id":  "03315262637422",
+                         "title":  "Pack X6 Picado Nestlé® Naturnes® Pollo, Zanahoria Y Arroz 215G",
+                         "percent":  -10,
+                         "price":  "$ 11.390",
+                         "price_value":  11390.0,
+                         "images":  "https://i5.walmartimages.cl/asr/e718b5e1-3ada-44b7-8865-54415a8cae74.dd2131f62bbf6e1596cf050b1285dbbd.png?odnHeight=480\u0026odnWidth=480\u0026odnBg=ffffff",
+                         "prev_price":  "$ 12.690",
+                         "price_tm":  8990.0,
+                         "ktype":  50,
+                         "retail_label":  "Lider Electrohogar",
+                         "retail":  "lider",
+                         "brand":  "",
+                         "brandtitle":  "",
+                         "url":  "https://www.lider.cl/ip/alimentacion/pack-x6-picado-nestle-naturnes-pollo-zanahoria-y-arroz-215g/03315262637422?channable=05f254696400303333313532363236333734323295\u0026utm_campaign=affiliates\u0026utm_content=\u0026utm_source=knasta\u0026utm_medium=affiliates\u0026utm_term=03315262637422",
+                         "is_premium":  1,
+                         "category":  "100029"
+                     },
+                     {
+                         "kid":  "paris#EA6IQ9GPQJ",
+                         "product_id":  "EA6IQ9GPQJ",
+                         "title":  "Alimento perro 9 kg Premium carne arroz Cachupin",
+                         "percent":  -5,
+                         "price":  "$ 15.990",
+                         "price_value":  15990.0,
+                         "images":  "https://cl-dam-resizer.ecomm.cencosud.com/unsafe/adaptive-fit-in/400x400/easy/1081235/variant/images/ee4a4e0d-11f3-4fc0-b2fd-f3e0c2190504/1081235-0000-001.jpg",
+                         "prev_price":  "$ 16.990",
+                         "price_tm":  16990.0,
+                         "ktype":  84,
+                         "retail_label":  "Paris",
+                         "retail":  "paris",
+                         "brand":  "",
+                         "brandtitle":  "",
+                         "url":  "https://www.paris.cl/alimento-perro-9-kg-premium-carne-arroz-cachupin-EA6IQ9GPQJ.html",
+                         "is_premium":  1,
+                         "category":  "160003"
+                     },
+                     {
+                         "kid":  "santaisabel#10071",
+                         "product_id":  "10071",
+                         "title":  "Arroz Grado 2 Cuisine \u0026 Co Grano Largo y Ancho 1 kg",
+                         "percent":  6,
+                         "price":  "$ 1.690",
+                         "price_value":  1690.0,
+                         "images":  "https://santaisabel.vteximg.com.br/arquivos/ids/268460-250-250/Arroz-grado-2-grano-largo-y-ancho-1-kg.jpg?v=638144189948870000",
+                         "prev_price":  "$ 1.590",
+                         "price_tm":  1590.0,
+                         "ktype":  64,
+                         "retail_label":  "Santa Isabel",
+                         "retail":  "santaisabel",
+                         "brand":  "",
+                         "brandtitle":  "",
+                         "url":  "https://www.santaisabel.cl/arroz-cuisine-y-co-g2-grano-largo-ancho1kg/p",
+                         "is_premium":  1,
+                         "category":  "160009"
+                     },
+                     {
+                         "kid":  "santaisabel#10072",
+                         "product_id":  "10072",
+                         "title":  "Arroz Grado 1 Cuisine \u0026 Co Grano Largo y Ancho 1 kg",
+                         "percent":  12,
+                         "price":  "$ 2.020",
+                         "price_value":  2020.0,
+                         "images":  "https://santaisabel.vteximg.com.br/arquivos/ids/268459-250-250/Arroz-grado-1-grano-largo-y-ancho-1-kg.jpg?v=638144189941000000",
+                         "prev_price":  "$ 1.790",
+                         "price_tm":  1790.0,
+                         "ktype":  29,
+                         "retail_label":  "Santa Isabel",
+                         "retail":  "santaisabel",
+                         "brand":  "",
+                         "brandtitle":  "",
+                         "url":  "https://www.santaisabel.cl/arroz-cuisine-y-co-g1-grano-largo-ancho1kg/p",
+                         "is_premium":  1,
+                         "category":  "160009"
+                     },
+                     {
+                         "kid":  "santaisabel#10073",
+                         "product_id":  "10073",
+                         "title":  "Arroz Grado 1 Cuisine \u0026 Co Grano Largo y Ancho 3 kg",
+                         "percent":  0,
+                         "price":  "$ 5.890",
+                         "price_value":  5890.0,
+                         "images":  "https://santaisabel.vteximg.com.br/arquivos/ids/268461-250-250/Arroz-grado-1-grano-largo-y-ancho-3-kg.jpg?v=638144189957470000",
+                         "prev_price":  null,
+                         "price_tm":  null,
+                         "ktype":  0,
+                         "retail_label":  "Santa Isabel",
+                         "retail":  "santaisabel",
+                         "brand":  "",
+                         "brandtitle":  "",
+                         "url":  "https://www.santaisabel.cl/arroz-g1-largo-ancho-c-y-co-3-kg/p",
+                         "is_premium":  1,
+                         "category":  "160009"
+                     },
+                     {
+                         "kid":  "santaisabel#10074",
+                         "product_id":  "10074",
+                         "title":  "Arroz Integral Grado 1 Cuisine \u0026 Co Largo y Ancho 1 kg",
+                         "percent":  20,
+                         "price":  "$ 2.270",
+                         "price_value":  2270.0,
+                         "images":  "https://santaisabel.vteximg.com.br/arquivos/ids/268462-250-250/Arroz-integral-grado-1-largo-y-ancho-1-kg.jpg?v=638144189966500000",
+                         "prev_price":  "$ 1.890",
+                         "price_tm":  1790.0,
+                         "ktype":  29,
+                         "retail_label":  "Santa Isabel",
+                         "retail":  "santaisabel",
+                         "brand":  "",
+                         "brandtitle":  "",
+                         "url":  "https://www.santaisabel.cl/arroz-integral-c-y-co-1-kg/p",
+                         "is_premium":  1,
+                         "category":  "160009"
+                     },
+                     {
+                         "kid":  "santaisabel#10971",
+                         "product_id":  "10971",
+                         "title":  "Cereal Inflado de Arroz Cuisine \u0026 Co 100 g",
+                         "percent":  16,
+                         "price":  "$ 1.160",
+                         "price_value":  1160.0,
+                         "images":  "https://santaisabel.vteximg.com.br/arquivos/ids/267160-250-250/Cereal-inflado-de-arroz-100-g.jpg?v=638137238355270000",
+                         "prev_price":  "$ 1.000",
+                         "price_tm":  1000.0,
+                         "ktype":  85,
+                         "retail_label":  "Santa Isabel",
+                         "retail":  "santaisabel",
+                         "brand":  "",
+                         "brandtitle":  "",
+                         "url":  "https://www.santaisabel.cl/cereal-dilatado-arroz-cuisine-y-co-100g/p",
+                         "is_premium":  1,
+                         "category":  "160009"
+                     },
+                     {
+                         "kid":  "santaisabel#11004",
+                         "product_id":  "11004",
+                         "title":  "Arroz Grado 1 Iansa Agro Gran Selección 1 kg",
+                         "percent":  17,
+                         "price":  "$ 2.290",
+                         "price_value":  2290.0,
+                         "images":  "https://santaisabel.vteximg.com.br/arquivos/ids/518083-250-250/Arroz-Grado-1-Iansa-Agro-Gran-Seleccion-1-kg.jpg?v=638877533057300000",
+                         "prev_price":  "$ 1.950",
+                         "price_tm":  1950.0,
+                         "ktype":  64,
+                         "retail_label":  "Santa Isabel",
+                         "retail":  "santaisabel",
+                         "brand":  "",
+                         "brandtitle":  "",
+                         "url":  "https://www.santaisabel.cl/arroz-grado-1-largo-y-ancho-1-kg/p",
+                         "is_premium":  1,
+                         "category":  "160009"
+                     },
+                     {
+                         "kid":  "santaisabel#11005",
+                         "product_id":  "11005",
+                         "title":  "Arroz Grado 2 Iansa Agro 1 kg",
+                         "percent":  0,
+                         "price":  "$ 2.090",
+                         "price_value":  2090.0,
+                         "images":  "https://santaisabel.vteximg.com.br/arquivos/ids/518100-250-250/Arroz-Grado-2-Iansa-Agro-1-kg.jpg?v=638877533092800000",
+                         "prev_price":  null,
+                         "price_tm":  null,
+                         "ktype":  0,
+                         "retail_label":  "Santa Isabel",
+                         "retail":  "santaisabel",
+                         "brand":  "",
+                         "brandtitle":  "",
+                         "url":  "https://www.santaisabel.cl/arroz-grado-2-largo-y-ancho-1-kg/p",
+                         "is_premium":  1,
+                         "category":  "160009"
+                     },
+                     {
+                         "kid":  "santaisabel#11390",
+                         "product_id":  "11390",
+                         "title":  "Arroz Basmati Miraflores 400 g",
+                         "percent":  3,
+                         "price":  "$ 3.070",
+                         "price_value":  3070.0,
+                         "images":  "https://santaisabel.vteximg.com.br/arquivos/ids/288004-250-250/Arroz-Basmati-grano-largo-y-delgado-400-g.jpg?v=638211736050970000",
+                         "prev_price":  "$ 2.960",
+                         "price_tm":  2960.0,
+                         "ktype":  20,
+                         "retail_label":  "Santa Isabel",
+                         "retail":  "santaisabel",
+                         "brand":  "",
+                         "brandtitle":  "",
+                         "url":  "https://www.santaisabel.cl/arroz-basmati-grano-largo-y-delgado-400-g/p",
+                         "is_premium":  1,
+                         "category":  "160009"
+                     },
+                     {
+                         "kid":  "santaisabel#11392",
+                         "product_id":  "11392",
+                         "title":  "Arroz Risotto Miraflores 400 g",
+                         "percent":  3,
+                         "price":  "$ 2.280",
+                         "price_value":  2280.0,
+                         "images":  "https://santaisabel.vteximg.com.br/arquivos/ids/186311-250-250/Arroz-Risotto-Carnaroli-400-g.jpg?v=637740677805630000",
+                         "prev_price":  "$ 2.210",
+                         "price_tm":  2210.0,
+                         "ktype":  20,
+                         "retail_label":  "Santa Isabel",
+                         "retail":  "santaisabel",
+                         "brand":  "",
+                         "brandtitle":  "",
+                         "url":  "https://www.santaisabel.cl/arroz-risotto-carnaroli-400-g/p",
+                         "is_premium":  1,
+                         "category":  "160009"
+                     },
+                     {
+                         "kid":  "santaisabel#12277",
+                         "product_id":  "12277",
+                         "title":  "Arroz Pregraneado Cuisine \u0026 Co 1 kg",
+                         "percent":  8,
+                         "price":  "$ 2.050",
+                         "price_value":  2050.0,
+                         "images":  "https://santaisabel.vteximg.com.br/arquivos/ids/268455-250-250/Arroz-pregraneado-1-kg.jpg?v=638144189906700000",
+                         "prev_price":  "$ 1.890",
+                         "price_tm":  1890.0,
+                         "ktype":  29,
+                         "retail_label":  "Santa Isabel",
+                         "retail":  "santaisabel",
+                         "brand":  "",
+                         "brandtitle":  "",
+                         "url":  "https://www.santaisabel.cl/arroz-pregraneado-1-kg-1883873/p",
+                         "is_premium":  1,
+                         "category":  "160009"
+                     },
+                     {
+                         "kid":  "santaisabel#12938",
+                         "product_id":  "12938",
+                         "title":  "Tortitas de Arroz Integral Bicentury con Yogurt 130 g",
+                         "percent":  0,
+                         "price":  "$ 4.290",
+                         "price_value":  4290.0,
+                         "images":  "https://santaisabel.vteximg.com.br/arquivos/ids/372771-250-250/Tortitas-de-arroz-integral-con-yoghurt-130-g.jpg?v=638514639427470000",
+                         "prev_price":  null,
+                         "price_tm":  null,
+                         "ktype":  0,
+                         "retail_label":  "Santa Isabel",
+                         "retail":  "santaisabel",
+                         "brand":  "",
+                         "brandtitle":  "",
+                         "url":  "https://www.santaisabel.cl/tortitas-de-arroz-integral-con-yoghurt-130-g-1024868/p",
+                         "is_premium":  1,
+                         "category":  "10000"
+                     },
+                     {
+                         "kid":  "santaisabel#12941",
+                         "product_id":  "12941",
+                         "title":  "Tortitas de Arroz Integral Bicentury 130 g",
+                         "percent":  0,
+                         "price":  "$ 2.290",
+                         "price_value":  2290.0,
+                         "images":  "https://santaisabel.vteximg.com.br/arquivos/ids/372760-250-250/Tortitas-de-arroz-integral-130-g.jpg?v=638514639399730000",
+                         "prev_price":  null,
+                         "price_tm":  null,
+                         "ktype":  0,
+                         "retail_label":  "Santa Isabel",
+                         "retail":  "santaisabel",
+                         "brand":  "",
+                         "brandtitle":  "",
+                         "url":  "https://www.santaisabel.cl/tortitas-de-arroz-integral-130-g-1024865/p",
+                         "is_premium":  1,
+                         "category":  "160009"
+                     },
+                     {
+                         "kid":  "santaisabel#14141",
+                         "product_id":  "14141",
+                         "title":  "Galleta de Arroz Cuisine \u0026 Co con Sal 100 g",
+                         "percent":  6,
+                         "price":  "$ 1.370",
+                         "price_value":  1370.0,
+                         "images":  "https://santaisabel.vteximg.com.br/arquivos/ids/268469-250-250/Galleta-de-arroz-con-sal-100-g.jpg?v=638144190035570000",
+                         "prev_price":  "$ 1.290",
+                         "price_tm":  1000.0,
+                         "ktype":  29,
+                         "retail_label":  "Santa Isabel",
+                         "retail":  "santaisabel",
+                         "brand":  "",
+                         "brandtitle":  "",
+                         "url":  "https://www.santaisabel.cl/galleta-de-arroz-con-sal-100-g-1918705/p",
+                         "is_premium":  1,
+                         "category":  "160009"
+                     },
+                     {
+                         "kid":  "santaisabel#14143",
+                         "product_id":  "14143",
+                         "title":  "Galleta de Arroz Cuisine \u0026 Co con Chocolate 150 g",
+                         "percent":  14,
+                         "price":  "$ 1.930",
+                         "price_value":  1930.0,
+                         "images":  "https://santaisabel.vteximg.com.br/arquivos/ids/268470-250-250/Galleta-de-arroz-con-chocolate-150-g.jpg?v=638144190045170000",
+                         "prev_price":  "$ 1.690",
+                         "price_tm":  1690.0,
+                         "ktype":  29,
+                         "retail_label":  "Santa Isabel",
+                         "retail":  "santaisabel",
+                         "brand":  "",
+                         "brandtitle":  "",
+                         "url":  "https://www.santaisabel.cl/galleta-de-arroz-con-chocolate-150-g-1918706/p",
+                         "is_premium":  1,
+                         "category":  "160009"
+                     },
+                     {
+                         "kid":  "santaisabel#14148",
+                         "product_id":  "14148",
+                         "title":  "Galleta de Arroz Cuisine \u0026 Co con Chocolate 20 g",
+                         "percent":  0,
+                         "price":  "$ 480",
+                         "price_value":  480.0,
+                         "images":  "https://santaisabel.vteximg.com.br/arquivos/ids/608559-250-250/Galleta-de-Arroz-Cuisine---Co-con-Chocolate-20-g.jpg?v=639150783344000000",
+                         "prev_price":  null,
+                         "price_tm":  null,
+                         "ktype":  0,
+                         "retail_label":  "Santa Isabel",
+                         "retail":  "santaisabel",
+                         "brand":  "",
+                         "brandtitle":  "",
+                         "url":  "https://www.santaisabel.cl/galleta-de-arroz-con-chocolate-20-g-1918708/p",
+                         "is_premium":  1,
+                         "category":  "160009"
+                     },
+                     {
+                         "kid":  "santaisabel#14149",
+                         "product_id":  "14149",
+                         "title":  "Galleta de Arroz Cuisine \u0026 Co Manzana 16 g",
+                         "percent":  0,
+                         "price":  "$ 480",
+                         "price_value":  480.0,
+                         "images":  "https://santaisabel.vteximg.com.br/arquivos/ids/608558-250-250/Galleta-de-Arroz-Cuisine---Co-Manzana-16-g.jpg?v=639150783327800000",
+                         "prev_price":  null,
+                         "price_tm":  null,
+                         "ktype":  0,
+                         "retail_label":  "Santa Isabel",
+                         "retail":  "santaisabel",
+                         "brand":  "",
+                         "brandtitle":  "",
+                         "url":  "https://www.santaisabel.cl/galleta-de-arroz-manzana-16-g-1918707/p",
+                         "is_premium":  1,
+                         "category":  "160009"
+                     },
+                     {
+                         "kid":  "santaisabel#14154",
+                         "product_id":  "14154",
+                         "title":  "Galleta de Arroz Cuisine \u0026 Co con Chocolate y Naranja 25 g",
+                         "percent":  0,
+                         "price":  "$ 480",
+                         "price_value":  480.0,
+                         "images":  "https://santaisabel.vteximg.com.br/arquivos/ids/608560-250-250/Galleta-de-Arroz-Cuisine---Co-con-Chocolate-y-Naranja-25-g.jpg?v=639150783355400000",
+                         "prev_price":  null,
+                         "price_tm":  null,
+                         "ktype":  0,
+                         "retail_label":  "Santa Isabel",
+                         "retail":  "santaisabel",
+                         "brand":  "",
+                         "brandtitle":  "",
+                         "url":  "https://www.santaisabel.cl/galleta-de-arroz-con-chocolate-y-naranja-25-g-1918709/p",
+                         "is_premium":  1,
+                         "category":  "160009"
+                     },
+                     {
+                         "kid":  "santaisabel#14738",
+                         "product_id":  "14738",
+                         "title":  "Galletas de Arroz Tucapel Clásica 25 g",
+                         "percent":  -4,
+                         "price":  "$ 440",
+                         "price_value":  440.0,
+                         "images":  "https://santaisabel.vteximg.com.br/arquivos/ids/199134-250-250/Galleta-arroz-clasica-25-g.jpg?v=637914591434900000",
+                         "prev_price":  "$ 460",
+                         "price_tm":  460.0,
+                         "ktype":  19,
+                         "retail_label":  "Santa Isabel",
+                         "retail":  "santaisabel",
+                         "brand":  "",
+                         "brandtitle":  "",
+                         "url":  "https://www.santaisabel.cl/galleta-arroz-clasica-25-g-1894074/p",
+                         "is_premium":  1,
+                         "category":  "160009"
+                     },
+                     {
+                         "kid":  "santaisabel#15265",
+                         "product_id":  "15265",
+                         "title":  "Arroz Especial Tucapel Basmati Pregraneado1 kg",
+                         "percent":  -1,
+                         "price":  "$ 5.610",
+                         "price_value":  5610.0,
+                         "images":  "https://santaisabel.vteximg.com.br/arquivos/ids/200021-250-250/Arroz-especial-Tucapel-1-kg-basmati-pregraneado.jpg?v=637914598550700000",
+                         "prev_price":  "$ 5.690",
+                         "price_tm":  4690.0,
+                         "ktype":  20,
+                         "retail_label":  "Santa Isabel",
+                         "retail":  "santaisabel",
+                         "brand":  "",
+                         "brandtitle":  "",
+                         "url":  "https://www.santaisabel.cl/arroz-especial-tucapel-1-kg-basmati-pregraneado-1538709/p",
+                         "is_premium":  1,
+                         "category":  "160009"
+                     },
+                     {
+                         "kid":  "santaisabel#15526",
+                         "product_id":  "15526",
+                         "title":  "Papel de Arroz Exotic Food Caja 100 g",
+                         "percent":  -30,
+                         "price":  "$ 1.043",
+                         "price_value":  1043.0,
+                         "images":  "https://santaisabel.vteximg.com.br/arquivos/ids/380990-250-250/Papel-de-arroz-Exotic-Food-caja-100-g.jpg?v=638525950681700000",
+                         "prev_price":  "$ 1.490",
+                         "price_tm":  1192.0,
+                         "ktype":  1,
+                         "retail_label":  "Santa Isabel",
+                         "retail":  "santaisabel",
+                         "brand":  "",
+                         "brandtitle":  "",
+                         "url":  "https://www.santaisabel.cl/papel-de-arroz-exotic-food-caja-100-g-1189639/p",
+                         "is_premium":  1,
+                         "category":  "10000"
+                     },
+                     {
+                         "kid":  "santaisabel#15531",
+                         "product_id":  "15531",
+                         "title":  "Sazonador Gourmet para Arroz 6 un.",
+                         "percent":  1,
+                         "price":  "$ 830",
+                         "price_value":  830.0,
+                         "images":  "https://santaisabel.vteximg.com.br/arquivos/ids/583556-250-250/Sazonador-Gourmet-Para-Arroz-6-un.jpg?v=639104847922070000",
+                         "prev_price":  "$ 820",
+                         "price_tm":  810.0,
+                         "ktype":  20,
+                         "retail_label":  "Santa Isabel",
+                         "retail":  "santaisabel",
+                         "brand":  "",
+                         "brandtitle":  "",
+                         "url":  "https://www.santaisabel.cl/sazonador-gourmet-para-arroz-6-unid-1587261/p",
+                         "is_premium":  1,
+                         "category":  "160009"
+                     },
+                     {
+                         "kid":  "santaisabel#17021",
+                         "product_id":  "17021",
+                         "title":  "Galletas de Arroz Mizos Chocolate Familiar 120 g",
+                         "percent":  0,
+                         "price":  "$ 3.420",
+                         "price_value":  3420.0,
+                         "images":  "https://santaisabel.vteximg.com.br/arquivos/ids/474933-250-250/Galletas-de-Arroz-Mizos-Chocolate-Familiar-120-g.jpg?v=638717943568770000",
+                         "prev_price":  "$ 3.390",
+                         "price_tm":  3390.0,
+                         "ktype":  20,
+                         "retail_label":  "Santa Isabel",
+                         "retail":  "santaisabel",
+                         "brand":  "",
+                         "brandtitle":  "",
+                         "url":  "https://www.santaisabel.cl/galleta-de-arroz-chocolate-familiar-120-g-1849196/p",
+                         "is_premium":  1,
+                         "category":  "160009"
+                     },
+                     {
+                         "kid":  "santaisabel#17072",
+                         "product_id":  "17072",
+                         "title":  "Palmitos Cuisine \u0026 Co Corte Arroz 220 g drenado",
+                         "percent":  33,
+                         "price":  "$ 2.660",
+                         "price_value":  2660.0,
+                         "images":  "https://santaisabel.vteximg.com.br/arquivos/ids/267529-250-250/Palmito-corte-arroz-400-g.jpg?v=638137373427530000",
+                         "prev_price":  "$ 1.990",
+                         "price_tm":  1990.0,
+                         "ktype":  29,
+                         "retail_label":  "Santa Isabel",
+                         "retail":  "santaisabel",
+                         "brand":  "",
+                         "brandtitle":  "",
+                         "url":  "https://www.santaisabel.cl/palmito-corte-arroz-400g-c-and-co-nbe-mp-1932738/p",
+                         "is_premium":  1,
+                         "category":  "160009"
+                     }
+                 ],
+    "category":  {
+                     "id":  "0",
+                     "name":  "Todas",
+                     "slug":  ""
+                 },
+    "results_retails":  [
+                            "lider",
+                            "lider_supermercado",
+                            "santaisabel",
+                            "falabella",
+                            "paris",
+                            "aliexpress",
+                            "easy",
+                            "abc",
+                            "elvolcan"
+                        ],
+    "url_retails":  [
+
+                    ],
+    "retails":  [
+                    {
+                        "alias":  "abc",
+                        "id":  "abc",
+                        "label":  "Abc",
+                        "verified":  true,
+                        "show_home":  true,
+                        "count":  1
+                    },
+                    {
+                        "alias":  "adidas",
+                        "id":  "adidas",
+                        "label":  "Adidas",
+                        "verified":  true,
+                        "show_home":  true,
+                        "count":  0
+                    },
+                    {
+                        "alias":  "aliexpress",
+                        "id":  "aliexpress",
+                        "label":  "Aliexpress",
+                        "verified":  true,
+                        "show_home":  true,
+                        "count":  9
+                    },
+                    {
+                        "alias":  "asics",
+                        "id":  "asics",
+                        "label":  "Asics",
+                        "verified":  true,
+                        "show_home":  true,
+                        "count":  0
+                    },
+                    {
+                        "alias":  "bebesit",
+                        "id":  "bebesit",
+                        "label":  "Bebesit",
+                        "verified":  true,
+                        "show_home":  false,
+                        "count":  0
+                    },
+                    {
+                        "alias":  "casaroyal",
+                        "id":  "casaroyal",
+                        "label":  "Casa Royal",
+                        "verified":  true,
+                        "show_home":  true,
+                        "count":  0
+                    },
+                    {
+                        "alias":  "claro",
+                        "id":  "claro",
+                        "label":  "Claro",
+                        "verified":  true,
+                        "show_home":  true,
+                        "count":  0
+                    },
+                    {
+                        "alias":  "dermotienda",
+                        "id":  "dermotienda",
+                        "label":  "Dermotienda",
+                        "verified":  true,
+                        "show_home":  true,
+                        "count":  0
+                    },
+                    {
+                        "alias":  "easy",
+                        "id":  "easy",
+                        "label":  "Easy",
+                        "verified":  true,
+                        "show_home":  true,
+                        "count":  8
+                    },
+                    {
+                        "alias":  "ebest",
+                        "id":  "ebest",
+                        "label":  "Ebest",
+                        "verified":  true,
+                        "show_home":  false,
+                        "count":  0
+                    },
+                    {
+                        "alias":  "elvolcan",
+                        "id":  "elvolcan",
+                        "label":  "El Volcan",
+                        "verified":  true,
+                        "show_home":  true,
+                        "count":  1
+                    },
+                    {
+                        "alias":  "falabella",
+                        "id":  "falabella",
+                        "label":  "Falabella",
+                        "verified":  true,
+                        "show_home":  true,
+                        "count":  18
+                    },
+                    {
+                        "alias":  "hit",
+                        "id":  "hit",
+                        "label":  "Hit",
+                        "verified":  true,
+                        "show_home":  true,
+                        "count":  0
+                    },
+                    {
+                        "alias":  "hollyconcept",
+                        "id":  "hollyconcept",
+                        "label":  "Holly Concept",
+                        "verified":  true,
+                        "show_home":  true,
+                        "count":  0
+                    },
+                    {
+                        "alias":  "thehouseofmarley",
+                        "id":  "thehouseofmarley",
+                        "label":  "House of Marley",
+                        "verified":  true,
+                        "show_home":  true,
+                        "count":  0
+                    },
+                    {
+                        "alias":  "hp",
+                        "id":  "hp",
+                        "label":  "HP Chile",
+                        "verified":  true,
+                        "show_home":  true,
+                        "count":  0
+                    },
+                    {
+                        "alias":  "importclick",
+                        "id":  "importclick",
+                        "label":  "Importclick",
+                        "verified":  true,
+                        "show_home":  true,
+                        "count":  0
+                    },
+                    {
+                        "alias":  "jayson",
+                        "id":  "jayson",
+                        "label":  "Jayson",
+                        "verified":  true,
+                        "show_home":  true,
+                        "count":  0
+                    },
+                    {
+                        "alias":  "kannu",
+                        "id":  "kannu",
+                        "label":  "Kannu",
+                        "verified":  true,
+                        "show_home":  true,
+                        "count":  0
+                    },
+                    {
+                        "alias":  "kotting",
+                        "id":  "kotting",
+                        "label":  "Kotting",
+                        "verified":  true,
+                        "show_home":  true,
+                        "count":  0
+                    },
+                    {
+                        "alias":  "lenovo",
+                        "id":  "lenovo",
+                        "label":  "Lenovo",
+                        "verified":  true,
+                        "show_home":  true,
+                        "count":  0
+                    },
+                    {
+                        "alias":  "lider",
+                        "id":  "lider",
+                        "label":  "Lider Electrohogar",
+                        "verified":  true,
+                        "show_home":  true,
+                        "count":  248
+                    },
+                    {
+                        "alias":  "lider_supermercado",
+                        "id":  "lider_supermercado",
+                        "label":  "Lider Supermercado",
+                        "verified":  true,
+                        "show_home":  false,
+                        "count":  105
+                    },
+                    {
+                        "alias":  "masterg",
+                        "id":  "masterg",
+                        "label":  "Master-G",
+                        "verified":  true,
+                        "show_home":  true,
+                        "count":  0
+                    },
+                    {
+                        "alias":  "mcgregor",
+                        "id":  "mcgregor",
+                        "label":  "Mcgregor",
+                        "verified":  true,
+                        "show_home":  true,
+                        "count":  0
+                    },
+                    {
+                        "alias":  "mercadolibre",
+                        "id":  "mercadolibre",
+                        "label":  "Mercado Libre",
+                        "verified":  true,
+                        "show_home":  true,
+                        "count":  0
+                    },
+                    {
+                        "alias":  "nike",
+                        "id":  "nike",
+                        "label":  "Nike",
+                        "verified":  true,
+                        "show_home":  true,
+                        "count":  0
+                    },
+                    {
+                        "alias":  "paris",
+                        "id":  "paris",
+                        "label":  "Paris",
+                        "verified":  true,
+                        "show_home":  true,
+                        "count":  11
+                    },
+                    {
+                        "alias":  "passol",
+                        "id":  "passol",
+                        "label":  "Passol",
+                        "verified":  true,
+                        "show_home":  true,
+                        "count":  0
+                    },
+                    {
+                        "alias":  "pcfactory",
+                        "id":  "pcfactory",
+                        "label":  "Pc Factory",
+                        "verified":  true,
+                        "show_home":  true,
+                        "count":  0
+                    },
+                    {
+                        "alias":  "potros",
+                        "id":  "potros",
+                        "label":  "Potros",
+                        "verified":  true,
+                        "show_home":  true,
+                        "count":  0
+                    },
+                    {
+                        "alias":  "pz",
+                        "id":  "pz",
+                        "label":  "PZ",
+                        "verified":  true,
+                        "show_home":  true,
+                        "count":  0
+                    },
+                    {
+                        "alias":  "sairam",
+                        "id":  "sairam",
+                        "label":  "Sairam Perfumes",
+                        "verified":  true,
+                        "show_home":  false,
+                        "count":  0
+                    },
+                    {
+                        "alias":  "santaisabel",
+                        "id":  "santaisabel",
+                        "label":  "Santa Isabel",
+                        "verified":  true,
+                        "show_home":  true,
+                        "count":  84
+                    },
+                    {
+                        "alias":  "siegen",
+                        "id":  "siegen",
+                        "label":  "Siegen",
+                        "verified":  true,
+                        "show_home":  true,
+                        "count":  0
+                    },
+                    {
+                        "alias":  "smartdeal",
+                        "id":  "smartdeal",
+                        "label":  "Smartdeal",
+                        "verified":  true,
+                        "show_home":  true,
+                        "count":  0
+                    },
+                    {
+                        "alias":  "tecnomas",
+                        "id":  "tecnomas",
+                        "label":  "Tecnomas",
+                        "verified":  true,
+                        "show_home":  true,
+                        "count":  0
+                    },
+                    {
+                        "alias":  "thomas",
+                        "id":  "thomas",
+                        "label":  "Thomas Chile",
+                        "verified":  true,
+                        "show_home":  true,
+                        "count":  0
+                    },
+                    {
+                        "alias":  "truval",
+                        "id":  "truval",
+                        "label":  "Truval",
+                        "verified":  true,
+                        "show_home":  true,
+                        "count":  0
+                    },
+                    {
+                        "alias":  "zapatos",
+                        "id":  "zapatos",
+                        "label":  "Zapatos",
+                        "verified":  true,
+                        "show_home":  true,
+                        "count":  0
+                    }
+                ],
+    "brands":  [
+                   {
+                       "id":  "Bothyi",
+                       "count":  91
+                   },
+                   {
+                       "id":  "Tucapel",
+                       "count":  17
+                   },
+                   {
+                       "id":  "Cuisine \u0026 Co",
+                       "count":  14
+                   },
+                   {
+                       "id":  "Ecosoulife",
+                       "count":  14
+                   },
+                   {
+                       "id":  "Xmhytop",
+                       "count":  13
+                   },
+                   {
+                       "id":  "Beauty Of Joseon",
+                       "count":  12
+                   },
+                   {
+                       "id":  "Genérico",
+                       "count":  12
+                   },
+                   {
+                       "id":  "Miraflores",
+                       "count":  10
+                   },
+                   {
+                       "id":  "Mizos",
+                       "count":  10
+                   },
+                   {
+                       "id":  "Yanco",
+                       "count":  9
+                   },
+                   {
+                       "id":  "Fvh",
+                       "count":  6
+                   },
+                   {
+                       "id":  "Anua",
+                       "count":  5
+                   },
+                   {
+                       "id":  "Baby Mum Mum",
+                       "count":  4
+                   },
+                   {
+                       "id":  "Cachupin",
+                       "count":  4
+                   },
+                   {
+                       "id":  "Haruharu",
+                       "count":  4
+                   },
+                   {
+                       "id":  "Komzon",
+                       "count":  4
+                   },
+                   {
+                       "id":  "Nutribest",
+                       "count":  4
+                   },
+                   {
+                       "id":  "Petrizzio",
+                       "count":  4
+                   },
+                   {
+                       "id":  "Silver Buffalo",
+                       "count":  4
+                   },
+                   {
+                       "id":  "Spt",
+                       "count":  4
+                   }
+               ],
+    "country":  "Chile",
+    "social_networks":  {
+                            "twitter":  "knasta_cl",
+                            "facebook":  "knasta.cl",
+                            "instagram":  "knasta_cl"
+                        },
+    "seo_head":  {
+
+                 },
+    "ranking_source":  "iranking",
+    "categories_tree":  {
+                            "category_id":  "0",
+                            "category_name":  "Todas",
+                            "priority":  0.0,
+                            "active":  "enabled",
+                            "parent_id":  null,
+                            "score":  0,
+                            "long_path":  "",
+                            "slug":  "",
+                            "leaves":  [
+
+                                       ],
+                            "children":  [
+                                             {
+                                                 "category_id":  "20106",
+                                                 "category_name":  "Tecnología",
+                                                 "priority":  0.0,
+                                                 "active":  "enabled",
+                                                 "parent_id":  "0",
+                                                 "score":  1,
+                                                 "long_path":  "Tecnología",
+                                                 "slug":  "tecnologia",
+                                                 "leaves":  [
+
+                                                            ],
+                                                 "children":  [
+                                                                  {
+                                                                      "category_id":  "1204860",
+                                                                      "category_name":  "Consolas y Videojuegos",
+                                                                      "priority":  0.0,
+                                                                      "active":  "enabled",
+                                                                      "parent_id":  "20106",
+                                                                      "score":  6,
+                                                                      "long_path":  "Tecnología \u003e Consolas y Videojuegos",
+                                                                      "slug":  "tecnologia/consolas-y-videojuegos",
+                                                                      "leaves":  [
+
+                                                                                 ],
+                                                                      "children":  [
+                                                                                       {
+                                                                                           "category_id":  "30001",
+                                                                                           "category_name":  "Controles y Accesorios",
+                                                                                           "priority":  2293.0,
+                                                                                           "active":  "enabled",
+                                                                                           "parent_id":  "1204860",
+                                                                                           "score":  6,
+                                                                                           "long_path":  "Tecnología \u003e Consolas y Videojuegos \u003e Controles y Accesorios",
+                                                                                           "slug":  "tecnologia/consolas-y-videojuegos/controles-y-accesorios",
+                                                                                           "leaves":  [
+
+                                                                                                      ],
+                                                                                           "children":  null,
+                                                                                           "retails":  [
+
+                                                                                                       ]
+                                                                                       }
+                                                                                   ],
+                                                                      "retails":  [
+
+                                                                                  ]
+                                                                  },
+                                                                  {
+                                                                      "category_id":  "20002",
+                                                                      "category_name":  "Drones y Fotografía",
+                                                                      "priority":  0.0,
+                                                                      "active":  "enabled",
+                                                                      "parent_id":  "20106",
+                                                                      "score":  11,
+                                                                      "long_path":  "Tecnología \u003e Drones y Fotografía",
+                                                                      "slug":  "tecnologia/drones-y-fotografia",
+                                                                      "leaves":  [
+
+                                                                                 ],
+                                                                      "children":  [
+                                                                                       {
+                                                                                           "category_id":  "20003",
+                                                                                           "category_name":  "Accesorios Para Cámaras",
+                                                                                           "priority":  73.0,
+                                                                                           "active":  "enabled",
+                                                                                           "parent_id":  "20002",
+                                                                                           "score":  8,
+                                                                                           "long_path":  "Tecnología \u003e Drones y Fotografía \u003e Accesorios Para Cámaras",
+                                                                                           "slug":  "tecnologia/drones-y-fotografia/accesorios-para-camaras",
+                                                                                           "leaves":  [
+
+                                                                                                      ],
+                                                                                           "children":  null,
+                                                                                           "retails":  [
+
+                                                                                                       ]
+                                                                                       }
+                                                                                   ],
+                                                                      "retails":  [
+
+                                                                                  ]
+                                                                  }
+                                                              ],
+                                                 "retails":  [
+
+                                                             ]
+                                             },
+                                             {
+                                                 "category_id":  "50872",
+                                                 "category_name":  "Decohogar",
+                                                 "priority":  0.0,
+                                                 "active":  "enabled",
+                                                 "parent_id":  "0",
+                                                 "score":  4,
+                                                 "long_path":  "Decohogar",
+                                                 "slug":  "decohogar",
+                                                 "leaves":  [
+
+                                                            ],
+                                                 "children":  [
+                                                                  {
+                                                                      "category_id":  "50362",
+                                                                      "category_name":  "Decoración",
+                                                                      "priority":  0.0,
+                                                                      "active":  "enabled",
+                                                                      "parent_id":  "50872",
+                                                                      "score":  2,
+                                                                      "long_path":  "Decohogar \u003e Decoración",
+                                                                      "slug":  "decohogar/decoracion",
+                                                                      "leaves":  [
+
+                                                                                 ],
+                                                                      "children":  [
+                                                                                       {
+                                                                                           "category_id":  "50385",
+                                                                                           "category_name":  "Artículos de Decoración",
+                                                                                           "priority":  1250.0,
+                                                                                           "active":  "enabled",
+                                                                                           "parent_id":  "50362",
+                                                                                           "score":  5,
+                                                                                           "long_path":  "Decohogar \u003e Decoración \u003e Artículos de Decoración",
+                                                                                           "slug":  "decohogar/decoracion/articulos-de-decoracion",
+                                                                                           "leaves":  [
+
+                                                                                                      ],
+                                                                                           "children":  null,
+                                                                                           "retails":  [
+
+                                                                                                       ]
+                                                                                       }
+                                                                                   ],
+                                                                      "retails":  [
+
+                                                                                  ]
+                                                                  },
+                                                                  {
+                                                                      "category_id":  "50913",
+                                                                      "category_name":  "Dormitorio",
+                                                                      "priority":  0.0,
+                                                                      "active":  "enabled",
+                                                                      "parent_id":  "50872",
+                                                                      "score":  3,
+                                                                      "long_path":  "Decohogar \u003e Dormitorio",
+                                                                      "slug":  "decohogar/dormitorio",
+                                                                      "leaves":  [
+
+                                                                                 ],
+                                                                      "children":  [
+                                                                                       {
+                                                                                           "category_id":  "50843",
+                                                                                           "category_name":  "Ropa de Cama",
+                                                                                           "priority":  4065.0,
+                                                                                           "active":  "enabled",
+                                                                                           "parent_id":  "50913",
+                                                                                           "score":  6,
+                                                                                           "long_path":  "Decohogar \u003e Dormitorio \u003e Ropa de Cama",
+                                                                                           "slug":  "decohogar/dormitorio/ropa-de-cama",
+                                                                                           "leaves":  [
+
+                                                                                                      ],
+                                                                                           "children":  null,
+                                                                                           "retails":  [
+
+                                                                                                       ]
+                                                                                       }
+                                                                                   ],
+                                                                      "retails":  [
+
+                                                                                  ]
+                                                                  },
+                                                                  {
+                                                                      "category_id":  "1204883",
+                                                                      "category_name":  "Comedor",
+                                                                      "priority":  0.0,
+                                                                      "active":  "enabled",
+                                                                      "parent_id":  "50872",
+                                                                      "score":  4,
+                                                                      "long_path":  "Decohogar \u003e Comedor",
+                                                                      "slug":  "decohogar/comedor",
+                                                                      "leaves":  [
+
+                                                                                 ],
+                                                                      "children":  [
+                                                                                       {
+                                                                                           "category_id":  "1205068",
+                                                                                           "category_name":  "Bar",
+                                                                                           "priority":  0.0,
+                                                                                           "active":  "enabled",
+                                                                                           "parent_id":  "1204883",
+                                                                                           "score":  3,
+                                                                                           "long_path":  "Decohogar \u003e Comedor \u003e Bar",
+                                                                                           "slug":  "decohogar/comedor/bar",
+                                                                                           "leaves":  [
+
+                                                                                                      ],
+                                                                                           "children":  null,
+                                                                                           "retails":  [
+
+                                                                                                       ]
+                                                                                       }
+                                                                                   ],
+                                                                      "retails":  [
+
+                                                                                  ]
+                                                                  },
+                                                                  {
+                                                                      "category_id":  "50521",
+                                                                      "category_name":  "Terraza y Jardín",
+                                                                      "priority":  0.0,
+                                                                      "active":  "enabled",
+                                                                      "parent_id":  "50872",
+                                                                      "score":  5,
+                                                                      "long_path":  "Decohogar \u003e Terraza y Jardín",
+                                                                      "slug":  "decohogar/terraza-y-jardin",
+                                                                      "leaves":  [
+
+                                                                                 ],
+                                                                      "children":  [
+                                                                                       {
+                                                                                           "category_id":  "50589",
+                                                                                           "category_name":  "Artículos de Jardinería",
+                                                                                           "priority":  228.0,
+                                                                                           "active":  "enabled",
+                                                                                           "parent_id":  "50521",
+                                                                                           "score":  2,
+                                                                                           "long_path":  "Decohogar \u003e Terraza y Jardín \u003e Artículos de Jardinería",
+                                                                                           "slug":  "decohogar/terraza-y-jardin/articulos-de-jardineria",
+                                                                                           "leaves":  [
+
+                                                                                                      ],
+                                                                                           "children":  null,
+                                                                                           "retails":  [
+
+                                                                                                       ]
+                                                                                       }
+                                                                                   ],
+                                                                      "retails":  [
+
+                                                                                  ]
+                                                                  },
+                                                                  {
+                                                                      "category_id":  "1204956",
+                                                                      "category_name":  "Menaje de Cocina",
+                                                                      "priority":  0.0,
+                                                                      "active":  "enabled",
+                                                                      "parent_id":  "50872",
+                                                                      "score":  9,
+                                                                      "long_path":  "Decohogar \u003e Menaje de Cocina",
+                                                                      "slug":  "decohogar/menaje-de-cocina",
+                                                                      "leaves":  [
+
+                                                                                 ],
+                                                                      "children":  [
+                                                                                       {
+                                                                                           "category_id":  "50122",
+                                                                                           "category_name":  "Ollas y Sartenes",
+                                                                                           "priority":  1727.0,
+                                                                                           "active":  "enabled",
+                                                                                           "parent_id":  "1204956",
+                                                                                           "score":  1,
+                                                                                           "long_path":  "Decohogar \u003e Menaje de Cocina \u003e Ollas y Sartenes",
+                                                                                           "slug":  "decohogar/menaje-de-cocina/ollas-y-sartenes",
+                                                                                           "leaves":  [
+
+                                                                                                      ],
+                                                                                           "children":  null,
+                                                                                           "retails":  [
+
+                                                                                                       ]
+                                                                                       },
+                                                                                       {
+                                                                                           "category_id":  "50124",
+                                                                                           "category_name":  "Utensilios",
+                                                                                           "priority":  599.0,
+                                                                                           "active":  "enabled",
+                                                                                           "parent_id":  "1204956",
+                                                                                           "score":  2,
+                                                                                           "long_path":  "Decohogar \u003e Menaje de Cocina \u003e Utensilios",
+                                                                                           "slug":  "decohogar/menaje-de-cocina/utensilios",
+                                                                                           "leaves":  [
+
+                                                                                                      ],
+                                                                                           "children":  null,
+                                                                                           "retails":  [
+
+                                                                                                       ]
+                                                                                       },
+                                                                                       {
+                                                                                           "category_id":  "50123",
+                                                                                           "category_name":  "Organización de Cocina",
+                                                                                           "priority":  302.0,
+                                                                                           "active":  "enabled",
+                                                                                           "parent_id":  "1204956",
+                                                                                           "score":  3,
+                                                                                           "long_path":  "Decohogar \u003e Menaje de Cocina \u003e Organización de Cocina",
+                                                                                           "slug":  "decohogar/menaje-de-cocina/organizacion-de-cocina",
+                                                                                           "leaves":  [
+
+                                                                                                      ],
+                                                                                           "children":  null,
+                                                                                           "retails":  [
+
+                                                                                                       ]
+                                                                                       },
+                                                                                       {
+                                                                                           "category_id":  "1205090",
+                                                                                           "category_name":  "Tablas, Bandejas y Fuentes",
+                                                                                           "priority":  0.0,
+                                                                                           "active":  "enabled",
+                                                                                           "parent_id":  "1204956",
+                                                                                           "score":  4,
+                                                                                           "long_path":  "Decohogar \u003e Menaje de Cocina \u003e Tablas, Bandejas y Fuentes",
+                                                                                           "slug":  "decohogar/menaje-de-cocina/tablas-bandejas-y-fuentes",
+                                                                                           "leaves":  [
+
+                                                                                                      ],
+                                                                                           "children":  null,
+                                                                                           "retails":  [
+
+                                                                                                       ]
+                                                                                       }
+                                                                                   ],
+                                                                      "retails":  [
+
+                                                                                  ]
+                                                                  },
+                                                                  {
+                                                                      "category_id":  "1204957",
+                                                                      "category_name":  "Menaje de Mesa",
+                                                                      "priority":  0.0,
+                                                                      "active":  "enabled",
+                                                                      "parent_id":  "50872",
+                                                                      "score":  10,
+                                                                      "long_path":  "Decohogar \u003e Menaje de Mesa",
+                                                                      "slug":  "decohogar/menaje-de-mesa",
+                                                                      "leaves":  [
+
+                                                                                 ],
+                                                                      "children":  [
+                                                                                       {
+                                                                                           "category_id":  "50254",
+                                                                                           "category_name":  "Cubiertos y Utensilios de Mesa",
+                                                                                           "priority":  105.0,
+                                                                                           "active":  "enabled",
+                                                                                           "parent_id":  "1204957",
+                                                                                           "score":  1,
+                                                                                           "long_path":  "Decohogar \u003e Menaje de Mesa \u003e Cubiertos y Utensilios de Mesa",
+                                                                                           "slug":  "decohogar/menaje-de-mesa/cubiertos-y-utensilios-de-mesa",
+                                                                                           "leaves":  [
+
+                                                                                                      ],
+                                                                                           "children":  null,
+                                                                                           "retails":  [
+
+                                                                                                       ]
+                                                                                       },
+                                                                                       {
+                                                                                           "category_id":  "50256",
+                                                                                           "category_name":  "Vasos y Copas",
+                                                                                           "priority":  154.0,
+                                                                                           "active":  "enabled",
+                                                                                           "parent_id":  "1204957",
+                                                                                           "score":  2,
+                                                                                           "long_path":  "Decohogar \u003e Menaje de Mesa \u003e Vasos y Copas",
+                                                                                           "slug":  "decohogar/menaje-de-mesa/vasos-y-copas",
+                                                                                           "leaves":  [
+
+                                                                                                      ],
+                                                                                           "children":  null,
+                                                                                           "retails":  [
+
+                                                                                                       ]
+                                                                                       },
+                                                                                       {
+                                                                                           "category_id":  "50255",
+                                                                                           "category_name":  "Juegos de Loza",
+                                                                                           "priority":  577.0,
+                                                                                           "active":  "enabled",
+                                                                                           "parent_id":  "1204957",
+                                                                                           "score":  3,
+                                                                                           "long_path":  "Decohogar \u003e Menaje de Mesa \u003e Juegos de Loza",
+                                                                                           "slug":  "decohogar/menaje-de-mesa/juegos-de-loza",
+                                                                                           "leaves":  [
+
+                                                                                                      ],
+                                                                                           "children":  null,
+                                                                                           "retails":  [
+
+                                                                                                       ]
+                                                                                       }
+                                                                                   ],
+                                                                      "retails":  [
+
+                                                                                  ]
+                                                                  }
+                                                              ],
+                                                 "retails":  [
+
+                                                             ]
+                                             },
+                                             {
+                                                 "category_id":  "1204986",
+                                                 "category_name":  "Hombre",
+                                                 "priority":  0.0,
+                                                 "active":  "enabled",
+                                                 "parent_id":  "0",
+                                                 "score":  6,
+                                                 "long_path":  "Hombre",
+                                                 "slug":  "hombre",
+                                                 "leaves":  [
+
+                                                            ],
+                                                 "children":  [
+                                                                  {
+                                                                      "category_id":  "1204987",
+                                                                      "category_name":  "Ropa Hombre",
+                                                                      "priority":  0.0,
+                                                                      "active":  "enabled",
+                                                                      "parent_id":  "1204986",
+                                                                      "score":  1,
+                                                                      "long_path":  "Hombre \u003e Ropa Hombre",
+                                                                      "slug":  "hombre/ropa-hombre",
+                                                                      "leaves":  [
+
+                                                                                 ],
+                                                                      "children":  [
+                                                                                       {
+                                                                                           "category_id":  "1205010",
+                                                                                           "category_name":  "Sweaters y Polerones",
+                                                                                           "priority":  0.0,
+                                                                                           "active":  "enabled",
+                                                                                           "parent_id":  "1204987",
+                                                                                           "score":  1,
+                                                                                           "long_path":  "Hombre \u003e Ropa Hombre \u003e Sweaters y Polerones",
+                                                                                           "slug":  "hombre/ropa-hombre/sweaters-y-polerones",
+                                                                                           "leaves":  [
+
+                                                                                                      ],
+                                                                                           "children":  null,
+                                                                                           "retails":  [
+
+                                                                                                       ]
+                                                                                       }
+                                                                                   ],
+                                                                      "retails":  [
+
+                                                                                  ]
+                                                                  }
+                                                              ],
+                                                 "retails":  [
+
+                                                             ]
+                                             },
+                                             {
+                                                 "category_id":  "80023",
+                                                 "category_name":  "Moda",
+                                                 "priority":  0.0,
+                                                 "active":  "enabled",
+                                                 "parent_id":  "0",
+                                                 "score":  8,
+                                                 "long_path":  "Moda",
+                                                 "slug":  "moda",
+                                                 "leaves":  [
+
+                                                            ],
+                                                 "children":  [
+                                                                  {
+                                                                      "category_id":  "80041",
+                                                                      "category_name":  "Accesorios",
+                                                                      "priority":  0.0,
+                                                                      "active":  "enabled",
+                                                                      "parent_id":  "80023",
+                                                                      "score":  2,
+                                                                      "long_path":  "Moda \u003e Accesorios",
+                                                                      "slug":  "moda/accesorios",
+                                                                      "leaves":  [
+
+                                                                                 ],
+                                                                      "children":  [
+                                                                                       {
+                                                                                           "category_id":  "80124",
+                                                                                           "category_name":  "Joyas",
+                                                                                           "priority":  53.0,
+                                                                                           "active":  "enabled",
+                                                                                           "parent_id":  "80041",
+                                                                                           "score":  2,
+                                                                                           "long_path":  "Moda \u003e Accesorios \u003e Joyas",
+                                                                                           "slug":  "moda/accesorios/joyas",
+                                                                                           "leaves":  [
+
+                                                                                                      ],
+                                                                                           "children":  null,
+                                                                                           "retails":  [
+
+                                                                                                       ]
+                                                                                       },
+                                                                                       {
+                                                                                           "category_id":  "80032",
+                                                                                           "category_name":  "Lentes de Sol",
+                                                                                           "priority":  68.0,
+                                                                                           "active":  "enabled",
+                                                                                           "parent_id":  "80041",
+                                                                                           "score":  3,
+                                                                                           "long_path":  "Moda \u003e Accesorios \u003e Lentes de Sol",
+                                                                                           "slug":  "moda/accesorios/lentes-de-sol",
+                                                                                           "leaves":  [
+
+                                                                                                      ],
+                                                                                           "children":  null,
+                                                                                           "retails":  [
+
+                                                                                                       ]
+                                                                                       }
+                                                                                   ],
+                                                                      "retails":  [
+
+                                                                                  ]
+                                                                  }
+                                                              ],
+                                                 "retails":  [
+
+                                                             ]
+                                             },
+                                             {
+                                                 "category_id":  "140000",
+                                                 "category_name":  "Belleza, Higiene y Salud",
+                                                 "priority":  0.0,
+                                                 "active":  "enabled",
+                                                 "parent_id":  "0",
+                                                 "score":  9,
+                                                 "long_path":  "Belleza, Higiene y Salud",
+                                                 "slug":  "belleza-higiene-y-salud",
+                                                 "leaves":  [
+
+                                                            ],
+                                                 "children":  [
+                                                                  {
+                                                                      "category_id":  "90030",
+                                                                      "category_name":  "Cosméticos",
+                                                                      "priority":  0.0,
+                                                                      "active":  "enabled",
+                                                                      "parent_id":  "140000",
+                                                                      "score":  1,
+                                                                      "long_path":  "Belleza, Higiene y Salud \u003e Cosméticos",
+                                                                      "slug":  "belleza-higiene-y-salud/cosmeticos",
+                                                                      "leaves":  [
+
+                                                                                 ],
+                                                                      "children":  [
+                                                                                       {
+                                                                                           "category_id":  "90031",
+                                                                                           "category_name":  "Baño y Cuidado Corporal",
+                                                                                           "priority":  116.0,
+                                                                                           "active":  "enabled",
+                                                                                           "parent_id":  "90030",
+                                                                                           "score":  1,
+                                                                                           "long_path":  "Belleza, Higiene y Salud \u003e Cosméticos \u003e Baño y Cuidado Corporal",
+                                                                                           "slug":  "belleza-higiene-y-salud/cosmeticos/bano-y-cuidado-corporal",
+                                                                                           "leaves":  [
+
+                                                                                                      ],
+                                                                                           "children":  null,
+                                                                                           "retails":  [
+
+                                                                                                       ]
+                                                                                       },
+                                                                                       {
+                                                                                           "category_id":  "90043",
+                                                                                           "category_name":  "Cuidado de la Piel",
+                                                                                           "priority":  299.0,
+                                                                                           "active":  "enabled",
+                                                                                           "parent_id":  "90030",
+                                                                                           "score":  2,
+                                                                                           "long_path":  "Belleza, Higiene y Salud \u003e Cosméticos \u003e Cuidado de la Piel",
+                                                                                           "slug":  "belleza-higiene-y-salud/cosmeticos/cuidado-de-la-piel",
+                                                                                           "leaves":  [
+
+                                                                                                      ],
+                                                                                           "children":  null,
+                                                                                           "retails":  [
+
+                                                                                                       ]
+                                                                                       },
+                                                                                       {
+                                                                                           "category_id":  "90102",
+                                                                                           "category_name":  "Objetos Cosméticos",
+                                                                                           "priority":  245.0,
+                                                                                           "active":  "enabled",
+                                                                                           "parent_id":  "90030",
+                                                                                           "score":  3,
+                                                                                           "long_path":  "Belleza, Higiene y Salud \u003e Cosméticos \u003e Objetos Cosméticos",
+                                                                                           "slug":  "belleza-higiene-y-salud/cosmeticos/objetos-cosmeticos",
+                                                                                           "leaves":  [
+
+                                                                                                      ],
+                                                                                           "children":  null,
+                                                                                           "retails":  [
+
+                                                                                                       ]
+                                                                                       }
+                                                                                   ],
+                                                                      "retails":  [
+
+                                                                                  ]
+                                                                  },
+                                                                  {
+                                                                      "category_id":  "90001",
+                                                                      "category_name":  "Cuidado Personal",
+                                                                      "priority":  0.0,
+                                                                      "active":  "enabled",
+                                                                      "parent_id":  "140000",
+                                                                      "score":  2,
+                                                                      "long_path":  "Belleza, Higiene y Salud \u003e Cuidado Personal",
+                                                                      "slug":  "belleza-higiene-y-salud/cuidado-personal",
+                                                                      "leaves":  [
+
+                                                                                 ],
+                                                                      "children":  [
+                                                                                       {
+                                                                                           "category_id":  "90163",
+                                                                                           "category_name":  "Cuidado Capilar",
+                                                                                           "priority":  97.0,
+                                                                                           "active":  "enabled",
+                                                                                           "parent_id":  "90001",
+                                                                                           "score":  6,
+                                                                                           "long_path":  "Belleza, Higiene y Salud \u003e Cuidado Personal \u003e Cuidado Capilar",
+                                                                                           "slug":  "belleza-higiene-y-salud/cuidado-personal/cuidado-capilar",
+                                                                                           "leaves":  [
+
+                                                                                                      ],
+                                                                                           "children":  null,
+                                                                                           "retails":  [
+
+                                                                                                       ]
+                                                                                       },
+                                                                                       {
+                                                                                           "category_id":  "90220",
+                                                                                           "category_name":  "Masaje y Relajación",
+                                                                                           "priority":  165.0,
+                                                                                           "active":  "enabled",
+                                                                                           "parent_id":  "90001",
+                                                                                           "score":  7,
+                                                                                           "long_path":  "Belleza, Higiene y Salud \u003e Cuidado Personal \u003e Masaje y Relajación",
+                                                                                           "slug":  "belleza-higiene-y-salud/cuidado-personal/masaje-y-relajacion",
+                                                                                           "leaves":  [
+
+                                                                                                      ],
+                                                                                           "children":  null,
+                                                                                           "retails":  [
+
+                                                                                                       ]
+                                                                                       },
+                                                                                       {
+                                                                                           "category_id":  "140030",
+                                                                                           "category_name":  "Vitaminas y Suplementos",
+                                                                                           "priority":  68.0,
+                                                                                           "active":  "enabled",
+                                                                                           "parent_id":  "90001",
+                                                                                           "score":  10,
+                                                                                           "long_path":  "Belleza, Higiene y Salud \u003e Cuidado Personal \u003e Vitaminas y Suplementos",
+                                                                                           "slug":  "belleza-higiene-y-salud/cuidado-personal/vitaminas-y-suplementos",
+                                                                                           "leaves":  [
+
+                                                                                                      ],
+                                                                                           "children":  null,
+                                                                                           "retails":  [
+
+                                                                                                       ]
+                                                                                       }
+                                                                                   ],
+                                                                      "retails":  [
+
+                                                                                  ]
+                                                                  }
+                                                              ],
+                                                 "retails":  [
+
+                                                             ]
+                                             },
+                                             {
+                                                 "category_id":  "70001",
+                                                 "category_name":  "Deportes",
+                                                 "priority":  0.0,
+                                                 "active":  "enabled",
+                                                 "parent_id":  "0",
+                                                 "score":  10,
+                                                 "long_path":  "Deportes",
+                                                 "slug":  "deportes",
+                                                 "leaves":  [
+
+                                                            ],
+                                                 "children":  [
+                                                                  {
+                                                                      "category_id":  "70002",
+                                                                      "category_name":  "Deportes al Aire Libre",
+                                                                      "priority":  0.0,
+                                                                      "active":  "enabled",
+                                                                      "parent_id":  "70001",
+                                                                      "score":  4,
+                                                                      "long_path":  "Deportes \u003e Deportes al Aire Libre",
+                                                                      "slug":  "deportes/deportes-al-aire-libre",
+                                                                      "leaves":  [
+
+                                                                                 ],
+                                                                      "children":  [
+                                                                                       {
+                                                                                           "category_id":  "70003",
+                                                                                           "category_name":  "Termos, Mugs y Botellas",
+                                                                                           "priority":  228.0,
+                                                                                           "active":  "enabled",
+                                                                                           "parent_id":  "70002",
+                                                                                           "score":  8,
+                                                                                           "long_path":  "Deportes \u003e Deportes al Aire Libre \u003e Termos, Mugs y Botellas",
+                                                                                           "slug":  "deportes/deportes-al-aire-libre/termos-mugs-y-botellas",
+                                                                                           "leaves":  [
+
+                                                                                                      ],
+                                                                                           "children":  null,
+                                                                                           "retails":  [
+
+                                                                                                       ]
+                                                                                       }
+                                                                                   ],
+                                                                      "retails":  [
+
+                                                                                  ]
+                                                                  }
+                                                              ],
+                                                 "retails":  [
+
+                                                             ]
+                                             },
+                                             {
+                                                 "category_id":  "160002",
+                                                 "category_name":  "Supermercado",
+                                                 "priority":  0.0,
+                                                 "active":  "enabled",
+                                                 "parent_id":  "0",
+                                                 "score":  11,
+                                                 "long_path":  "Supermercado",
+                                                 "slug":  "supermercado",
+                                                 "leaves":  [
+
+                                                            ],
+                                                 "children":  [
+                                                                  {
+                                                                      "category_id":  "160007",
+                                                                      "category_name":  "Frescos y lácteos",
+                                                                      "priority":  66.0,
+                                                                      "active":  "enabled",
+                                                                      "parent_id":  "160002",
+                                                                      "score":  4,
+                                                                      "long_path":  "Supermercado \u003e Frescos y lácteos",
+                                                                      "slug":  "supermercado/frescos-y-lacteos",
+                                                                      "leaves":  [
+
+                                                                                 ],
+                                                                      "children":  null,
+                                                                      "retails":  [
+
+                                                                                  ]
+                                                                  },
+                                                                  {
+                                                                      "category_id":  "160009",
+                                                                      "category_name":  "Despensa",
+                                                                      "priority":  310.0,
+                                                                      "active":  "enabled",
+                                                                      "parent_id":  "160002",
+                                                                      "score":  6,
+                                                                      "long_path":  "Supermercado \u003e Despensa",
+                                                                      "slug":  "supermercado/despensa",
+                                                                      "leaves":  [
+
+                                                                                 ],
+                                                                      "children":  null,
+                                                                      "retails":  [
+
+                                                                                  ]
+                                                                  },
+                                                                  {
+                                                                      "category_id":  "160013",
+                                                                      "category_name":  "Cotillón y festividades",
+                                                                      "priority":  25.0,
+                                                                      "active":  "enabled",
+                                                                      "parent_id":  "160002",
+                                                                      "score":  9,
+                                                                      "long_path":  "Supermercado \u003e Cotillón y festividades",
+                                                                      "slug":  "supermercado/cotillon-y-festividades",
+                                                                      "leaves":  [
+
+                                                                                 ],
+                                                                      "children":  null,
+                                                                      "retails":  [
+
+                                                                                  ]
+                                                                  }
+                                                              ],
+                                                 "retails":  [
+
+                                                             ]
+                                             },
+                                             {
+                                                 "category_id":  "100001",
+                                                 "category_name":  "Bebés",
+                                                 "priority":  0.0,
+                                                 "active":  "enabled",
+                                                 "parent_id":  "0",
+                                                 "score":  13,
+                                                 "long_path":  "Bebés",
+                                                 "slug":  "bebes",
+                                                 "leaves":  [
+
+                                                            ],
+                                                 "children":  [
+                                                                  {
+                                                                      "category_id":  "1204968",
+                                                                      "category_name":  "Lactancia y Alimentación",
+                                                                      "priority":  0.0,
+                                                                      "active":  "enabled",
+                                                                      "parent_id":  "100001",
+                                                                      "score":  4,
+                                                                      "long_path":  "Bebés \u003e Lactancia y Alimentación",
+                                                                      "slug":  "bebes/lactancia-y-alimentacion",
+                                                                      "leaves":  [
+
+                                                                                 ],
+                                                                      "children":  [
+                                                                                       {
+                                                                                           "category_id":  "100029",
+                                                                                           "category_name":  "Lactancia y Alimentación",
+                                                                                           "priority":  36.0,
+                                                                                           "active":  "enabled",
+                                                                                           "parent_id":  "1204968",
+                                                                                           "score":  1,
+                                                                                           "long_path":  "Bebés \u003e Lactancia y Alimentación \u003e Lactancia y Alimentación",
+                                                                                           "slug":  "bebes/lactancia-y-alimentacion/lactancia-y-alimentacion",
+                                                                                           "leaves":  [
+
+                                                                                                      ],
+                                                                                           "children":  null,
+                                                                                           "retails":  [
+
+                                                                                                       ]
+                                                                                       }
+                                                                                   ],
+                                                                      "retails":  [
+
+                                                                                  ]
+                                                                  }
+                                                              ],
+                                                 "retails":  [
+
+                                                             ]
+                                             },
+                                             {
+                                                 "category_id":  "100082",
+                                                 "category_name":  "Juguetes y Juegos",
+                                                 "priority":  0.0,
+                                                 "active":  "enabled",
+                                                 "parent_id":  "0",
+                                                 "score":  14,
+                                                 "long_path":  "Juguetes y Juegos",
+                                                 "slug":  "juguetes-y-juegos",
+                                                 "leaves":  [
+
+                                                            ],
+                                                 "children":  [
+                                                                  {
+                                                                      "category_id":  "100119",
+                                                                      "category_name":  "Juguetes",
+                                                                      "priority":  0.0,
+                                                                      "active":  "enabled",
+                                                                      "parent_id":  "100082",
+                                                                      "score":  2,
+                                                                      "long_path":  "Juguetes y Juegos \u003e Juguetes",
+                                                                      "slug":  "juguetes-y-juegos/juguetes",
+                                                                      "leaves":  [
+
+                                                                                 ],
+                                                                      "children":  [
+                                                                                       {
+                                                                                           "category_id":  "100150",
+                                                                                           "category_name":  "Juguetes Didácticos",
+                                                                                           "priority":  152.0,
+                                                                                           "active":  "enabled",
+                                                                                           "parent_id":  "100119",
+                                                                                           "score":  4,
+                                                                                           "long_path":  "Juguetes y Juegos \u003e Juguetes \u003e Juguetes Didácticos",
+                                                                                           "slug":  "juguetes-y-juegos/juguetes/juguetes-didacticos",
+                                                                                           "leaves":  [
+
+                                                                                                      ],
+                                                                                           "children":  null,
+                                                                                           "retails":  [
+
+                                                                                                       ]
+                                                                                       },
+                                                                                       {
+                                                                                           "category_id":  "100236",
+                                                                                           "category_name":  "Vehículos de Juguete",
+                                                                                           "priority":  168.0,
+                                                                                           "active":  "enabled",
+                                                                                           "parent_id":  "100119",
+                                                                                           "score":  7,
+                                                                                           "long_path":  "Juguetes y Juegos \u003e Juguetes \u003e Vehículos de Juguete",
+                                                                                           "slug":  "juguetes-y-juegos/juguetes/vehiculos-de-juguete",
+                                                                                           "leaves":  [
+
+                                                                                                      ],
+                                                                                           "children":  null,
+                                                                                           "retails":  [
+
+                                                                                                       ]
+                                                                                       }
+                                                                                   ],
+                                                                      "retails":  [
+
+                                                                                  ]
+                                                                  }
+                                                              ],
+                                                 "retails":  [
+
+                                                             ]
+                                             },
+                                             {
+                                                 "category_id":  "160001",
+                                                 "category_name":  "Mascotas",
+                                                 "priority":  0.0,
+                                                 "active":  "enabled",
+                                                 "parent_id":  "0",
+                                                 "score":  15,
+                                                 "long_path":  "Mascotas",
+                                                 "slug":  "mascotas",
+                                                 "leaves":  [
+
+                                                            ],
+                                                 "children":  [
+                                                                  {
+                                                                      "category_id":  "1204969",
+                                                                      "category_name":  "Productos Para Mascotas",
+                                                                      "priority":  0.0,
+                                                                      "active":  "enabled",
+                                                                      "parent_id":  "160001",
+                                                                      "score":  1,
+                                                                      "long_path":  "Mascotas \u003e Productos Para Mascotas",
+                                                                      "slug":  "mascotas/productos-para-mascotas",
+                                                                      "leaves":  [
+
+                                                                                 ],
+                                                                      "children":  [
+                                                                                       {
+                                                                                           "category_id":  "160003",
+                                                                                           "category_name":  "Productos Para Mascotas",
+                                                                                           "priority":  472.0,
+                                                                                           "active":  "enabled",
+                                                                                           "parent_id":  "1204969",
+                                                                                           "score":  1,
+                                                                                           "long_path":  "Mascotas \u003e Productos Para Mascotas \u003e Productos Para Mascotas",
+                                                                                           "slug":  "mascotas/productos-para-mascotas/productos-para-mascotas",
+                                                                                           "leaves":  [
+
+                                                                                                      ],
+                                                                                           "children":  null,
+                                                                                           "retails":  [
+
+                                                                                                       ]
+                                                                                       }
+                                                                                   ],
+                                                                      "retails":  [
+
+                                                                                  ]
+                                                                  }
+                                                              ],
+                                                 "retails":  [
+
+                                                             ]
+                                             },
+                                             {
+                                                 "category_id":  "80001",
+                                                 "category_name":  "Maletas, Mochilas y Bolsos",
+                                                 "priority":  0.0,
+                                                 "active":  "enabled",
+                                                 "parent_id":  "0",
+                                                 "score":  18,
+                                                 "long_path":  "Maletas, Mochilas y Bolsos",
+                                                 "slug":  "maletas-mochilas-y-bolsos",
+                                                 "leaves":  [
+
+                                                            ],
+                                                 "children":  [
+                                                                  {
+                                                                      "category_id":  "1204971",
+                                                                      "category_name":  "Maletas, Mochilas y Bolsos",
+                                                                      "priority":  0.0,
+                                                                      "active":  "enabled",
+                                                                      "parent_id":  "80001",
+                                                                      "score":  1,
+                                                                      "long_path":  "Maletas, Mochilas y Bolsos \u003e Maletas, Mochilas y Bolsos",
+                                                                      "slug":  "maletas-mochilas-y-bolsos/maletas-mochilas-y-bolsos",
+                                                                      "leaves":  [
+
+                                                                                 ],
+                                                                      "children":  [
+                                                                                       {
+                                                                                           "category_id":  "80021",
+                                                                                           "category_name":  "Bolsos, Maletines y Bananos",
+                                                                                           "priority":  337.0,
+                                                                                           "active":  "enabled",
+                                                                                           "parent_id":  "1204971",
+                                                                                           "score":  3,
+                                                                                           "long_path":  "Maletas, Mochilas y Bolsos \u003e Maletas, Mochilas y Bolsos \u003e Bolsos, Maletines y Bananos",
+                                                                                           "slug":  "maletas-mochilas-y-bolsos/maletas-mochilas-y-bolsos/bolsos-maletines-y-bananos",
+                                                                                           "leaves":  [
+
+                                                                                                      ],
+                                                                                           "children":  null,
+                                                                                           "retails":  [
+
+                                                                                                       ]
+                                                                                       }
+                                                                                   ],
+                                                                      "retails":  [
+
+                                                                                  ]
+                                                                  }
+                                                              ],
+                                                 "retails":  [
+
+                                                             ]
+                                             },
+                                             {
+                                                 "category_id":  "180002",
+                                                 "category_name":  "Oficina y Librería",
+                                                 "priority":  0.0,
+                                                 "active":  "enabled",
+                                                 "parent_id":  "0",
+                                                 "score":  19,
+                                                 "long_path":  "Oficina y Librería",
+                                                 "slug":  "oficina-y-libreria",
+                                                 "leaves":  [
+
+                                                            ],
+                                                 "children":  [
+                                                                  {
+                                                                      "category_id":  "1204973",
+                                                                      "category_name":  "Librería",
+                                                                      "priority":  0.0,
+                                                                      "active":  "enabled",
+                                                                      "parent_id":  "180002",
+                                                                      "score":  2,
+                                                                      "long_path":  "Oficina y Librería \u003e Librería",
+                                                                      "slug":  "oficina-y-libreria/libreria",
+                                                                      "leaves":  [
+
+                                                                                 ],
+                                                                      "children":  [
+                                                                                       {
+                                                                                           "category_id":  "180001",
+                                                                                           "category_name":  "Oficina y Escolares",
+                                                                                           "priority":  297.0,
+                                                                                           "active":  "enabled",
+                                                                                           "parent_id":  "1204973",
+                                                                                           "score":  1,
+                                                                                           "long_path":  "Oficina y Librería \u003e Librería \u003e Oficina y Escolares",
+                                                                                           "slug":  "oficina-y-libreria/libreria/oficina-y-escolares",
+                                                                                           "leaves":  [
+
+                                                                                                      ],
+                                                                                           "children":  null,
+                                                                                           "retails":  [
+
+                                                                                                       ]
+                                                                                       }
+                                                                                   ],
+                                                                      "retails":  [
+
+                                                                                  ]
+                                                                  }
+                                                              ],
+                                                 "retails":  [
+
+                                                             ]
+                                             },
+                                             {
+                                                 "category_id":  "10000",
+                                                 "category_name":  "Otros",
+                                                 "priority":  5436.0,
+                                                 "active":  "enabled",
+                                                 "parent_id":  "0",
+                                                 "score":  21,
+                                                 "long_path":  "Otros",
+                                                 "slug":  "otros",
+                                                 "leaves":  [
+
+                                                            ],
+                                                 "children":  null,
+                                                 "retails":  [
+
+                                                             ]
+                                             }
+                                         ],
+                            "retails":  [
+
+                                        ]
+                        },
+    "android_version":  "1.7.10",
+    "ios_version":  "1.7.10"
+}

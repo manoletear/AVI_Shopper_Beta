@@ -1,0 +1,11 @@
+﻿{
+    "adultos":  5,
+    "ninos":  2,
+    "presupuesto_semanal":  250000,
+    "supermercado_favorito":  "jumbo",
+    "restricciones":  [
+
+                      ],
+    "modo_ahorro":  false,
+    "ultima_actualizacion":  "2026-05-26"
+}
