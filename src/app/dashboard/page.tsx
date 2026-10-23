@@ -80,6 +80,7 @@ export default function DashboardPage() {
   const [promoIndex, setPromoIndex] = useState(0)
   const [showWzp, setShowWzp] = useState(false)
   const [upcomingEvents, setUpcomingEvents] = useState<Array<{ id: string; name: string; type: string; daysUntil: number; suggestedProducts: string[] }>>([])
+  const [replenishment, setReplenishment] = useState<Array<{ id: string; title: string; message: string }>>([])
 
   useEffect(() => {
     if (!session) return
@@ -96,7 +97,10 @@ export default function DashboardPage() {
           }
         }).catch(() => {}),
         fetch('/api/alerts').then(r => r.json()).then(d => {
-          if (d.success) results.alertsCount = d.data.filter((a: any) => !a.read).length
+          if (d.success) {
+            results.alertsCount = d.data.filter((a: any) => !a.read).length
+            setReplenishment(d.data.filter((a: any) => a.type === 'replenishment' && !a.read).slice(0, 2))
+          }
         }).catch(() => {}),
         fetch('/api/health?mode=report').then(r => r.json()).then(d => {
           if (d.success) results.healthScore = d.data.overallScore
@@ -175,6 +179,13 @@ export default function DashboardPage() {
               </div>
             </div>
           </div>
+        )}
+
+        {replenishment.length > 0 && (
+          <a href="/reposicion" className="block bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 mb-4">
+            <p className="text-sm font-semibold text-amber-900">{replenishment[0].title}</p>
+            <p className="text-xs text-amber-800 mt-1">{replenishment[0].message}</p>
+          </a>
         )}
 
         {/* AVI Search Bar — links to cart-assistant (the AI agent) */}

@@ -204,6 +204,30 @@ export default function ComprarPage() {
     }
   }
 
+  const recordBought = async () => {
+    if (!autoCart) return
+    const lines = autoCart.items.filter((item) => item.added)
+    if (lines.length === 0) return
+    const res = await fetch('/api/purchases', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        items: lines.map((item) => ({
+          productName: item.matchedName || item.query,
+          quantity: item.quantity,
+          price: item.lineTotal || item.price,
+          storeSlug: store,
+          storeName: STORES[store]?.name || store,
+          source: 'avi-cart',
+        })),
+      }),
+    })
+    const body = await res.json()
+    setMessage(body.success
+      ? 'Listo. Anoté la compra para estimar cuándo se acaba. AVI no pagó.'
+      : 'No pude anotar la compra. Puedes marcarla en la lista.')
+  }
+
   const storeName = STORES[store]?.name || 'Jumbo'
   const openCart = phase === 'done' && !autoCart
     ? STORES[store]?.cart
@@ -351,6 +375,12 @@ export default function ComprarPage() {
                   <ShoppingCart className="h-5 w-5" />
                   Abrir carrito para pagar
                 </a>
+              )}
+              {autoCart?.status === 'ready' && autoCart.itemsAdded > 0 && (
+                <button onClick={recordBought}
+                  className="w-full bg-indigo-600 text-white py-3 rounded-2xl font-medium text-sm">
+                  Ya lo compré
+                </button>
               )}
               <button onClick={() => { setPhase('ready'); setCurrentIdx(0); setAutoCart(null) }}
                 className="w-full bg-gray-100 text-gray-700 py-3 rounded-2xl font-medium text-sm">

@@ -597,20 +597,19 @@ async function executeTool(
     }
 
     case 'get_replenishment': {
-      const orders = await prisma.order.findMany({
-        where: { userId, status: { in: ['delivered', 'confirmed'] } },
-        orderBy: { createdAt: 'desc' },
-        take: 5,
-      });
-
-      if (orders.length === 0) {
-        return { success: true, data: { alerts: [] }, message: 'No tengo suficiente historial para predecir reposición. Sigue comprando y AVI aprenderá.' };
+      const { analyzeHousehold } = await import('./replenishment.service');
+      const products = await analyzeHousehold(userId);
+      const alerts = products.filter((item) => item.urgency === 'add_now' || item.urgency === 'add_soon');
+      if (products.length === 0) {
+        return { success: true, data: { alerts: [] }, message: 'No tengo compras anotadas. Cuando marques una lista o me digas qué compraste, empiezo a estimar.' };
       }
-
+      if (alerts.length === 0) {
+        return { success: true, data: { products: products.length }, message: 'Todavía no hay nada por acabarse. Con una sola compra de un producto no aviso: me falta ver el ritmo.' };
+      }
       return {
         success: true,
-        data: { ordersCount: orders.length },
-        message: 'Revisa /reposicion en la app para ver predicciones detalladas basadas en tu historial.',
+        data: { alerts },
+        message: alerts.slice(0, 3).map((item) => item.message).join(' '),
       };
     }
 

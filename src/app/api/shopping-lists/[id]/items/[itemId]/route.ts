@@ -4,6 +4,7 @@ import { requireAuth } from '@/lib/session';
 import { updateShoppingItemSchema } from '@/lib/validations';
 import { successResponse, errorResponse, noContentResponse } from '@/lib/responses';
 import { NotFoundError, ForbiddenError } from '@/lib/errors';
+import { recordPurchase } from '@/services/purchase-learning.service';
 
 export async function PATCH(
   request: NextRequest,
@@ -40,6 +41,21 @@ export async function PATCH(
         product: true,
       },
     });
+
+    if (validatedData.checked === true && !item.checked) {
+      const source = `list:${item.id}`;
+      const since = new Date(Date.now() - 86_400_000);
+      const already = await prisma.purchaseHistory.findFirst({
+        where: { userId, source, purchasedAt: { gte: since } },
+      });
+      if (!already) {
+        await recordPurchase(userId, {
+          productName: updatedItem.name,
+          quantity: updatedItem.quantity,
+          source,
+        });
+      }
+    }
 
     return successResponse(updatedItem);
   } catch (error: any) {

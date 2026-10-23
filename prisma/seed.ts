@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import { syncReplenishmentAlerts } from '../src/services/replenishment.service';
 
 const prisma = new PrismaClient();
 
@@ -406,6 +407,51 @@ async function main() {
   });
 
   console.log('✅ Created shortcut templates');
+
+  const daysAgo = (days: number) => {
+    const date = new Date();
+    date.setUTCHours(15, 0, 0, 0);
+    date.setUTCDate(date.getUTCDate() - days);
+    return date;
+  };
+
+  await prisma.purchaseHistory.createMany({
+    data: [
+      ...[33, 26, 19, 12, 5].map((days) => ({
+        userId: user.id,
+        productName: 'Leche Colun Entera 1 L',
+        quantity: 6,
+        unit: 'L',
+        storeSlug: 'jumbo',
+        storeName: 'Jumbo',
+        price: 7140,
+        source: 'seed',
+        purchasedAt: daysAgo(days),
+      })),
+      {
+        userId: user.id,
+        productName: 'Arroz grado 1 1 kg',
+        quantity: 1,
+        unit: 'kg',
+        storeSlug: 'lider',
+        storeName: 'Lider',
+        price: 1690,
+        source: 'manual',
+        purchasedAt: daysAgo(20),
+      },
+    ],
+  });
+
+  await prisma.priceObservation.createMany({
+    data: [
+      { productName: 'Leche Colun Entera 1 L', brand: 'Colun', storeSlug: 'jumbo', storeName: 'Jumbo', price: 1190, inStock: true, searchTerm: 'leche colun' },
+      { productName: 'Leche Colun Entera 1 L', brand: 'Colun', storeSlug: 'lider', storeName: 'Lider', price: 1390, inStock: true, searchTerm: 'leche colun' },
+      { productName: 'Leche Colun Entera 1 L', brand: 'Colun', storeSlug: 'tottus', storeName: 'Tottus', price: 1290, inStock: true, searchTerm: 'leche colun' },
+    ],
+  });
+
+  const notices = await syncReplenishmentAlerts();
+  console.log('✅ Purchase history and replenishment alerts:', notices.sent);
 
   console.log('🎉 Seeding completed successfully!');
   console.log('');
