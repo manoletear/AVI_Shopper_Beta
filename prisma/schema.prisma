@@ -21,6 +21,9 @@ model User {
   name          String?
   password      String
   image         String?
+  // Puente opcional a Supabase Auth. La app entra con NextAuth y no lo llena.
+  // Las políticas de RLS de public usan este valor contra auth.uid().
+  authUserId    String?   @unique
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
@@ -442,7 +445,7 @@ model Lead {
 }
 
 // Catálogo unificado. Una ficha de Jumbo, Lider, Unimarc, Tottus o Santa Isabel
-// apunta a un solo producto. El dueño aplica esto con: npx prisma db push
+// apunta a un solo producto. En soc-chile se crea con supabase/migrations, no con db push.
 
 model CanonicalProduct {
   id           String   @id @default(cuid())

@@ -184,8 +184,11 @@ export async function generateMonthlyPlan(userId: string): Promise<MonthlyShoppi
   };
 }
 
-export async function syncReplenishmentAlerts(now = new Date()): Promise<{ users: number; sent: number; updated: number }> {
-  const users = await prisma.user.findMany({ select: { id: true } });
+export async function syncReplenishmentAlerts(now = new Date(), onlyUserId?: string): Promise<{ users: number; sent: number; updated: number }> {
+  const users = await prisma.user.findMany({
+    where: onlyUserId ? { id: onlyUserId } : undefined,
+    select: { id: true },
+  });
   const drafts: AlertDraft[] = [];
   for (const user of users) {
     const products = await analyzeHousehold(user.id, now);

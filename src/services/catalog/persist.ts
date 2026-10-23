@@ -38,15 +38,36 @@ const LISTINGS: Array<{
   },
 ];
 
-export async function seedCanonicalCatalog(db: PrismaClient) {
-  await db.catalogReview.deleteMany();
-  await db.productSubstitute.deleteMany();
-  await db.storeListing.deleteMany();
-  await db.canonicalProduct.deleteMany();
+async function ensureSubstitute(
+  db: PrismaClient,
+  fromId: string,
+  toId: string,
+  reason: string,
+  note: string,
+) {
+  const existing = await db.productSubstitute.findUnique({
+    where: { fromId_toId: { fromId, toId } },
+  });
+  if (existing) return;
+  await db.productSubstitute.create({ data: { fromId, toId, reason, note } });
+}
 
+/**
+ * Carga el catálogo de ejemplo sin borrar fichas.
+ * Si una ficha ya existe (mismo EAN, o el mismo nombre y tienda), se deja como está:
+ * una confirmación humana no vuelve a quedar pendiente.
+ */
+export async function seedCanonicalCatalog(db: PrismaClient) {
   const ids = new Map<string, string>();
   for (const product of LABELED_PRODUCTS) {
     const norm = normalizeName(product.name, product.ean);
+    const existing = norm.ean
+      ? await db.canonicalProduct.findUnique({ where: { ean: norm.ean } })
+      : await db.canonicalProduct.findFirst({ where: { name: product.name } });
+    if (existing) {
+      ids.set(product.id, existing.id);
+      continue;
+    }
     const row = await db.canonicalProduct.create({
       data: {
         name: product.name,
@@ -68,6 +89,26 @@ export async function seedCanonicalCatalog(db: PrismaClient) {
   for (const listing of LISTINGS) {
     const norm = normalizeName(listing.rawName, listing.ean);
     const canonicalId = ids.get(listing.productKey) || null;
+    const existing = await db.storeListing.findFirst({
+      where: { storeSlug: listing.storeSlug, rawName: listing.rawName },
+    });
+    if (existing) {
+      if (listing.status === 'pending' && existing.matchMethod !== 'human') {
+        const review = await db.catalogReview.findFirst({ where: { listingId: existing.id } });
+        if (!review) {
+          await db.catalogReview.create({
+            data: {
+              listingId: existing.id,
+              suggestedId: existing.canonicalId ?? canonicalId,
+              confidence: listing.confidence,
+              reason: listing.reason || 'Parecido bajo',
+              status: 'pending',
+            },
+          });
+        }
+      }
+      continue;
+    }
     const row = await db.storeListing.create({
       data: {
         storeSlug: listing.storeSlug,
@@ -105,7 +146,7 @@ export async function seedCanonicalCatalog(db: PrismaClient) {
     const fromId = ids.get(pair.from);
     const toId = ids.get(pair.to);
     if (!fromId || !toId) continue;
-    await db.productSubstitute.create({ data: { fromId, toId, reason: pair.reason, note: pair.note } });
-    await db.productSubstitute.create({ data: { fromId: toId, toId: fromId, reason: pair.reason, note: pair.note } });
+    await ensureSubstitute(db, fromId, toId, pair.reason, pair.note);
+    await ensureSubstitute(db, toId, fromId, pair.reason, pair.note);
   }
 }
