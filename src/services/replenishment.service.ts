@@ -6,7 +6,8 @@
 
 import { prisma } from '@/lib/prisma';
 import { familyWhere } from '@/lib/family';
-import { forecastProducts, productKey, ProductForecast, PurchaseEvent } from './consumption/predict';
+import { productIdentity } from './catalog/normalize';
+import { forecastProducts, ProductForecast, PurchaseEvent } from './consumption/predict';
 import { priceQuery, RawOffer } from './offer-pricing';
 import { deliverAlerts, AlertDraft } from './notifications/channels';
 
@@ -63,7 +64,7 @@ async function cheapestOffer(forecast: ProductForecast): Promise<{ store: string
   const observations = (await prisma.priceObservation.findMany({
     orderBy: { observedAt: 'desc' },
     take: 300,
-  })).filter((row) => productKey(row.productName) === forecast.key);
+  })).filter((row) => productIdentity(row.productName) === forecast.identity);
   if (!observations.length) return null;
   const offers: RawOffer[] = observations.map((row) => ({
     name: row.productName,

@@ -22,5 +22,6 @@ export const config = {
     '/historial/:path*',
     '/comprar/:path*',
     '/instalar/:path*',
+    '/admin/:path*',
   ],
 };

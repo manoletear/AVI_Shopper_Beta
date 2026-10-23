@@ -102,8 +102,24 @@ export async function GET(request: NextRequest) {
 
 function generateDemoResults(query: string) {
   const asked = query.toLowerCase();
-  if (/lomo vetado|entraña|entrana/.test(asked)) {
-    const cut = /entrana|entraña/.test(asked) ? 'Entraña' : 'Lomo vetado';
+  if (/soprole/.test(asked) && /leche/.test(asked)) {
+    return [
+      { name: 'Leche Soprole Entera 1 L', brand: 'Soprole', store: 'Jumbo', price: 1190, inStock: true },
+      { name: 'Leche Entera Soprole 1L', brand: 'Soprole', store: 'Lider', price: 1090, inStock: true },
+      { name: 'Leche Colun 1L', brand: 'Colun', store: 'Unimarc', price: 890, inStock: true },
+      { name: 'Leche Soprole Entera 6x1 L', brand: 'Soprole', store: 'Tottus', price: 4990, inStock: true },
+    ];
+  }
+  if (/entrañita|entranita/.test(asked) || /entraña|entrana/.test(asked)) {
+    const lookingForSmall = /entrañita|entranita/.test(asked);
+    return [
+      { name: 'Entrañita', brand: '', store: 'Tottus', price: 20000, inStock: true },
+      { name: lookingForSmall ? 'Entrañita' : 'Entraña', brand: '', store: 'Lider', price: lookingForSmall ? 22000 : 39990, inStock: true },
+      { name: lookingForSmall ? 'Entraña' : 'Entraña', brand: '', store: 'Jumbo', price: 42990, inStock: true },
+    ];
+  }
+  if (/lomo vetado/.test(asked)) {
+    const cut = 'Lomo vetado';
     return [
       { name: cut, brand: '', store: 'Tottus', price: 35605, inStock: true },
       { name: cut, brand: '', store: 'Lider', price: 39990, inStock: true },

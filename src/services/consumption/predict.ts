@@ -1,7 +1,10 @@
 /**
  * Predice cuándo se acaba un producto a partir de las compras del hogar.
  * Con una sola compra no avisa. Los saltos raros no mandan el promedio.
+ * La leche se agrupa por marca y variante, no por el orden de las palabras.
  */
+
+import { consumptionKey, productIdentity } from '../catalog/normalize';
 
 export type BaseUnit = 'kg' | 'L' | 'un';
 export type Confidence = 'insuficiente' | 'baja' | 'media' | 'alta';
@@ -27,6 +30,7 @@ export interface PurchasePoint {
 
 export interface ProductForecast {
   key: string;
+  identity: string;
   label: string;
   unit: BaseUnit;
   purchases: number;
@@ -46,23 +50,8 @@ export interface ProductForecast {
 
 const SIZE_TOKEN = /(\d+(?:[.,]\d+)?)\s*(kg|g|gr|grs|ml|cc|lt|l|litro|litros|un|und|uds)\b/gi;
 
-function stripAccents(value: string): string {
-  return value
-    .replace(/[áàä]/gi, 'a')
-    .replace(/[éèë]/gi, 'e')
-    .replace(/[íìï]/gi, 'i')
-    .replace(/[óòö]/gi, 'o')
-    .replace(/[úùü]/gi, 'u')
-    .replace(/ñ/gi, 'n');
-}
-
 export function productKey(name: string): string {
-  return stripAccents(name)
-    .toLowerCase()
-    .replace(SIZE_TOKEN, ' ')
-    .replace(/[^a-z0-9\s]/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
+  return consumptionKey(name);
 }
 
 function displayLabel(name: string): string {
@@ -229,6 +218,7 @@ export function forecastProducts(events: PurchaseEvent[], now = new Date()): Pro
 
     forecasts.push({
       key,
+      identity: productIdentity(merged[merged.length - 1].label),
       label,
       unit,
       purchases: merged.length,

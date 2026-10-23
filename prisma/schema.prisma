@@ -440,3 +440,97 @@ model Lead {
 
   @@map("leads")
 }
+
+// Catálogo unificado. Una ficha de Jumbo, Lider, Unimarc, Tottus o Santa Isabel
+// apunta a un solo producto. El dueño aplica esto con: npx prisma db push
+
+model CanonicalProduct {
+  id           String   @id @default(cuid())
+  name         String
+  brand        String?
+  category     String
+  variant      String?
+  sizeAmount   Float?
+  sizeUnit     String?
+  packCount    Int      @default(1)
+  soldByWeight Boolean  @default(false)
+  minPurchase  Float?
+  stepAmount   Float?
+  ean          String?  @unique
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  listings     StoreListing[]
+  reviews      CatalogReview[]
+  substitutesFrom ProductSubstitute[] @relation("SubstituteFrom")
+  substitutesTo   ProductSubstitute[] @relation("SubstituteTo")
+
+  @@index([category, variant])
+  @@index([brand])
+  @@map("canonical_products")
+}
+
+model StoreListing {
+  id              String   @id @default(cuid())
+  storeSlug       String
+  storeName       String
+  rawName         String
+  ean             String?
+  price           Int?
+  inStock         Boolean  @default(true)
+  url             String?
+  brand           String?
+  category        String?
+  variant         String?
+  sizeAmount      Float?
+  sizeUnit        String?
+  packCount       Int?
+  soldByWeight    Boolean  @default(false)
+  canonicalId     String?
+  canonical       CanonicalProduct? @relation(fields: [canonicalId], references: [id], onDelete: SetNull)
+  matchMethod     String?
+  matchConfidence Float?
+  matchStatus     String   @default("unmatched")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  reviews         CatalogReview[]
+
+  @@index([storeSlug, rawName])
+  @@index([ean])
+  @@index([matchStatus])
+  @@index([canonicalId])
+  @@map("store_listings")
+}
+
+model CatalogReview {
+  id           String   @id @default(cuid())
+  listingId    String
+  listing      StoreListing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  suggestedId  String?
+  suggested    CanonicalProduct? @relation(fields: [suggestedId], references: [id], onDelete: SetNull)
+  confidence   Float
+  reason       String
+  status       String   @default("pending")
+  resolverNote String?
+  resolvedBy   String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([status])
+  @@map("catalog_reviews")
+}
+
+model ProductSubstitute {
+  id        String   @id @default(cuid())
+  fromId    String
+  from      CanonicalProduct @relation("SubstituteFrom", fields: [fromId], references: [id], onDelete: Cascade)
+  toId      String
+  to        CanonicalProduct @relation("SubstituteTo", fields: [toId], references: [id], onDelete: Cascade)
+  reason    String
+  note      String?
+  createdAt DateTime @default(now())
+
+  @@unique([fromId, toId])
+  @@map("product_substitutes")
+}

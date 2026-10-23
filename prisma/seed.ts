@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { syncReplenishmentAlerts } from '../src/services/replenishment.service';
+import { seedCanonicalCatalog } from '../src/services/catalog/persist';
 
 const prisma = new PrismaClient();
 
@@ -450,6 +451,7 @@ async function main() {
     ],
   });
 
+  await seedCanonicalCatalog(prisma);
   const notices = await syncReplenishmentAlerts();
   console.log('✅ Purchase history and replenishment alerts:', notices.sent);
 
