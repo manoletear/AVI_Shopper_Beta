@@ -46,13 +46,17 @@ npx vercel --prod
 
 ## Paso 5: Inicializar base de datos
 
-Despues del primer deploy:
+En el proyecto **soc-chile** las tablas ya están en el schema `public`. No corras `prisma db push` ahí y no toques los schemas `ig`, `ads` ni `sii_pj`.
+
+Aplica, en este orden, los archivos de `supabase/migrations/` con la herramienta de migraciones de Supabase. El detalle y las políticas de RLS están en el PR de esa carpeta.
+
+Después, con `DATABASE_URL` y `DIRECT_URL` del usuario `postgres` y `?schema=public`:
 
 ```bash
-# Con la DATABASE_URL de produccion
-DATABASE_URL="postgresql://..." npx prisma db push
-DATABASE_URL="postgresql://..." npx tsx prisma/seed.ts
+npx tsx prisma/seed.ts
 ```
+
+El seed se puede correr de nuevo: no borra filas y no cambia la clave del usuario demo si ya existe.
 
 ## Paso 6: Verificar
 

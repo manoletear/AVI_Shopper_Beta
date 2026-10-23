@@ -46,9 +46,9 @@ function main() {
     console.log('  npx prisma db push');
   } else {
     console.log('  1. Configura DATABASE_URL con tu connection string de PostgreSQL');
-    console.log('     Ejemplo: postgresql://user:pass@host:5432/avi_shopper');
+    console.log('     soc-chile usa schema public, usuario postgres.');
     console.log('  2. npx prisma generate');
-    console.log('  3. npx prisma db push');
+    console.log('  3. En soc-chile aplica supabase/migrations (no uses db push sobre public).');
     console.log('  4. npx tsx prisma/seed.ts');
   }
 }
