@@ -10,6 +10,13 @@ import {
 } from 'lucide-react'
 import AdBanner from '@/components/AdBanner'
 
+interface HistoryPoint {
+  date: string
+  amount: number
+  unit: string
+  storeName?: string | null
+}
+
 interface Alert {
   productName: string
   category: string
@@ -18,11 +25,18 @@ interface Alert {
   estimatedRunOutDate: string
   daysUntilEmpty: number
   suggestedQuantity: number
+  confidence?: 'insuficiente' | 'baja' | 'media' | 'alta'
+  weeklyAmount?: number | null
+  unit?: string
+  cheapestStore?: string | null
+  cheapestPayable?: number | null
+  history?: HistoryPoint[]
 }
 
 interface Plan {
   monthTarget: string
   alerts: Alert[]
+  products?: Alert[]
   summary: { addNow: number; addSoon: number; monitoring: number }
 }
 
@@ -54,6 +68,23 @@ export default function ReposicionPage() {
 
   useEffect(() => { if (session) fetchPlan() }, [session])
 
+  const autoAddOne = async (productName: string) => {
+    setAdding(true)
+    try {
+      const res = await fetch('/api/replenishment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productName }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        setAddedItems(data.data.addedItems.length ? data.data.addedItems : [productName])
+        setTimeout(() => setAddedItems([]), 5000)
+      }
+    } catch {}
+    setAdding(false)
+  }
+
   const autoAdd = async (urgency: 'add_now' | 'add_soon') => {
     setAdding(true)
     try {
@@ -71,8 +102,13 @@ export default function ReposicionPage() {
     setAdding(false)
   }
 
-  const formatDate = (dateStr: string) =>
-    new Date(dateStr).toLocaleDateString('es-CL', { day: 'numeric', month: 'short' })
+  const formatDate = (dateStr: string) => {
+    if (/^\d{4}-\d{2}-\d{2}/.test(dateStr)) {
+      const [year, month, day] = dateStr.slice(0, 10).split('-').map(Number)
+      return new Date(Date.UTC(year, month - 1, day)).toLocaleDateString('es-CL', { day: 'numeric', month: 'short', timeZone: 'UTC' })
+    }
+    return new Date(dateStr).toLocaleDateString('es-CL', { day: 'numeric', month: 'short' })
+  }
 
   return (
     <div className="avi-page min-h-screen pb-20">
@@ -82,8 +118,8 @@ export default function ReposicionPage() {
             <a href="/dashboard" className="text-gray-400 hover:text-gray-600">
               <ArrowLeft className="h-5 w-5" />
             </a>
-            <Package className="h-6 w-6 text-purple-600" />
-            <h1 className="text-lg font-semibold">Reposicion Inteligente</h1>
+            <Package className="h-6 w-6 text-indigo-600" />
+            <h1 className="text-lg font-semibold">Reposición</h1>
           </div>
           <button onClick={fetchPlan} disabled={loading} className="p-2 text-gray-400 hover:text-gray-600">
             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
@@ -93,15 +129,14 @@ export default function ReposicionPage() {
 
       <main className="max-w-4xl mx-auto px-4 py-6 space-y-6">
         {/* Info */}
-        <div className="bg-purple-50 border border-purple-200 rounded-xl p-4 flex items-start space-x-3">
-          <Calendar className="h-5 w-5 text-purple-600 mt-0.5 flex-shrink-0" />
+        <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4 flex items-start space-x-3">
+          <Calendar className="h-5 w-5 text-indigo-600 mt-0.5 flex-shrink-0" />
           <div>
-            <p className="text-sm text-purple-800 font-medium">
-              AVI analiza tu historial de compras para predecir que se va a acabar
+            <p className="text-sm text-indigo-900 font-medium">
+              AVI mira lo que compró la familia y avisa antes de que se acabe
             </p>
-            <p className="text-xs text-purple-600 mt-0.5">
-              Basado en la frecuencia de compra de cada producto, AVI te avisa antes de que se acabe
-              y puede agregarlo automaticamente a tu lista del mes.
+            <p className="text-xs text-indigo-700 mt-0.5">
+              Con una sola compra no avisa. Cuando hay ritmo, muestra cuánto usan por semana y puede agregarlo a la lista.
             </p>
           </div>
         </div>
@@ -210,15 +245,22 @@ export default function ReposicionPage() {
                               </span>
                             </div>
                             <p className="text-xs text-gray-600 mt-1">{alert.message}</p>
-                            <div className="flex items-center space-x-3 mt-2 text-xs text-gray-500">
-                              <span>Cantidad sugerida: {alert.suggestedQuantity}</span>
-                              <span>·</span>
-                              <span>
-                                {alert.daysUntilEmpty <= 0
-                                  ? 'Probablemente vacio'
-                                  : `Se acaba ~${formatDate(alert.estimatedRunOutDate)}`}
-                              </span>
+                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 text-xs text-gray-500">
+                              {alert.confidence && <span>Confianza {alert.confidence}</span>}
+                              {alert.weeklyAmount != null && <span>Usas ~{alert.weeklyAmount} {alert.unit || ''} por semana</span>}
+                              {alert.cheapestStore && alert.cheapestPayable != null && (
+                                <span>Más barato hoy: {alert.cheapestStore} ${alert.cheapestPayable.toLocaleString('es-CL')}</span>
+                              )}
                             </div>
+                            {alert.history && alert.history.length > 0 && (
+                              <div className="mt-2 space-y-0.5">
+                                {alert.history.slice(-4).map((point) => (
+                                  <p key={`${alert.productName}-${point.date}`} className="text-xs text-gray-500">
+                                    {formatDate(point.date)} · {point.amount} {point.unit}{point.storeName ? ` · ${point.storeName}` : ''}
+                                  </p>
+                                ))}
+                              </div>
+                            )}
                             <div className="flex gap-2 mt-3">
                               <a
                                 href={`/cart-assistant?products=${encodeURIComponent(alert.productName)}`}
@@ -227,6 +269,13 @@ export default function ReposicionPage() {
                                 <ShoppingCart className="h-3 w-3" />
                                 Comprar
                               </a>
+                              <button
+                                onClick={() => autoAddOne(alert.productName)}
+                                className="flex items-center gap-1 text-xs font-medium py-1.5 px-2.5 rounded-lg bg-white/80 border border-gray-200 text-gray-700"
+                              >
+                                <Plus className="h-3 w-3" />
+                                Agregar a la lista
+                              </button>
                               <a
                                 href={`/comparar?q=${encodeURIComponent(alert.productName)}`}
                                 className="flex items-center gap-1 text-xs font-medium py-1.5 px-2.5 rounded-lg bg-white/80 border border-gray-200 text-gray-700 hover:bg-white hover:border-emerald-300 hover:text-emerald-700 transition-colors"
@@ -242,7 +291,19 @@ export default function ReposicionPage() {
                   )
                 })}
               </div>
-            ) : (
+            ) : null}
+
+            {(plan.products || []).filter((item) => item.confidence === 'insuficiente').length > 0 && (
+              <div className="bg-white border rounded-xl p-4">
+                <p className="text-sm font-medium text-gray-900">Todavía sin aviso</p>
+                <p className="text-xs text-gray-500 mt-1 mb-2">Con una sola compra no estimo cuándo se acaba.</p>
+                {(plan.products || []).filter((item) => item.confidence === 'insuficiente').map((item) => (
+                  <p key={item.productName} className="text-xs text-gray-600 py-1">{item.productName}</p>
+                ))}
+              </div>
+            )}
+
+            {plan.alerts.filter((item) => item.confidence !== 'insuficiente').length === 0 && (
               <div className="avi-card p-8 text-center">
                 <Package className="h-10 w-10 text-gray-300 mx-auto mb-3" />
                 <p className="text-gray-700 font-medium">AVI esta aprendiendo tus patrones</p>

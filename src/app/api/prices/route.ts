@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { requireAuth } from '@/lib/session';
 import { successResponse, errorResponse } from '@/lib/responses';
 import { comparePrices, expandQuery } from '@/services/apify-price.service';
+import { priceQuery } from '@/services/offer-pricing';
 import { matchProducts } from '@/services/typesafe-decision.service';
 import { savePriceObservations, getLatestPrices } from '@/services/price-observation.service';
 
@@ -79,7 +80,7 @@ export async function GET(request: NextRequest) {
     // 3. No results — return demo data for MVP
     const demoProducts = generateDemoResults(query);
     if (demoProducts.length > 0) {
-      const cheapest = demoProducts.reduce((min, p) => (p.price < min.price ? p : min));
+      const cheapest = priceQuery(query, demoProducts).cheapest;
       return successResponse({
         query, totalResults: demoProducts.length, cheapest,
         byStore: {
@@ -100,6 +101,16 @@ export async function GET(request: NextRequest) {
 }
 
 function generateDemoResults(query: string) {
+  const asked = query.toLowerCase();
+  if (/lomo vetado|entraña|entrana/.test(asked)) {
+    const cut = /entrana|entraña/.test(asked) ? 'Entraña' : 'Lomo vetado';
+    return [
+      { name: cut, brand: '', store: 'Tottus', price: 35605, inStock: true },
+      { name: cut, brand: '', store: 'Lider', price: 39990, inStock: true },
+      { name: cut, brand: '', store: 'Jumbo', price: 42990, inStock: true },
+      { name: `${cut} bandeja 1 kg`, brand: '', store: 'Unimarc', price: 45990, inStock: true },
+    ];
+  }
   const expanded = expandQuery(query);
   const q = expanded.toLowerCase();
   const stores = ['Jumbo', 'Lider', 'Unimarc', 'Tottus'];

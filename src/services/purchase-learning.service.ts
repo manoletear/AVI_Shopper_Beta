@@ -30,6 +30,7 @@ export interface PurchaseInput {
   quantity?: number;
   unit?: string;
   source?: string;
+  purchasedAt?: Date | string;
 }
 
 export async function recordPurchase(
@@ -48,6 +49,7 @@ export async function recordPurchase(
       quantity: purchase.quantity || 1,
       unit: purchase.unit || null,
       source: purchase.source || 'manual',
+      ...(purchase.purchasedAt ? { purchasedAt: new Date(purchase.purchasedAt) } : {}),
     },
   });
 }
@@ -68,6 +70,7 @@ export async function recordMultiplePurchases(
       quantity: p.quantity || 1,
       unit: p.unit || null,
       source: p.source || 'list',
+      ...(p.purchasedAt ? { purchasedAt: new Date(p.purchasedAt) } : {}),
     })),
   });
   return result.count;

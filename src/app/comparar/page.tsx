@@ -9,6 +9,7 @@ import {
   Check, Store, Zap, Trash2, Settings, Shield, ExternalLink,
   Camera,
 } from 'lucide-react'
+import { priceQuery } from '@/services/offer-pricing'
 
 interface ProductResult {
   name: string
@@ -26,6 +27,12 @@ interface ProductResult {
   nutriscoreGrade?: string
   novaGroup?: number
   nutritionWarnings?: string[]
+  inStock?: boolean
+  payable?: number
+  note?: string
+  matched?: boolean
+  isBest?: boolean
+  requestLabel?: string
 }
 
 interface ComparisonItem {
@@ -238,6 +245,7 @@ function CompararInner() {
                 store: store.charAt(0).toUpperCase() + store.slice(1),
                 url: p.url,
                 imageUrl: p.imageUrl,
+                inStock: p.inStock !== false,
               })
 
               // Filtro de relevancia: el producto debe contener al menos
@@ -259,6 +267,7 @@ function CompararInner() {
                   listPrice: p.listPrice,
                   store: store.charAt(0).toUpperCase() + store.slice(1),
                   url: p.url, imageUrl: p.imageUrl,
+                  inStock: p.inStock !== false,
                 }))
               }
             }
@@ -276,9 +285,21 @@ function CompararInner() {
             }
           }
 
-          const cheapest = allResults.length > 0
-            ? allResults.reduce((min, p) => (p.price < min.price ? p : min))
-            : null
+          const priced = priceQuery(query, allResults.map((result) => ({
+            name: result.name,
+            store: result.store,
+            price: result.price,
+            inStock: result.inStock !== false,
+          })))
+          const results = allResults.map((result, index) => ({
+            ...result,
+            payable: priced.lines[index]?.payable ?? result.price,
+            note: priced.lines[index]?.note || '',
+            matched: priced.lines[index]?.matched ?? true,
+            isBest: priced.lines[index]?.isBest ?? false,
+            requestLabel: priced.requestLabel,
+          })).sort((a, b) => Number(b.isBest) - Number(a.isBest) || (a.payable || a.price) - (b.payable || b.price))
+          const cheapest = results.find((result) => result.isBest) || null
 
           // Enriquecer con datos nutricionales — solo el cheapest
           if (cheapest) {
@@ -297,7 +318,7 @@ function CompararInner() {
 
           setComparisons((prev) => {
             const next = new Map(prev)
-            next.set(query, { query, results: allResults, cheapest, loading: false })
+            next.set(query, { query, results, cheapest, loading: false })
             return next
           })
         } else {
@@ -445,9 +466,11 @@ function CompararInner() {
         if (!storeTotals[r.store]) storeTotals[r.store] = { items: [], total: 0 }
         const existing = storeTotals[r.store].items.find((i) => i.name === comp.query)
         if (!existing) {
-          const cheapestInStore = comp.results.filter((x) => x.store === r.store).reduce((min, x) => x.price < min.price ? x : min)
-          storeTotals[r.store].items.push({ name: comp.query, price: cheapestInStore.price, url: cheapestInStore.url })
-          storeTotals[r.store].total += cheapestInStore.price
+          const choices = comp.results.filter((x) => x.store === r.store && x.matched !== false)
+          if (choices.length === 0) continue
+          const cheapestInStore = choices.reduce((min, x) => (x.payable ?? x.price) < (min.payable ?? min.price) ? x : min)
+          storeTotals[r.store].items.push({ name: comp.query, price: cheapestInStore.payable ?? cheapestInStore.price, url: cheapestInStore.url })
+          storeTotals[r.store].total += cheapestInStore.payable ?? cheapestInStore.price
         }
       }
     }
@@ -480,7 +503,7 @@ function CompararInner() {
       if (!comp.cheapest) continue
       const store = comp.cheapest.store
       if (!splitStores[store]) splitStores[store] = []
-      splitStores[store].push({ name: comp.query, price: comp.cheapest.price, url: comp.cheapest.url })
+      splitStores[store].push({ name: comp.query, price: comp.cheapest.payable ?? comp.cheapest.price, url: comp.cheapest.url })
     }
 
     const splitStoreList = Object.entries(splitStores).map(([store, items]) => ({
@@ -770,7 +793,7 @@ function CompararInner() {
                       {comp.loading && <Loader2 className="h-4 w-4 animate-spin text-indigo-500" />}
                       {comp.cheapest && (
                         <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
-                          Mejor: {comp.cheapest.store} {formatCLP(comp.cheapest.price)}
+                          Mejor para {comp.cheapest.requestLabel || 'lo pedido'}: {comp.cheapest.store} {formatCLP(comp.cheapest.payable ?? comp.cheapest.price)}
                         </span>
                       )}
                     </div>
@@ -785,7 +808,7 @@ function CompararInner() {
                     {comp.results.length > 0 && (
                       <div className="divide-y">
                         {comp.results.slice(0, 6).map((r, i) => {
-                          const isCheapest = comp.cheapest && r.price === comp.cheapest.price && r.store === comp.cheapest.store
+                          const isCheapest = Boolean(r.isBest)
                           return (
                             <div
                               key={`${r.store}-${i}`}
@@ -796,6 +819,12 @@ function CompararInner() {
 
                               <div className="flex-1 min-w-0">
                                 <p className="text-sm text-gray-900 truncate">{r.name}</p>
+                                {r.matched === false && (
+                                  <p className="text-xs text-amber-700 mt-0.5">{r.note || 'No calza con la cantidad pedida'}</p>
+                                )}
+                                {r.matched !== false && r.note && (
+                                  <p className="text-xs text-gray-500 mt-0.5">{r.note}</p>
+                                )}
                                 <div className="flex items-center space-x-2 mt-0.5">
                                   <span className="text-xs text-gray-400">{r.store}</span>
                                   {r.brand && <span className="text-xs text-gray-400">· {r.brand}</span>}
@@ -851,8 +880,11 @@ function CompararInner() {
 
                               <div className="text-right flex-shrink-0">
                                 <p className={`text-sm font-semibold ${isCheapest ? 'text-green-700' : 'text-gray-900'}`}>
-                                  {formatCLP(r.price)}
+                                  {formatCLP(r.payable ?? r.price)}
                                 </p>
+                                {r.payable != null && r.payable !== r.price && (
+                                  <p className="text-xs text-gray-400">ficha {formatCLP(r.price)}</p>
+                                )}
                                 {r.listPrice && r.listPrice > r.price && (
                                   <p className="text-xs text-gray-400 line-through">{formatCLP(r.listPrice)}</p>
                                 )}

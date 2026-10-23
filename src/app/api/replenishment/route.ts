@@ -43,12 +43,13 @@ export async function POST(request: NextRequest) {
   try {
     const userId = await requireAuth();
     const body = await request.json();
-    const { listId, urgency } = body;
+    const { listId, urgency, productName } = body;
 
     const result = await autoAddToShoppingList(
       userId,
       listId,
-      urgency || 'add_now'
+      urgency || 'add_now',
+      typeof productName === 'string' ? productName : undefined
     );
 
     return successResponse({
