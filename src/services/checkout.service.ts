@@ -40,7 +40,7 @@ const STORE_CONFIG: Record<string, {
 }> = {
   jumbo: {
     name: 'Jumbo',
-    searchUrlTemplate: (q) => `https://www.jumbo.cl/search?ft=${encodeURIComponent(q)}`,
+    searchUrlTemplate: (q) => `https://www.jumbo.cl/busqueda?ft=${encodeURIComponent(q)}`,
     deliveryFee: 2990,
     color: '#16a34a',
   },

@@ -342,7 +342,7 @@ function CompararInner() {
   const [cartResult, setCartResult] = useState<{ success: boolean; cartUrl?: string; added: number; failed: string[] } | null>(null)
 
   const SEARCH_URLS: Record<string, (q: string) => string> = {
-    Jumbo: (q) => `https://www.jumbo.cl/search?ft=${encodeURIComponent(q)}`,
+    Jumbo: (q) => `https://www.jumbo.cl/busqueda?ft=${encodeURIComponent(q)}`,
     Lider: (q) => `https://super.lider.cl/search?q=${encodeURIComponent(q)}`,
     Unimarc: (q) => `https://www.unimarc.cl/search?q=${encodeURIComponent(q)}`,
     'Santa Isabel': (q) => `https://www.santaisabel.cl/buscar?ft=${encodeURIComponent(q)}`,
@@ -410,7 +410,7 @@ function CompararInner() {
       setCurrentProductIdx(-1)
 
       const CHECKOUT_URLS: Record<string, string> = {
-        Jumbo: 'https://www.jumbo.cl/checkout',
+        Jumbo: 'https://www.jumbo.cl/mi-carro',
         Lider: 'https://super.lider.cl/cart',
         Unimarc: 'https://www.unimarc.cl/checkout',
         Tottus: 'https://www.tottus.cl/tottus-cl/checkout',
