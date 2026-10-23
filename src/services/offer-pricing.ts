@@ -2,7 +2,10 @@
  * Precio efectivo de una oferta.
  * El número de la ficha no es lo que se paga: hay mínimos por peso,
  * formatos más chicos que lo pedido, stock y despacho.
+ * El más barato sale solo entre ofertas del mismo producto.
  */
+
+import { tagOffers } from './catalog/compare';
 
 export type BaseUnit = 'kg' | 'L' | 'un';
 
@@ -26,8 +29,12 @@ export interface PricedOffer extends RawOffer {
   requestedAmount: number;
   requestedUnit: BaseUnit;
   matched: boolean;
+  comparable: boolean;
   note: string;
   isBest: boolean;
+  catalogRelation?: 'same' | 'substitute' | 'other';
+  catalogReason?: string;
+  pricePerUnitLabel?: string | null;
 }
 
 export const STORE_DELIVERY_CLP: Record<string, number> = {
@@ -124,8 +131,30 @@ export function priceQuery<T extends RawOffer>(query: string, offers: T[]): {
   cheapest: (T & PricedOffer) | null;
 } {
   const request = parseRequestedAmount(query) || defaultRequest(offers);
-  const lines = offers.map((offer) => priceOne(offer, request));
-  const eligible = lines.filter((line) => line.matched && line.inStock !== false);
+  const tags = tagOffers(query, offers);
+  const lines = offers.map((offer, index) => {
+    const priced = priceOne(offer, request);
+    const tag = tags[index];
+    if (tag.relation === 'other') {
+      return {
+        ...priced,
+        matched: false,
+        comparable: false,
+        note: 'No es el mismo producto',
+        catalogRelation: tag.relation,
+        catalogReason: tag.reason,
+        pricePerUnitLabel: tag.pricePerUnitLabel,
+      };
+    }
+    return {
+      ...priced,
+      comparable: tag.relation === 'same',
+      catalogRelation: tag.relation,
+      catalogReason: tag.reason,
+      pricePerUnitLabel: tag.pricePerUnitLabel,
+    };
+  });
+  const eligible = lines.filter((line) => line.comparable && line.matched && line.inStock !== false);
   const best = eligible.reduce<(T & PricedOffer) | null>((winner, line) => {
     if (!winner || line.payable < winner.payable) return line;
     return winner;
@@ -158,6 +187,7 @@ function priceOne<T extends RawOffer>(offer: T, request: ParsedSize): T & Priced
     requestedAmount: request.amount,
     requestedUnit: request.unit,
     matched: false,
+    comparable: true,
     inStock,
     note,
     isBest: false,
@@ -181,6 +211,7 @@ function priceOne<T extends RawOffer>(offer: T, request: ParsedSize): T & Priced
       requestedAmount: request.amount,
       requestedUnit: 'kg',
       matched: true,
+      comparable: true,
       inStock,
       note: raised
         ? `Mínimo ${formatAmount(min, 'kg')}. Para ${formatAmount(request.amount, 'kg')} llevas ${formatAmount(bought, 'kg')} y pagas $${payable.toLocaleString('es-CL')}. El kilo está a $${offer.price.toLocaleString('es-CL')}.`
@@ -201,6 +232,7 @@ function priceOne<T extends RawOffer>(offer: T, request: ParsedSize): T & Priced
       requestedAmount: request.amount,
       requestedUnit: 'un',
       matched: true,
+      comparable: true,
       inStock,
       note: '',
       isBest: false,
@@ -221,6 +253,7 @@ function priceOne<T extends RawOffer>(offer: T, request: ParsedSize): T & Priced
     requestedAmount: request.amount,
     requestedUnit: request.unit,
     matched: true,
+    comparable: true,
     inStock,
     note: extra
       ? `El formato es de ${formatAmount(pack.amount, pack.unit)}. Para ${formatAmount(request.amount, pack.unit)} llevas ${packs} (${formatAmount(bought, pack.unit)}).`
@@ -256,7 +289,7 @@ export function priceBaskets(queries: BasketLine[], fees: Record<string, number>
     const items: StoreBasket['items'] = [];
     const missing: string[] = [];
     for (const query of queries) {
-      const choices = query.lines.filter((line) => line.store === store && line.matched && line.inStock !== false);
+      const choices = query.lines.filter((line) => line.store === store && line.matched && line.inStock !== false && line.comparable !== false);
       const best = choices.reduce<PricedOffer | null>((winner, line) => (!winner || line.payable < winner.payable ? line : winner), null);
       if (!best) {
         missing.push(query.query);

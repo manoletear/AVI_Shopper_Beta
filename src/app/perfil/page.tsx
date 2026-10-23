@@ -133,6 +133,7 @@ export default function PerfilNutricionalPage() {
             </a>
             <Heart className="h-6 w-6 text-red-500" />
             <h1 className="text-lg font-semibold">Mi Perfil Nutricional</h1>
+            <a href="/admin/catalogo" className="text-xs font-medium text-indigo-600">Catálogo</a>
           </div>
           <button
             onClick={handleSave}
@@ -333,6 +334,9 @@ export default function PerfilNutricionalPage() {
               </a>
               <a href="/listas" className="text-sm text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1">
                 → Crear tu primera lista de compras
+              </a>
+              <a href="/admin/catalogo" className="text-sm text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1">
+                → Revisar el catálogo de productos
               </a>
             </div>
           </div>

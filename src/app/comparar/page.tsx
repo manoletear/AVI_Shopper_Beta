@@ -10,6 +10,7 @@ import {
   Camera,
 } from 'lucide-react'
 import { priceQuery } from '@/services/offer-pricing'
+import { shouldShowWithQuery } from '@/services/catalog/compare'
 
 interface ProductResult {
   name: string
@@ -33,6 +34,9 @@ interface ProductResult {
   matched?: boolean
   isBest?: boolean
   requestLabel?: string
+  catalogRelation?: 'same' | 'substitute' | 'other'
+  catalogReason?: string
+  pricePerUnitLabel?: string | null
 }
 
 interface ComparisonItem {
@@ -232,9 +236,6 @@ function CompararInner() {
           const allResults: ProductResult[] = []
           const byStore = data.data.byStore || {}
 
-          // Palabras clave de la busqueda para filtrar relevancia
-          const queryWords = query.toLowerCase().split(/\s+/).filter(w => w.length > 2)
-
           for (const [store, products] of Object.entries(byStore)) {
             for (const p of (products as any[])) {
               const result = checkProduct({
@@ -248,11 +249,7 @@ function CompararInner() {
                 inStock: p.inStock !== false,
               })
 
-              // Filtro de relevancia: el producto debe contener al menos
-              // una palabra clave de la busqueda (>2 chars) en su nombre
-              const productNameLower = result.name.toLowerCase()
-              const isRelevant = queryWords.some(w => productNameLower.includes(w))
-              if (isRelevant) {
+              if (shouldShowWithQuery(query, result.name, result.price)) {
                 allResults.push(result)
               }
             }
@@ -291,6 +288,7 @@ function CompararInner() {
             price: result.price,
             inStock: result.inStock !== false,
           })))
+          const rank = (relation?: string) => relation === 'substitute' ? 1 : relation === 'other' ? 2 : 0
           const results = allResults.map((result, index) => ({
             ...result,
             payable: priced.lines[index]?.payable ?? result.price,
@@ -298,7 +296,10 @@ function CompararInner() {
             matched: priced.lines[index]?.matched ?? true,
             isBest: priced.lines[index]?.isBest ?? false,
             requestLabel: priced.requestLabel,
-          })).sort((a, b) => Number(b.isBest) - Number(a.isBest) || (a.payable || a.price) - (b.payable || b.price))
+            catalogRelation: priced.lines[index]?.catalogRelation,
+            catalogReason: priced.lines[index]?.catalogReason,
+            pricePerUnitLabel: priced.lines[index]?.pricePerUnitLabel,
+          })).sort((a, b) => rank(a.catalogRelation) - rank(b.catalogRelation) || Number(b.isBest) - Number(a.isBest) || (a.payable || a.price) - (b.payable || b.price))
           const cheapest = results.find((result) => result.isBest) || null
 
           // Enriquecer con datos nutricionales — solo el cheapest
@@ -466,7 +467,7 @@ function CompararInner() {
         if (!storeTotals[r.store]) storeTotals[r.store] = { items: [], total: 0 }
         const existing = storeTotals[r.store].items.find((i) => i.name === comp.query)
         if (!existing) {
-          const choices = comp.results.filter((x) => x.store === r.store && x.matched !== false)
+          const choices = comp.results.filter((x) => x.store === r.store && x.matched !== false && x.catalogRelation !== 'substitute' && x.catalogRelation !== 'other')
           if (choices.length === 0) continue
           const cheapestInStore = choices.reduce((min, x) => (x.payable ?? x.price) < (min.payable ?? min.price) ? x : min)
           storeTotals[r.store].items.push({ name: comp.query, price: cheapestInStore.payable ?? cheapestInStore.price, url: cheapestInStore.url })
@@ -807,7 +808,7 @@ function CompararInner() {
 
                     {comp.results.length > 0 && (
                       <div className="divide-y">
-                        {comp.results.slice(0, 6).map((r, i) => {
+                        {comp.results.slice(0, 8).map((r, i) => {
                           const isCheapest = Boolean(r.isBest)
                           return (
                             <div
@@ -819,11 +820,20 @@ function CompararInner() {
 
                               <div className="flex-1 min-w-0">
                                 <p className="text-sm text-gray-900 truncate">{r.name}</p>
-                                {r.matched === false && (
+                                {r.catalogRelation === 'substitute' && (
+                                  <p className="text-xs text-amber-700 mt-0.5">Sustituto: {r.catalogReason}{r.pricePerUnitLabel ? ` · ${r.pricePerUnitLabel}` : ''}</p>
+                                )}
+                                {r.catalogRelation === 'other' && (
+                                  <p className="text-xs text-amber-700 mt-0.5">No es el mismo producto</p>
+                                )}
+                                {r.matched === false && r.catalogRelation !== 'other' && (
                                   <p className="text-xs text-amber-700 mt-0.5">{r.note || 'No calza con la cantidad pedida'}</p>
                                 )}
-                                {r.matched !== false && r.note && (
+                                {r.matched !== false && r.catalogRelation !== 'substitute' && r.note && (
                                   <p className="text-xs text-gray-500 mt-0.5">{r.note}</p>
+                                )}
+                                {r.catalogRelation === 'same' && r.pricePerUnitLabel && (
+                                  <p className="text-xs text-teal-700 mt-0.5">{r.pricePerUnitLabel}</p>
                                 )}
                                 <div className="flex items-center space-x-2 mt-0.5">
                                   <span className="text-xs text-gray-400">{r.store}</span>
