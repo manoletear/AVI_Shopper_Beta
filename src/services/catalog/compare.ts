@@ -78,6 +78,21 @@ function isPrimary(
   return false;
 }
 
+export function shouldShowWithQuery(query: string, name: string, price = 0): boolean {
+  const queryWords = query.toLowerCase().split(/\s+/).filter((word) => word.length > 2);
+  if (queryWords.some((word) => name.toLowerCase().includes(word))) return true;
+  const tag = tagOffers(query, [{ name, price }])[0];
+  if (tag.relation === 'same' || tag.relation === 'substitute') return true;
+  const left = queryProfile(query).norm;
+  const right = normalizeName(name);
+  if (left.category === 'general' || left.category !== right.category || !left.variant || !right.variant || left.variant === right.variant) {
+    return false;
+  }
+  let shared = 0;
+  while (shared < left.variant.length && shared < right.variant.length && left.variant[shared] === right.variant[shared]) shared += 1;
+  return shared >= 5;
+}
+
 export function tagOffers<T extends PricedName>(query: string, offers: T[]): CatalogTag[] {
   const profile = queryProfile(query);
   const norms = offers.map((offer) => normalizeName(offer.name));

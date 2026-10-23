@@ -10,6 +10,7 @@ import {
   Camera,
 } from 'lucide-react'
 import { priceQuery } from '@/services/offer-pricing'
+import { shouldShowWithQuery } from '@/services/catalog/compare'
 
 interface ProductResult {
   name: string
@@ -235,9 +236,6 @@ function CompararInner() {
           const allResults: ProductResult[] = []
           const byStore = data.data.byStore || {}
 
-          // Palabras clave de la busqueda para filtrar relevancia
-          const queryWords = query.toLowerCase().split(/\s+/).filter(w => w.length > 2)
-
           for (const [store, products] of Object.entries(byStore)) {
             for (const p of (products as any[])) {
               const result = checkProduct({
@@ -251,11 +249,7 @@ function CompararInner() {
                 inStock: p.inStock !== false,
               })
 
-              // Filtro de relevancia: el producto debe contener al menos
-              // una palabra clave de la busqueda (>2 chars) en su nombre
-              const productNameLower = result.name.toLowerCase()
-              const isRelevant = queryWords.some(w => productNameLower.includes(w))
-              if (isRelevant) {
+              if (shouldShowWithQuery(query, result.name, result.price)) {
                 allResults.push(result)
               }
             }
@@ -473,7 +467,7 @@ function CompararInner() {
         if (!storeTotals[r.store]) storeTotals[r.store] = { items: [], total: 0 }
         const existing = storeTotals[r.store].items.find((i) => i.name === comp.query)
         if (!existing) {
-          const choices = comp.results.filter((x) => x.store === r.store && x.matched !== false)
+          const choices = comp.results.filter((x) => x.store === r.store && x.matched !== false && x.catalogRelation !== 'substitute' && x.catalogRelation !== 'other')
           if (choices.length === 0) continue
           const cheapestInStore = choices.reduce((min, x) => (x.payable ?? x.price) < (min.payable ?? min.price) ? x : min)
           storeTotals[r.store].items.push({ name: comp.query, price: cheapestInStore.payable ?? cheapestInStore.price, url: cheapestInStore.url })

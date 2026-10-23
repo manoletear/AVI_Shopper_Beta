@@ -6,6 +6,7 @@ import { createFuzzyMatcher, grokFuzzyMatcher, heuristicFuzzyMatcher } from './a
 import { measureMatchAccuracy } from './accuracy';
 import { LABELED_PRODUCTS } from './examples';
 import { matchListing } from './match';
+import { shouldShowWithQuery } from './compare';
 import { normalizeName } from './normalize';
 import { applyReview } from './review';
 import { substituteReason } from './substitutes';
@@ -87,6 +88,8 @@ describe('catálogo canónico', () => {
     ]);
     assert.equal(meat.cheapest?.store, 'Lider');
     assert.equal(meat.lines.find((line) => line.name === 'Entrañita')?.catalogRelation, 'other');
+    assert.equal(shouldShowWithQuery('Entraña', 'Entrañita'), true);
+    assert.equal(shouldShowWithQuery('Entraña', 'Leche Colun 1L'), false);
   });
 
   it('Grok confirma sobre 0,85; sin clave la ficha queda en revisión y no sale a la red', async () => {
