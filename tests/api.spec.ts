@@ -30,7 +30,17 @@ test.describe('API Endpoints', () => {
     { method: 'GET', url: '/api/nutrition' },
     { method: 'GET', url: '/api/health' },
     { method: 'GET', url: '/api/users/store-accounts' },
+    { method: 'GET', url: '/api/checkout/auto/job_test_123' },
   ];
+
+  test('POST /api/checkout/auto returns 401 without auth', async ({ request }) => {
+    const res = await request.post('/api/checkout/auto', {
+      data: { storeSlug: 'jumbo', items: [{ productName: 'Leche', quantity: 1 }] },
+    });
+    expect(res.status()).toBe(401);
+    const body = await res.json();
+    expect(body.success).toBe(false);
+  });
 
   for (const endpoint of protectedEndpoints) {
     test(`${endpoint.method} ${endpoint.url} returns 401 without auth`, async ({ request }) => {

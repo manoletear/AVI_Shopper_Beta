@@ -88,15 +88,8 @@ export async function POST(request: NextRequest) {
 
     if (!text) {
       return errorResponse('No se pudo procesar tu mensaje', 500);
-    },
-    });
-
-    if (!workerRes.ok) {
-      return errorResponse('Error en Workers AI', 500);
     }
 
-    const workerData = await workerRes.json() as any;
-    const text = workerData.reply || '';
     const listMatch = text.match(/---LISTA---\s*\n?\s*(\[[\s\S]*\])/);
 
     if (listMatch) {

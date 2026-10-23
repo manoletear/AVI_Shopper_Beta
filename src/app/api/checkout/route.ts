@@ -3,11 +3,12 @@ import { requireAuth } from '@/lib/session';
 import { prisma } from '@/lib/prisma';
 import { successResponse, errorResponse } from '@/lib/responses';
 import { buildCart } from '@/services/store-cart.service';
+import { fillAutomaticCart } from '@/services/cart-agent';
 import { decrypt } from '@/lib/encryption';
 import { recordMultiplePurchases } from '@/services/purchase-learning.service';
 
 const STORE_SEARCH_URLS: Record<string, (q: string) => string> = {
-  jumbo: (q) => `https://www.jumbo.cl/search?ft=${encodeURIComponent(q)}`,
+  jumbo: (q) => `https://www.jumbo.cl/busqueda?ft=${encodeURIComponent(q)}`,
   lider: (q) => `https://super.lider.cl/search?q=${encodeURIComponent(q)}`,
   unimarc: (q) => `https://www.unimarc.cl/search?q=${encodeURIComponent(q)}`,
   'santa-isabel': (q) => `https://www.santaisabel.cl/buscar?ft=${encodeURIComponent(q)}`,
@@ -15,7 +16,7 @@ const STORE_SEARCH_URLS: Record<string, (q: string) => string> = {
 };
 
 const STORE_CART_URLS: Record<string, string> = {
-  jumbo: 'https://www.jumbo.cl/checkout',
+  jumbo: 'https://www.jumbo.cl/mi-carro',
   lider: 'https://super.lider.cl/cart',
   unimarc: 'https://www.unimarc.cl/checkout',
   'santa-isabel': 'https://www.santaisabel.cl/checkout',
@@ -49,6 +50,18 @@ export async function POST(request: NextRequest) {
 
     if (!cartItems || cartItems.length === 0) {
       return errorResponse('No hay productos para agregar al carrito', 400);
+    }
+
+    if (storeSlug === 'jumbo' || storeSlug === 'unimarc' || storeSlug === 'tottus') {
+      const result = await fillAutomaticCart(storeSlug, cartItems.map((item: { productName: string; quantity?: number; sku?: string; price?: number }) => ({
+        productName: item.productName,
+        quantity: item.quantity,
+        sku: item.sku,
+        price: item.price,
+      })));
+      if (result.status === 'ready' || result.status === 'running') {
+        return successResponse(result);
+      }
     }
 
     // Intentar carrito automatico si tiene cuenta vinculada

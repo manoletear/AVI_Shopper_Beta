@@ -34,6 +34,9 @@ jobs:
       - name: Type check
         run: npx tsc --noEmit --project tsconfig.json
 
+      - name: Unit tests (carrito)
+        run: npm run test:unit
+
       - name: Build
         run: npm run build
         env:

@@ -5,6 +5,21 @@
   const url = window.location.href;
   const params = new URLSearchParams(window.location.search);
   const aviAutoAdd = params.get('avi_add') === '1';
+  const aviSession = params.get('avi_session');
+
+  // El carrito de Jumbo vive en localStorage.sessionId. AVI lo llena en la nube
+  // y esta página solo lo engancha. No toca el pago.
+  if (aviSession && /^[0-9a-f-]{36}$/i.test(aviSession) && url.includes('jumbo.cl')) {
+    try {
+      localStorage.setItem('sessionId', aviSession);
+    } catch (error) {
+      console.log('[AVI] No pude guardar la sesión del carrito', error);
+    }
+    const clean = new URL(window.location.href);
+    clean.searchParams.delete('avi_session');
+    window.location.replace(clean.toString());
+    return;
+  }
   const aviProductName = params.get('avi_product') || '';
   const isProductPage = url.includes('/ip/') || url.includes('/p?') || url.includes('/product/');
   const isSearchPage = url.includes('/search') || url.includes('/buscar') || url.includes('/busca');
@@ -179,50 +194,21 @@
 
     console.log('[AVI] Checkout page detected:', url);
 
-    // Find ANY button that advances the checkout
     const allButtons = document.querySelectorAll('button, a[role="button"], a.btn, [class*="checkout"] button');
-    let targetBtn = null;
-    let targetAction = '';
 
     for (const btn of allButtons) {
       const text = (btn.textContent || '').trim();
       if (!text) continue;
 
-      // Payment/confirm buttons — highlight but DON'T click
-      if (text.match(/^(Pagar|Confirmar pedido|Finalizar compra|Realizar pedido|Confirmar y pagar)$/i)) {
-        console.log('[AVI] Payment button found:', text);
-        showAviNotification('AVI llego al pago. Revisa y confirma: ' + text);
+      // Cualquier paso hacia el pago se resalta y no se aprieta.
+      if (text.match(/pago|pagar|confirmar|finalizar|realizar pedido/i)) {
+        console.log('[AVI] Botón de pago, sin click:', text);
+        showAviNotification('Carrito listo. El pago lo haces tú: ' + text);
         btn.style.outline = '4px solid #4F46E5';
         btn.style.outlineOffset = '4px';
-        btn.style.animation = 'aviPulse 1.5s infinite';
-        const style = document.createElement('style');
-        style.textContent = '@keyframes aviPulse { 0%,100% { outline-color: #4F46E5; } 50% { outline-color: #22c55e; } }';
-        document.head.appendChild(style);
         btn.scrollIntoView({ behavior: 'smooth', block: 'center' });
         return;
       }
-
-      // Navigation buttons — auto-click
-      if (text.match(/^(Continuar|Siguiente|Continuar al pago|Ir al pago|Continuar compra)$/i)) {
-        targetBtn = btn;
-        targetAction = text;
-        break;
-      }
-    }
-
-    if (targetBtn) {
-      console.log('[AVI] Clicking checkout button:', targetAction);
-      showAviNotification('AVI avanzando: ' + targetAction);
-      targetBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      await new Promise((r) => setTimeout(r, 500));
-      targetBtn.click();
-    } else {
-      console.log('[AVI] No checkout button found, waiting...');
-      // Retry after page updates (SPAs change content without reload)
-      setTimeout(() => {
-        document.querySelector('[data-avi-checkout-done]')?.remove();
-        autoCheckout();
-      }, 3000);
     }
   }
 
