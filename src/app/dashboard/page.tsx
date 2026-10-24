@@ -1,9 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
 import {
-  ShoppingCart, ListChecks, Heart, Store, Users,
+  ShoppingCart, ListChecks, Heart, Store, Users, Home,
   ArrowRight, ChevronRight, CreditCard,
   Wallet, Package, User, Bot, MessageCircle,
   Repeat, Zap,
@@ -74,6 +75,7 @@ const STORE_DEALS = [
 ]
 
 export default function DashboardPage() {
+  const router = useRouter()
   const { data: session } = useSession()
   const userName = session?.user?.name || session?.user?.email?.split('@')[0] || ''
   const [data, setData] = useState<DashboardData | null>(null)
@@ -84,6 +86,9 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (!session) return
+    fetch('/api/onboarding').then((response) => response.json()).then((body) => {
+      if (body?.success && body.data?.needsOnboarding) router.replace('/onboarding')
+    }).catch(() => {})
     const load = async () => {
       const results: DashboardData = {
         listsCount: 0, itemsCount: 0, alertsCount: 0,
@@ -119,7 +124,7 @@ export default function DashboardPage() {
     fetch('/api/events?days=21').then(r => r.json()).then(d => {
       if (d.success && d.data.events) setUpcomingEvents(d.data.events.slice(0, 3))
     }).catch(() => {})
-  }, [session])
+  }, [session, router])
 
   useEffect(() => {
     const timer = setInterval(() => setPromoIndex((i) => (i + 1) % STORE_DEALS.length), 5000)
@@ -364,6 +369,7 @@ export default function DashboardPage() {
               { href: '/configuracion/pagos', label: 'Pagos', sub: 'Tarjetas y metodos', icon: CreditCard },
               { href: '/historial', label: 'Historial', sub: 'Compras pasadas', icon: ShoppingCart },
               { href: '/familia', label: 'Mi familia', sub: 'Miembros y alergenos', icon: Users },
+              { href: '/configuracion/hogar', label: 'Mi hogar', sub: 'Dirección, tiendas y preferencias', icon: Home },
             ].map((svc) => {
               const Icon = svc.icon
               return (

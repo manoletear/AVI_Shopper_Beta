@@ -3,6 +3,7 @@
  * la variante (entera con entera). Cambia la marca, el pack o el formato.
  */
 
+import { allowsSubstitution, ProposalConstraints } from '../household/constraints';
 import { NormalizedProduct } from './normalize';
 
 export function substituteReason(left: NormalizedProduct, right: NormalizedProduct): string | null {
@@ -22,4 +23,17 @@ export function substituteReason(left: NormalizedProduct, right: NormalizedProdu
   if (formatDiff) return 'otro formato';
   if ((left.brand && !right.brand) || (!left.brand && right.brand)) return 'marca no confirmada';
   return null;
+}
+
+/** El motivo del reemplazo, o null si el hogar no lo puede recibir. */
+export function proposeSubstituteReason(
+  left: NormalizedProduct,
+  right: NormalizedProduct,
+  candidateName: string,
+  constraints?: ProposalConstraints,
+): string | null {
+  const reason = substituteReason(left, right);
+  if (!reason) return null;
+  if (constraints && !allowsSubstitution(candidateName, constraints)) return null;
+  return reason;
 }

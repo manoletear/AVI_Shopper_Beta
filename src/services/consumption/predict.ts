@@ -130,11 +130,31 @@ export function priorFor(name: string): { perPersonDay: number; unit: BaseUnit; 
 }
 
 /** Adulto 1, mayor 0,8, niño 0,6. Las mascotas no entran en N. */
-export function householdEquivalents(members: HouseholdMember[]): number {
+export function householdEquivalents(members: HouseholdMember[], elderWeight = ROLE_WEIGHT.elder): number {
   const people = members.filter((member) => member.type !== 'pet');
   if (!people.length) return 1;
-  const total = people.reduce((sum, member) => sum + (ROLE_WEIGHT[member.role] ?? 1), 0);
+  const total = people.reduce((sum, member) => {
+    if (member.role === 'elder') return sum + elderWeight;
+    return sum + (ROLE_WEIGHT[member.role] ?? 1);
+  }, 0);
   return total > 0 ? total : 1;
+}
+
+/**
+ * Si el hogar indicó para cuántos compra, ese número manda.
+ * Cada adulto mayor dentro de ese tamaño pesa 0,8 en vez de 1.
+ */
+export function plannedEquivalents(
+  members: HouseholdMember[],
+  householdSize: number | null | undefined,
+  elderWeight = ROLE_WEIGHT.elder,
+): number {
+  const people = members.filter((member) => member.type !== 'pet');
+  if (householdSize && householdSize > 0) {
+    const elders = Math.min(people.filter((member) => member.role === 'elder').length, householdSize);
+    return (householdSize - elders) + elders * elderWeight;
+  }
+  return householdEquivalents(people, elderWeight);
 }
 
 export function coldStartRate(perPersonDay: number, equivalents: number): number {

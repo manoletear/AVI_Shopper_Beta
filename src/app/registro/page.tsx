@@ -4,6 +4,7 @@ import { useState, Suspense } from 'react'
 import { signIn } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Mail, Lock, User, ArrowRight, AlertCircle, Check } from 'lucide-react'
+import { pathAfterAuth } from '@/lib/onboarding/after-auth'
 
 function RegistroForm() {
   const router = useRouter()
@@ -40,7 +41,8 @@ function RegistroForm() {
         }).catch(() => {})
       }
 
-      router.push(inviteCode ? '/familia' : '/dashboard')
+      if (inviteCode) router.push('/familia')
+      else router.push(await pathAfterAuth())
     } catch { setError('Error de conexion'); setLoading(false) }
   }
 

@@ -4,7 +4,8 @@
  */
 
 import { normalizeName, NormalizedProduct, pricePerUnit } from './normalize';
-import { substituteReason } from './substitutes';
+import { allowsProposedItem, allowsSubstitution, ProposalConstraints } from '../household/constraints';
+import { proposeSubstituteReason } from './substitutes';
 
 export type CatalogRelation = 'same' | 'substitute' | 'other';
 
@@ -93,7 +94,11 @@ export function shouldShowWithQuery(query: string, name: string, price = 0): boo
   return shared >= 5;
 }
 
-export function tagOffers<T extends PricedName>(query: string, offers: T[]): CatalogTag[] {
+export function tagOffers<T extends PricedName>(
+  query: string,
+  offers: T[],
+  constraints?: ProposalConstraints,
+): CatalogTag[] {
   const profile = queryProfile(query);
   const norms = offers.map((offer) => normalizeName(offer.name));
   if (profile.norm.category === 'general') {
@@ -114,9 +119,16 @@ export function tagOffers<T extends PricedName>(query: string, offers: T[]): Cat
 
   return norms.map((norm, index) => {
     const unit = pricePerUnit(norm, offers[index].price)?.label || null;
+    const name = offers[index].name;
+    if (constraints && !allowsProposedItem(name, constraints)) {
+      return { relation: 'other', reason: 'No cumple las restricciones del hogar', pricePerUnitLabel: unit };
+    }
     if (norm.category === 'general') return { relation: 'same', reason: '', pricePerUnitLabel: unit };
     if (primary[index]) return { relation: 'same', reason: '', pricePerUnitLabel: unit };
-    const reason = substituteReason(profile.norm, norm);
+    if (constraints && !allowsSubstitution(name, constraints)) {
+      return { relation: 'other', reason: 'No cumple las restricciones del hogar', pricePerUnitLabel: unit };
+    }
+    const reason = proposeSubstituteReason(profile.norm, norm, name, constraints);
     if (reason || sameFamily(profile.norm, norm)) {
       return { relation: 'substitute', reason: reason || 'otro formato', pricePerUnitLabel: unit };
     }

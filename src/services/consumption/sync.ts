@@ -6,6 +6,7 @@
 
 import { prisma } from '@/lib/prisma';
 import { productIdentity } from '../catalog/normalize';
+import { loadProposalConstraints } from '../household/load-constraints';
 import { bundleCart, BundleItem, BundleOffer, STORE_LEAD_DAYS } from './bundle';
 import {
   applyFeedback,
@@ -15,8 +16,8 @@ import {
   coverageOf,
   emptyProfile,
   FeedbackKind,
-  householdEquivalents,
   householdGroupKey,
+  plannedEquivalents,
   priorFor,
   ProfileState,
   HouseholdEventWindow,
@@ -108,6 +109,7 @@ async function familyContext(userId: string) {
         include: {
           members: { where: { isActive: true } },
           events: { where: { isActive: true } },
+          settings: true,
         },
       },
     },
@@ -123,7 +125,11 @@ async function familyContext(userId: string) {
   }));
   return {
     familyId: membership.familyId,
-    equivalents: householdEquivalents(membership.family.members),
+    equivalents: plannedEquivalents(
+      membership.family.members,
+      membership.family.settings?.householdSize,
+      membership.family.settings?.elderWeight ?? 0.8,
+    ),
     events,
   };
 }
@@ -220,7 +226,7 @@ export async function applyPendingPurchases(now = new Date()): Promise<{ applied
 }
 
 export async function refreshProfiles(now = new Date()): Promise<{ opened: number; dismissed: number }> {
-  const profiles = await prisma.consumptionProfile.findMany({ include: { group: true, family: { include: { members: true, events: true } } } });
+  const profiles = await prisma.consumptionProfile.findMany({ include: { group: true, family: { include: { members: true, events: true, settings: true } } } });
   let opened = 0;
   let dismissed = 0;
   for (const profile of profiles) {
@@ -234,7 +240,10 @@ export async function refreshProfiles(now = new Date()): Promise<{ opened: numbe
     }));
     const state = toState(profile);
     const coverage = coverageOf(state, now, {
-      priorPerDay: coldStartRate(profile.group.priorPerPersonDay, householdEquivalents(profile.family.members)),
+      priorPerDay: coldStartRate(
+        profile.group.priorPerPersonDay,
+        plannedEquivalents(profile.family.members, profile.family.settings?.householdSize, profile.family.settings?.elderWeight ?? 0.8),
+      ),
       events,
       leadDays: 2,
     });
@@ -351,7 +360,8 @@ export async function proposeWeeklyCarts(now = new Date()): Promise<{ carts: num
         offers,
       });
     }
-    const proposal = bundleCart(items, { now, leadDays: 2, bufferDays: 2 });
+    const constraints = await loadProposalConstraints(familyId);
+    const proposal = bundleCart(items, { now, leadDays: 2, bufferDays: 2, constraints });
     if (!proposal) continue;
     const cart = await prisma.proposedCart.create({
       data: {
@@ -400,7 +410,9 @@ export async function approveProposedCart(cartId: string, userId: string) {
   const member = await prisma.familyMember.findFirst({
     where: { userId, familyId: cart.familyId, isActive: true },
   });
-  if (!member || member.role !== 'master') {
+  const settings = await prisma.familySettings.findUnique({ where: { familyId: cart.familyId } });
+  const approver = settings?.approverRole || 'master';
+  if (!member || member.role !== approver) {
     const error = new Error('Solo quien administra la familia puede aprobar el carro') as Error & { statusCode?: number };
     error.statusCode = 403;
     throw error;

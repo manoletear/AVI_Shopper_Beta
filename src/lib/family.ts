@@ -23,6 +23,10 @@ interface FamilyContext {
 
 let cache = new Map<string, { data: FamilyContext; expires: number }>();
 
+export function clearFamilyContextCache() {
+  cache = new Map();
+}
+
 export async function getFamilyContext(userId: string): Promise<FamilyContext> {
   // Cache de 5 minutos
   const cached = cache.get(userId);
@@ -35,7 +39,7 @@ export async function getFamilyContext(userId: string): Promise<FamilyContext> {
         include: {
           members: {
             where: { isActive: true },
-            select: { userId: true, allergies: true, dietType: true, name: true },
+            select: { userId: true, allergies: true, dietType: true, dietTags: true, name: true },
           },
         },
       },
@@ -72,6 +76,7 @@ export async function getFamilyContext(userId: string): Promise<FamilyContext> {
       } catch {}
     }
     if (m.dietType) allDiets.add(m.dietType);
+    for (const tag of m.dietTags || []) allDiets.add(tag);
   }
 
   const result: FamilyContext = {

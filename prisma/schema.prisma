@@ -24,6 +24,9 @@ model User {
   // Puente opcional a Supabase Auth. La app entra con NextAuth y no lo llena.
   // Las políticas de RLS de public usan este valor contra auth.uid().
   authUserId    String?   @unique
+  // True hasta que el hogar termina el onboarding (aunque salte pasos).
+  // Los usuarios que ya existían quedan en false y entran al inicio.
+  householdOnboarding Boolean @default(false)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
@@ -392,6 +395,9 @@ model Family {
   profiles   ConsumptionProfile[]
   replenishmentAlerts ReplenishmentAlert[]
   proposedCarts ProposedCart[]
+  addresses  FamilyAddress[]
+  stores     FamilyStore[]
+  settings   FamilySettings?
 
   @@map("families")
 }
@@ -411,6 +417,8 @@ model FamilyMember {
   avatar      String?
   allergies   String?  // JSON array
   dietType    String?
+  // Dietas múltiples (Instacart Smart Shop). En Postgres es text[].
+  dietTags    String[] @default([])
   dateOfBirth String?
   species     String?  // para mascotas: perro, gato, etc
   breed       String?  // raza
@@ -670,6 +678,8 @@ model MemberPreference {
   preferredCanonical   CanonicalProduct? @relation(fields: [preferredCanonicalId], references: [id], onDelete: SetNull)
   avoid                Boolean  @default(false)
   notes                String?
+  // best_match, specific o none. El hogar también guarda el valor por defecto.
+  substitutionMode     String   @default("best_match")
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
 
@@ -718,4 +728,73 @@ model ProposedCartItem {
 
   @@index([cartId])
   @@map("proposed_cart_items")
+}
+
+// Dirección de despacho del hogar. Una principal.
+model FamilyAddress {
+  id        String   @id @default(cuid())
+  familyId  String
+  family    Family   @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  street    String
+  number    String   @default("")
+  unit      String?
+  comuna    String
+  // door, handoff, curbside
+  dropoff   String   @default("door")
+  notes     String?
+  isPrimary Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([familyId])
+  @@map("family_addresses")
+}
+
+// Tiendas habilitadas, modo de entrega y programa de puntos.
+model FamilyStore {
+  id             String   @id @default(cuid())
+  familyId       String
+  family         Family   @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  chain          String
+  enabled        Boolean  @default(true)
+  // delivery o pickup
+  mode           String   @default("delivery")
+  loyaltyProgram String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([familyId, chain])
+  @@index([familyId])
+  @@map("family_stores")
+}
+
+// Ritmo, presupuesto y decisiones del hogar. Los pasos saltados viven en stepState.
+model FamilySettings {
+  id                   String   @id @default(cuid())
+  familyId             String   @unique
+  family               Family   @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  cadence              String?
+  deliveryDay          String?
+  // Presupuesto por porción, en CLP.
+  budget               Int?
+  monthlyBudget        Int?
+  orderCap             Int?
+  // JSON: [{ day, start, end }]
+  deliveryWindows      String?
+  approverRole         String   @default("master")
+  elderWeight          Float    @default(0.8)
+  proposeAlcohol       Boolean  @default(true)
+  householdSize        Int?
+  includesBaby         Boolean  @default(false)
+  includesToddler      Boolean  @default(false)
+  includesPet          Boolean  @default(false)
+  substitutionMode     String   @default("best_match")
+  specificReplacements String?
+  onboardingStep       String   @default("address")
+  stepState            String   @default("{}")
+  mandatoryComplete    Boolean  @default(false)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@map("family_settings")
 }
