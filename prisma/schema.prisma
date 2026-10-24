@@ -342,21 +342,40 @@ model PurchaseHistory {
   userId      String
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  familyId    String?
+  family      Family?  @relation(fields: [familyId], references: [id], onDelete: SetNull)
+
+  memberId    String?
+  member      FamilyMember? @relation(fields: [memberId], references: [id], onDelete: SetNull)
+
+  canonicalProductId String?
+  canonicalProduct CanonicalProduct? @relation(fields: [canonicalProductId], references: [id], onDelete: SetNull)
+
+  // Grupo del hogar sin marca, por ejemplo "lacteos|entera".
+  groupKey    String?
+  orderRef    String?
+
   productName String
   brand       String?
   category    String?
   storeSlug   String?
   storeName   String?
   price       Int?
-  quantity    Int      @default(1)
+  quantity    Float    @default(1)
   unit        String?
+  // Cantidad en L, kg o un: paquetes × tamaño × pack del catálogo.
+  baseAmount  Float?
+  baseUnit    String?
   source      String   @default("manual")
 
   purchasedAt DateTime @default(now())
   createdAt   DateTime @default(now())
+  // Se llena cuando esa línea ya actualizó el perfil. No se reprocesa.
+  appliedAt   DateTime?
 
   @@index([userId, purchasedAt(sort: Desc)])
   @@index([userId, productName])
+  @@index([familyId, groupKey, purchasedAt])
   @@map("purchase_history")
 }
 
@@ -369,6 +388,10 @@ model Family {
 
   members    FamilyMember[]
   events     FamilyEvent[]
+  purchases  PurchaseHistory[]
+  profiles   ConsumptionProfile[]
+  replenishmentAlerts ReplenishmentAlert[]
+  proposedCarts ProposedCart[]
 
   @@map("families")
 }
@@ -394,6 +417,9 @@ model FamilyMember {
   notes       String?
   isActive    Boolean  @default(true)
   events      FamilyEvent[]
+  purchases   PurchaseHistory[]
+  preferences MemberPreference[]
+  feedback    AlertFeedback[]
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -424,6 +450,10 @@ model FamilyEvent {
   notes       String?
   isActive    Boolean  @default(true)
   lastNotified DateTime?
+  // Ventana y multiplicador: visitas ×1,5, vacaciones ×0.
+  multiplier  Float    @default(1)
+  startsAt    DateTime?
+  endsAt      DateTime?
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -467,6 +497,8 @@ model CanonicalProduct {
   reviews      CatalogReview[]
   substitutesFrom ProductSubstitute[] @relation("SubstituteFrom")
   substitutesTo   ProductSubstitute[] @relation("SubstituteTo")
+  purchases    PurchaseHistory[]
+  preferences  MemberPreference[]
 
   @@index([category, variant])
   @@index([brand])
@@ -536,4 +568,154 @@ model ProductSubstitute {
 
   @@unique([fromId, toId])
   @@map("product_substitutes")
+}
+
+// Necesidad del hogar sin marca. "lacteos|entera" junta Colun y Soprole.
+model ProductGroup {
+  id                String   @id @default(cuid())
+  familyKey         String   @unique
+  category          String
+  defaultBaseUnit   String
+  priorPerPersonDay Float
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  profiles          ConsumptionProfile[]
+  alerts            ReplenishmentAlert[]
+  preferences       MemberPreference[]
+  cartItems         ProposedCartItem[]
+
+  @@map("product_groups")
+}
+
+// Estado del modelo por familia y grupo. Se actualiza de a una compra.
+model ConsumptionProfile {
+  id              String    @id @default(cuid())
+  familyId        String
+  family          Family    @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  groupId         String
+  group           ProductGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  ratePerDay      Float     @default(0)
+  rateVar         Float     @default(0)
+  rateMedian      Float     @default(0)
+  rateMad         Float     @default(0)
+  avgInterval     Float?
+  lastPurchaseAt  DateTime?
+  lastAmount      Float     @default(0)
+  leftover        Float     @default(0)
+  estStock        Float     @default(0)
+  stockAnchoredAt DateTime?
+  runOutAt        DateTime?
+  bandEarly       DateTime?
+  bandLate        DateTime?
+  confidence      String    @default("baja")
+  nPurchases      Int       @default(0)
+  nIntervals      Int       @default(0)
+  seasonFactor    Float     @default(1)
+  monthCounts     String?
+  frozen          Boolean   @default(false)
+  updatedAt       DateTime  @updatedAt
+
+  @@unique([familyId, groupId])
+  @@index([familyId, runOutAt])
+  @@map("consumption_profiles")
+}
+
+model ReplenishmentAlert {
+  id              String    @id @default(cuid())
+  familyId        String
+  family          Family    @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  groupId         String
+  group           ProductGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  predictedRunOut DateTime?
+  bandEarly       DateTime?
+  bandLate        DateTime?
+  // open, proposed, approved, dismissed, snoozed
+  status          String    @default("open")
+  cartId          String?
+  cart            ProposedCart? @relation(fields: [cartId], references: [id], onDelete: SetNull)
+  message         String    @default("")
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  feedback        AlertFeedback[]
+
+  @@index([familyId, status])
+  @@map("replenishment_alerts")
+}
+
+model AlertFeedback {
+  id            String   @id @default(cuid())
+  alertId       String
+  alert         ReplenishmentAlert @relation(fields: [alertId], references: [id], onDelete: Cascade)
+  memberId      String?
+  member        FamilyMember? @relation(fields: [memberId], references: [id], onDelete: SetNull)
+  // ya_tengo, se_acabo_antes, no_compro_mas, cantidad
+  kind          String
+  stockReported Float?
+  createdAt     DateTime @default(now())
+
+  @@index([alertId])
+  @@map("alert_feedback")
+}
+
+model MemberPreference {
+  id                   String   @id @default(cuid())
+  memberId             String
+  member               FamilyMember @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  groupId              String
+  group                ProductGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  preferredCanonicalId String?
+  preferredCanonical   CanonicalProduct? @relation(fields: [preferredCanonicalId], references: [id], onDelete: SetNull)
+  avoid                Boolean  @default(false)
+  notes                String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@unique([memberId, groupId])
+  @@map("member_preferences")
+}
+
+// Carro propuesto. La familia lo aprueba. AVI no paga ni hace el pedido.
+model ProposedCart {
+  id            String   @id @default(cuid())
+  familyId      String
+  family        Family   @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  storeSlug     String
+  storeName     String
+  // proposed, approved, dismissed
+  status        String   @default("proposed")
+  subtotal      Int      @default(0)
+  delivery      Int      @default(0)
+  total         Int      @default(0)
+  minOrder      Int      @default(0)
+  meetsMinimum  Boolean  @default(false)
+  note          String   @default("")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  items         ProposedCartItem[]
+  alerts        ReplenishmentAlert[]
+
+  @@index([familyId, status])
+  @@map("proposed_carts")
+}
+
+model ProposedCartItem {
+  id                 String   @id @default(cuid())
+  cartId             String
+  cart               ProposedCart @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  groupId            String?
+  group              ProductGroup? @relation(fields: [groupId], references: [id], onDelete: SetNull)
+  canonicalProductId String?
+  name               String
+  quantity           Float
+  unit               String
+  payable            Int
+  runOutAt           DateTime?
+  pulledForward      Boolean  @default(false)
+
+  @@index([cartId])
+  @@map("proposed_cart_items")
 }
