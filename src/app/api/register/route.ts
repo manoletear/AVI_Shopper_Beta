@@ -30,6 +30,7 @@ export async function POST(request: NextRequest) {
         email: validatedData.email,
         password: hashedPassword,
         name: validatedData.name,
+        householdOnboarding: true,
         consents: {
           create: {
             precios: true,

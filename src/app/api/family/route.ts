@@ -96,6 +96,7 @@ export async function POST(request: NextRequest) {
           type: 'person',
         },
       });
+      await prisma.user.update({ where: { id: userId }, data: { householdOnboarding: false } });
 
       return successResponse({ familyId: family.id, message: `Te uniste a "${family.name}"` });
     }

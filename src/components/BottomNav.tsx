@@ -18,7 +18,7 @@ export default function BottomNav() {
   const pathname = usePathname()
   const { data: session } = useSession()
 
-  if (!session) return null
+  if (!session || pathname === '/onboarding' || pathname?.startsWith('/onboarding/')) return null
 
   return (
     <nav

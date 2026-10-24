@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { Mail, Lock, ArrowRight, AlertCircle } from 'lucide-react'
+import { pathAfterAuth } from '@/lib/onboarding/after-auth'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -17,8 +18,8 @@ export default function LoginPage() {
     setError('')
     setLoading(true)
     const result = await signIn('credentials', { email, password, redirect: false })
-    if (result?.error) { setError(result.error); setLoading(false) }
-    else router.push('/dashboard')
+    if (result?.error) { setError(result.error); setLoading(false); return }
+    router.push(await pathAfterAuth())
   }
 
   return (

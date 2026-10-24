@@ -8,6 +8,8 @@ import { prisma } from '@/lib/prisma';
 import { familyWhere } from '@/lib/family';
 import { productIdentity } from './catalog/normalize';
 import { forecastProducts, ProductForecast, PurchaseEvent } from './consumption/predict';
+import { allowsProposedItem, ProposalConstraints } from './household/constraints';
+import { loadProposalConstraintsForUser } from './household/load-constraints';
 import { priceQuery, RawOffer } from './offer-pricing';
 import { deliverAlerts, AlertDraft } from './notifications/channels';
 import { applyPendingPurchases, refreshProfiles } from './consumption/sync';
@@ -61,7 +63,10 @@ async function householdEvents(userId: string): Promise<PurchaseEvent[]> {
   }));
 }
 
-async function cheapestOffer(forecast: ProductForecast): Promise<{ store: string; payable: number; note: string } | null> {
+async function cheapestOffer(
+  forecast: ProductForecast,
+  constraints: ProposalConstraints,
+): Promise<{ store: string; payable: number; note: string } | null> {
   const observations = (await prisma.priceObservation.findMany({
     orderBy: { observedAt: 'desc' },
     take: 300,
@@ -74,7 +79,7 @@ async function cheapestOffer(forecast: ProductForecast): Promise<{ store: string
     inStock: row.inStock,
   }));
   const request = `${forecast.label} ${forecast.suggestedQuantity} ${forecast.unit}`;
-  const priced = priceQuery(request, offers);
+  const priced = priceQuery(request, offers, constraints);
   if (!priced.cheapest) return null;
   return {
     store: priced.cheapest.store,
@@ -125,9 +130,11 @@ function toAlert(forecast: ProductForecast, cheapest?: { store: string; payable:
 
 export async function analyzeHousehold(userId: string, now = new Date()): Promise<ReplenishmentAlert[]> {
   const forecasts = forecastProducts(await householdEvents(userId), now);
+  const constraints = await loadProposalConstraintsForUser(userId);
   const alerts: ReplenishmentAlert[] = [];
   for (const forecast of forecasts) {
-    const cheapest = forecast.alert ? await cheapestOffer(forecast) : null;
+    if (!allowsProposedItem(forecast.label, constraints)) continue;
+    const cheapest = forecast.alert ? await cheapestOffer(forecast, constraints) : null;
     const alert = toAlert(forecast, cheapest);
     if (alert) alerts.push(alert);
   }

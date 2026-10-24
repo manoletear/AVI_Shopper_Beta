@@ -6,6 +6,7 @@
  */
 
 import { tagOffers } from './catalog/compare';
+import { ProposalConstraints } from './household/constraints';
 
 export type BaseUnit = 'kg' | 'L' | 'un';
 
@@ -125,13 +126,13 @@ function defaultRequest(offers: RawOffer[]): ParsedSize {
   return sized[0] || { amount: 1, unit: 'un' };
 }
 
-export function priceQuery<T extends RawOffer>(query: string, offers: T[]): {
+export function priceQuery<T extends RawOffer>(query: string, offers: T[], constraints?: ProposalConstraints): {
   requestLabel: string;
   lines: Array<T & PricedOffer>;
   cheapest: (T & PricedOffer) | null;
 } {
   const request = parseRequestedAmount(query) || defaultRequest(offers);
-  const tags = tagOffers(query, offers);
+  const tags = tagOffers(query, offers, constraints);
   const lines = offers.map((offer, index) => {
     const priced = priceOne(offer, request);
     const tag = tags[index];

@@ -21,15 +21,11 @@ jobs:
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
 
-      - name: Switch Prisma to SQLite for CI
-        run: |
-          sed -i 's/provider  = "postgresql"/provider = "sqlite"/' prisma/schema.prisma
-          sed -i '/directUrl/d' prisma/schema.prisma
-
       - name: Generate Prisma client
         run: npx prisma generate
         env:
-          DATABASE_URL: "file:./dev.db"
+          DATABASE_URL: "postgresql://postgres:postgres@127.0.0.1:5432/avi?schema=public"
+          DIRECT_URL: "postgresql://postgres:postgres@127.0.0.1:5432/avi?schema=public"
 
       - name: Type check
         run: npx tsc --noEmit --project tsconfig.json
@@ -40,13 +36,27 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          DATABASE_URL: "file:./dev.db"
+          DATABASE_URL: "postgresql://postgres:postgres@127.0.0.1:5432/avi?schema=public"
+          DIRECT_URL: "postgresql://postgres:postgres@127.0.0.1:5432/avi?schema=public"
           NEXTAUTH_SECRET: "ci-test-secret-key"
           NEXTAUTH_URL: "http://localhost:3000"
 
   test:
     runs-on: ubuntu-latest
     needs: build
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: avi
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d avi"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
       - uses: actions/checkout@v4
@@ -59,25 +69,24 @@ jobs:
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
 
-      - name: Switch Prisma to SQLite for CI
-        run: |
-          sed -i 's/provider  = "postgresql"/provider = "sqlite"/' prisma/schema.prisma
-          sed -i '/directUrl/d' prisma/schema.prisma
-
       - name: Generate Prisma client
         run: npx prisma generate
         env:
-          DATABASE_URL: "file:./dev.db"
+          DATABASE_URL: "postgresql://postgres:postgres@127.0.0.1:5432/avi?schema=public"
+          DIRECT_URL: "postgresql://postgres:postgres@127.0.0.1:5432/avi?schema=public"
 
+      # Base efímera de CI. No es soc-chile y no toca ig, ads ni sii_pj.
       - name: Setup database
         run: npx prisma db push
         env:
-          DATABASE_URL: "file:./dev.db"
+          DATABASE_URL: "postgresql://postgres:postgres@127.0.0.1:5432/avi?schema=public"
+          DIRECT_URL: "postgresql://postgres:postgres@127.0.0.1:5432/avi?schema=public"
 
       - name: Seed database
         run: npx tsx prisma/seed.ts
         env:
-          DATABASE_URL: "file:./dev.db"
+          DATABASE_URL: "postgresql://postgres:postgres@127.0.0.1:5432/avi?schema=public"
+          DIRECT_URL: "postgresql://postgres:postgres@127.0.0.1:5432/avi?schema=public"
 
       - name: Install Playwright browsers
         run: npx playwright install chromium --with-deps
@@ -85,7 +94,8 @@ jobs:
       - name: Run tests
         run: npx playwright test
         env:
-          DATABASE_URL: "file:./dev.db"
+          DATABASE_URL: "postgresql://postgres:postgres@127.0.0.1:5432/avi?schema=public"
+          DIRECT_URL: "postgresql://postgres:postgres@127.0.0.1:5432/avi?schema=public"
           NEXTAUTH_SECRET: "ci-test-secret-key"
           NEXTAUTH_URL: "http://localhost:3000"
 

@@ -4,6 +4,7 @@
  * El carro queda propuesto. AVI no paga ni hace el pedido.
  */
 
+import { offerFitsHousehold, ProposalConstraints } from '../household/constraints';
 import { STORE_DELIVERY_CLP } from '../offer-pricing';
 
 const DAY = 86_400_000;
@@ -95,8 +96,13 @@ export function splitWindow(items: BundleItem[], now: Date, leadDays: number, bu
   return { due, later };
 }
 
-function offerFor(item: BundleItem, store: string): BundleOffer | null {
-  const found = item.offers.find((offer) => offer.store === store && offer.inStock !== false && offer.pricePerUnit > 0);
+function offerFor(item: BundleItem, store: string, constraints?: ProposalConstraints): BundleOffer | null {
+  const found = item.offers.find((offer) => (
+    offer.store === store
+    && offer.inStock !== false
+    && offer.pricePerUnit > 0
+    && offerFitsHousehold(item.name, offer.name, constraints)
+  ));
   return found || null;
 }
 
@@ -117,11 +123,12 @@ function priceStore(
   later: BundleItem[],
   minimums: Record<string, number>,
   deliveryFees: Record<string, number>,
+  constraints?: ProposalConstraints,
 ): PricedStore | null {
   const lines: BundleLine[] = [];
   let missing = 0;
   for (const item of due) {
-    const offer = offerFor(item, store);
+    const offer = offerFor(item, store, constraints);
     if (!offer) {
       missing += 1;
       continue;
@@ -142,7 +149,7 @@ function priceStore(
   const queue = [...later];
   while (lines.reduce((sum, line) => sum + line.payable, 0) < minOrder && queue.length) {
     const next = queue.shift()!;
-    const offer = offerFor(next, store);
+    const offer = offerFor(next, store, constraints);
     if (!offer) continue;
     const priced = linePayable(next.quantity, offer);
     lines.push({
@@ -178,6 +185,7 @@ export function bundleCart(
     extraDays?: number;
     minimums?: Record<string, number>;
     delivery?: Record<string, number>;
+    constraints?: ProposalConstraints;
   } = {},
 ): ProposedBundle | null {
   const now = options.now ?? new Date();
@@ -194,7 +202,7 @@ export function bundleCart(
   const minimums = { ...STORE_MIN_ORDER_CLP, ...options.minimums };
   const delivery = { ...STORE_DELIVERY_CLP, ...options.delivery };
   const priced = [...stores]
-    .map((store) => priceStore(store, due, later, minimums, delivery))
+    .map((store) => priceStore(store, due, later, minimums, delivery, options.constraints))
     .filter((row): row is PricedStore => Boolean(row));
   if (!priced.length) return null;
   priced.sort((a, b) => {
