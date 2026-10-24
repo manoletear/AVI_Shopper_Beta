@@ -9,7 +9,7 @@ import { recordMultiplePurchases } from '@/services/purchase-learning.service';
 const purchaseSchema = z.object({
   items: z.array(z.object({
     productName: z.string().min(1).max(160),
-    quantity: z.number().int().positive().max(99).optional(),
+    quantity: z.number().positive().max(5000).optional(),
     unit: z.string().max(16).optional(),
     price: z.number().int().nonnegative().max(5_000_000).optional(),
     storeSlug: z.string().max(40).optional(),

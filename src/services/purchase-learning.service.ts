@@ -15,6 +15,7 @@
  */
 
 import { prisma } from '@/lib/prisma';
+import { applyPendingPurchases } from './consumption/sync';
 
 // ============================================
 // REGISTRAR COMPRA
@@ -52,6 +53,7 @@ export async function recordPurchase(
       ...(purchase.purchasedAt ? { purchasedAt: new Date(purchase.purchasedAt) } : {}),
     },
   });
+  await applyPendingPurchases();
 }
 
 export async function recordMultiplePurchases(
@@ -73,6 +75,7 @@ export async function recordMultiplePurchases(
       ...(p.purchasedAt ? { purchasedAt: new Date(p.purchasedAt) } : {}),
     })),
   });
+  await applyPendingPurchases();
   return result.count;
 }
 

@@ -10,6 +10,7 @@ import { productIdentity } from './catalog/normalize';
 import { forecastProducts, ProductForecast, PurchaseEvent } from './consumption/predict';
 import { priceQuery, RawOffer } from './offer-pricing';
 import { deliverAlerts, AlertDraft } from './notifications/channels';
+import { applyPendingPurchases, refreshProfiles } from './consumption/sync';
 
 export interface ReplenishmentAlert {
   productName: string;
@@ -185,6 +186,10 @@ export async function generateMonthlyPlan(userId: string): Promise<MonthlyShoppi
 }
 
 export async function syncReplenishmentAlerts(now = new Date(), onlyUserId?: string): Promise<{ users: number; sent: number; updated: number }> {
+  if (!onlyUserId) {
+    await applyPendingPurchases(now);
+    await refreshProfiles(now);
+  }
   const users = await prisma.user.findMany({
     where: onlyUserId ? { id: onlyUserId } : undefined,
     select: { id: true },
