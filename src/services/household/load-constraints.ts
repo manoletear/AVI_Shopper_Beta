@@ -1,3 +1,4 @@
+import { parseBasicState } from '@/lib/onboarding/basic';
 import { SubstitutionMode } from '@/lib/onboarding/model';
 import { prisma } from '@/lib/prisma';
 import { collectAllergens, ProposalConstraints } from './constraints';
@@ -6,7 +7,7 @@ const OPEN: ProposalConstraints = {
   allergens: [],
   dislikes: [],
   proposeAlcohol: true,
-  substitutionMode: 'best_match',
+  substitutionMode: 'propose_approve',
   specificReplacements: [],
 };
 
@@ -33,12 +34,14 @@ export async function loadProposalConstraints(familyId: string): Promise<Proposa
     .filter((pref) => pref.group.familyKey.startsWith('ingrediente|'))
     .map((pref) => pref.notes || pref.group.familyKey.slice('ingrediente|'.length))
     .filter((name): name is string => Boolean(name));
+  const profile = parseBasicState(settings?.stepState);
   return {
     allergens: collectAllergens(members),
     dislikes,
     proposeAlcohol: settings?.proposeAlcohol ?? true,
-    substitutionMode: (settings?.substitutionMode as SubstitutionMode) || 'best_match',
+    substitutionMode: (settings?.substitutionMode as SubstitutionMode) || 'propose_approve',
     specificReplacements: replacementsFrom(settings?.specificReplacements),
+    allergenPolicy: profile.allergyPolicy,
   };
 }
 

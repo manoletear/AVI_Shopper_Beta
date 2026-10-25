@@ -46,6 +46,8 @@ export interface ProposalConstraints {
   proposeAlcohol?: boolean;
   substitutionMode?: SubstitutionMode;
   specificReplacements?: string[];
+  // warn: la alergia se muestra y no saca el producto. block: no se propone.
+  allergenPolicy?: 'warn' | 'block';
 }
 
 export function fold(value: string): string {
@@ -118,10 +120,18 @@ export function matchesDislike(name: string, dislike: string): boolean {
 }
 
 export function allowsProposedItem(name: string, constraints: ProposalConstraints): boolean {
+  // El carro automático no mete el alérgeno en silencio. La compra manual sigue: el aviso vive en proposalWarning.
   if (isAllergenItem(name, constraints.allergens)) return false;
   if (constraints.proposeAlcohol === false && isAlcoholItem(name)) return false;
   if ((constraints.dislikes || []).some((dislike) => matchesDislike(name, dislike))) return false;
   return true;
+}
+
+/** Aviso por integrante. No es un bloqueo de la compra manual. */
+export function proposalWarning(name: string, constraints: ProposalConstraints): string | null {
+  if (constraints.allergenPolicy !== 'warn') return null;
+  if (!isAllergenItem(name, constraints.allergens)) return null;
+  return 'Alergia en el hogar: AVI avisa y no bloquea la compra.';
 }
 
 function sameProduct(left: string, right: string): boolean {
@@ -131,7 +141,7 @@ function sameProduct(left: string, right: string): boolean {
   return a.includes(b) || b.includes(a);
 }
 
-/** Un reemplazo nunca puede ser un alérgeno, aunque el modo sea mejor coincidencia. */
+/** Con política block, un reemplazo no puede ser un alérgeno. propose_approve sí se puede proponer. */
 export function allowsSubstitution(candidateName: string, constraints: ProposalConstraints): boolean {
   if (!allowsProposedItem(candidateName, constraints)) return false;
   const mode = constraints.substitutionMode ?? 'best_match';
@@ -140,6 +150,7 @@ export function allowsSubstitution(candidateName: string, constraints: ProposalC
     const names = constraints.specificReplacements || [];
     return names.some((name) => sameProduct(candidateName, name));
   }
+  // best_match y propose_approve: el reemplazo se propone. propose_approve espera el ok de la familia.
   return true;
 }
 

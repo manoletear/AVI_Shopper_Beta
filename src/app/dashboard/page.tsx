@@ -10,6 +10,7 @@ import {
   Repeat, Zap,
 } from 'lucide-react'
 import OnboardingWizard from '@/components/OnboardingWizard'
+import ProgressiveBanner from '@/components/onboarding/ProgressiveBanner'
 
 interface DashboardData {
   listsCount: number
@@ -284,7 +285,7 @@ export default function DashboardPage() {
           ))}
         </div>
 
-        {/* Onboarding */}
+        <ProgressiveBanner />
         <OnboardingWizard />
 
         {/* Upcoming Events — Proactive reminders */}

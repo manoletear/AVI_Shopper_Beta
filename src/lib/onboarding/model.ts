@@ -112,7 +112,7 @@ export const HOUSEHOLD_DEFAULTS = {
   approverRole: 'master' as const,
   elderWeight: 0.8,
   proposeAlcohol: true,
-  substitutionMode: 'best_match' as const,
+  substitutionMode: 'propose_approve' as const,
   householdSize: 2,
 };
 
@@ -125,7 +125,7 @@ export type LoyaltyProgram =
   | 'mi_club_lider'
   | 'club_unimarc'
   | 'cmr_puntos';
-export type SubstitutionMode = 'best_match' | 'specific' | 'none';
+export type SubstitutionMode = 'propose_approve' | 'best_match' | 'specific' | 'none';
 export type Cadence = '2w' | '1m' | '2m' | '3m' | '4m' | '5m' | '6m';
 export type Weekday = 'lunes' | 'martes' | 'miercoles' | 'jueves' | 'viernes' | 'sabado' | 'domingo';
 
@@ -233,6 +233,7 @@ export const CADENCES: { id: Cadence; label: string }[] = [
 export const PORTION_BUDGETS = [3000, 4000, 5000] as const;
 
 export const SUBSTITUTION_MODES: { id: SubstitutionMode; label: string; hint: string }[] = [
+  { id: 'propose_approve', label: 'Proponer reemplazo y que yo apruebe', hint: 'AVI propone el cambio y el carro espera tu ok' },
   { id: 'best_match', label: 'Mejor coincidencia', hint: 'AVI elige el reemplazo más parecido' },
   { id: 'specific', label: 'Reemplazo específico', hint: 'Hasta 3 alternativas que tú indicas' },
   { id: 'none', label: 'No reemplazar', hint: 'Si falta, no lo cambia por otro' },

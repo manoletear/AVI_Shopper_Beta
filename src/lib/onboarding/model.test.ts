@@ -48,7 +48,7 @@ describe('onboarding del hogar', () => {
     assert.equal(HOUSEHOLD_DEFAULTS.approverRole, 'master');
     assert.equal(HOUSEHOLD_DEFAULTS.elderWeight, 0.8);
     assert.equal(HOUSEHOLD_DEFAULTS.proposeAlcohol, true);
-    assert.equal(HOUSEHOLD_DEFAULTS.substitutionMode, 'best_match');
+    assert.equal(HOUSEHOLD_DEFAULTS.substitutionMode, 'propose_approve');
     const address = parseAddress({
       street: 'Los Leones',
       number: '123',

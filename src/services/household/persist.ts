@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { clearFamilyContextCache } from '@/lib/family';
+import { parseBasicState, serializeBasicState } from '@/lib/onboarding/basic';
 import {
   AddressInput,
   AllergenId,
@@ -183,7 +184,7 @@ async function readView(userId: string): Promise<OnboardingView> {
       stage: pet.dateOfBirth === 'cachorro' || pet.dateOfBirth === 'senior' ? pet.dateOfBirth : 'adulto',
       food: pet.notes?.includes('humedo') ? 'humedo' : 'seco',
     })),
-    substitutionMode: (settings?.substitutionMode as SubstitutionMode) || 'best_match',
+    substitutionMode: (settings?.substitutionMode as SubstitutionMode) || 'propose_approve',
     replacements: jsonList(settings?.specificReplacements),
     cadence: settings?.cadence || null,
     deliveryDay: settings?.deliveryDay || null,
@@ -369,7 +370,7 @@ async function applyPayload(familyId: string, userId: string, step: StepId, payl
       where: { id: master.id },
       data: { allergies: JSON.stringify(parsed.value.allergens) },
     });
-    await syncDislikes(master.id, parsed.value.dislikes, settings?.substitutionMode || 'best_match');
+    await syncDislikes(master.id, parsed.value.dislikes, settings?.substitutionMode || 'propose_approve');
   }
 
   if (step === 'diets') {
@@ -484,11 +485,14 @@ export async function saveOnboardingStep(
   const moved = transition(steps, step, action);
   if (!moved.ok) return moved;
   const finished = wizardFinished(moved.steps);
+  const preserved = parseBasicState(settings?.stepState);
   await prisma.familySettings.update({
     where: { familyId },
     data: {
-      stepState: JSON.stringify(moved.steps),
-      onboardingStep: moved.next === 'done' ? 'budget' : moved.next,
+      stepState: serializeBasicState({ ...preserved, legacy: moved.steps }),
+      onboardingStep: settings?.onboardingStep === 'basic_done'
+        ? 'basic_done'
+        : (moved.next === 'done' ? 'budget' : moved.next),
       mandatoryComplete: mandatoryComplete(moved.steps),
     },
   });

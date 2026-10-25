@@ -79,7 +79,7 @@ function draftFrom(view: OnboardingView): Draft {
     dietTags: view.dietTags,
     primaryDiet: view.primaryDiet || '',
     pets: view.pets,
-    substitutionMode: view.substitutionMode || 'best_match',
+    substitutionMode: view.substitutionMode || 'propose_approve',
     replacements: [...view.replacements, '', '', ''].slice(0, 3),
     cadence: view.cadence || '',
     deliveryDay: view.deliveryDay || '',

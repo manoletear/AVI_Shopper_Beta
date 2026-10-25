@@ -143,3 +143,21 @@ export const updateStoreAccountSchema = z.object({
 export const autoCreateStoreAccountSchema = z.object({
   storeId: z.string().min(1, 'El ID de tienda es requerido'),
 });
+
+export {
+  addressStepSchema,
+  householdStepSchema,
+  allergiesStepSchema,
+  storesStepSchema,
+  approverStepSchema,
+  basicOnboardingSchema,
+  presupuestoSchema,
+  cadenciaSchema,
+  sustitucionSchema,
+  alcoholSchema,
+  dietasSchema,
+  marcasSchema,
+  categoriasSchema,
+  horariosSchema,
+  mascotasAseoSchema,
+} from './onboarding/basic';

@@ -4,7 +4,7 @@
  */
 
 import { normalizeName, NormalizedProduct, pricePerUnit } from './normalize';
-import { allowsProposedItem, allowsSubstitution, ProposalConstraints } from '../household/constraints';
+import { allowsProposedItem, allowsSubstitution, proposalWarning, ProposalConstraints } from '../household/constraints';
 import { proposeSubstituteReason } from './substitutes';
 
 export type CatalogRelation = 'same' | 'substitute' | 'other';
@@ -120,18 +120,28 @@ export function tagOffers<T extends PricedName>(
   return norms.map((norm, index) => {
     const unit = pricePerUnit(norm, offers[index].price)?.label || null;
     const name = offers[index].name;
+    const warning = constraints ? proposalWarning(name, constraints) : null;
     if (constraints && !allowsProposedItem(name, constraints)) {
-      return { relation: 'other', reason: 'No cumple las restricciones del hogar', pricePerUnitLabel: unit };
+      return {
+        relation: 'other' as const,
+        reason: warning || 'No cumple las restricciones del hogar',
+        pricePerUnitLabel: unit,
+      };
     }
-    if (norm.category === 'general') return { relation: 'same', reason: '', pricePerUnitLabel: unit };
-    if (primary[index]) return { relation: 'same', reason: '', pricePerUnitLabel: unit };
-    if (constraints && !allowsSubstitution(name, constraints)) {
-      return { relation: 'other', reason: 'No cumple las restricciones del hogar', pricePerUnitLabel: unit };
+    let tag: CatalogTag;
+    if (norm.category === 'general') tag = { relation: 'same', reason: '', pricePerUnitLabel: unit };
+    else if (primary[index]) tag = { relation: 'same', reason: '', pricePerUnitLabel: unit };
+    else if (constraints && !allowsSubstitution(name, constraints)) {
+      tag = { relation: 'other', reason: 'No cumple las restricciones del hogar', pricePerUnitLabel: unit };
+    } else {
+      const reason = proposeSubstituteReason(profile.norm, norm, name, constraints);
+      if (reason || sameFamily(profile.norm, norm)) {
+        tag = { relation: 'substitute', reason: reason || 'otro formato', pricePerUnitLabel: unit };
+      } else {
+        tag = { relation: 'other', reason: 'No es el mismo producto', pricePerUnitLabel: unit };
+      }
     }
-    const reason = proposeSubstituteReason(profile.norm, norm, name, constraints);
-    if (reason || sameFamily(profile.norm, norm)) {
-      return { relation: 'substitute', reason: reason || 'otro formato', pricePerUnitLabel: unit };
-    }
-    return { relation: 'other', reason: 'No es el mismo producto', pricePerUnitLabel: unit };
+    if (warning && tag.relation !== 'other') return { ...tag, reason: warning };
+    return tag;
   });
 }

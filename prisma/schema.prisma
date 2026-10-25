@@ -422,6 +422,11 @@ model FamilyMember {
   dateOfBirth String?
   species     String?  // para mascotas: perro, gato, etc
   breed       String?  // raza
+  // Columnas vivas en soc-chile (texto, nulas). sex y size van en minúscula;
+  // ageRange conserva el camelCase de la tabla. No hace falta @map: el nombre coincide.
+  sex         String?
+  ageRange    String?
+  size        String?
   notes       String?
   isActive    Boolean  @default(true)
   events      FamilyEvent[]
@@ -679,8 +684,8 @@ model MemberPreference {
   preferredCanonical   CanonicalProduct? @relation(fields: [preferredCanonicalId], references: [id], onDelete: SetNull)
   avoid                Boolean  @default(false)
   notes                String?
-  // best_match, specific o none. El hogar también guarda el valor por defecto.
-  substitutionMode     String   @default("best_match")
+  // best_match, specific, none o propose_approve. El hogar también guarda el valor por defecto.
+  substitutionMode     String   @default("propose_approve")
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
 
@@ -742,6 +747,8 @@ model FamilyAddress {
   comuna    String
   // door, handoff, curbside
   dropoff   String   @default("door")
+  // casa | casa en condominio | departamento. Columna viva: housingType.
+  housingType String?
   notes     String?
   isPrimary Boolean  @default(true)
   createdAt DateTime @default(now())
@@ -789,7 +796,8 @@ model FamilySettings {
   includesBaby         Boolean  @default(false)
   includesToddler      Boolean  @default(false)
   includesPet          Boolean  @default(false)
-  substitutionMode     String   @default("best_match")
+  // best_match, specific, none o propose_approve (proponer y que la familia apruebe).
+  substitutionMode     String   @default("propose_approve")
   specificReplacements String?
   onboardingStep       String   @default("address")
   stepState            String   @default("{}")

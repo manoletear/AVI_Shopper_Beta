@@ -46,7 +46,11 @@ export default function HogarSettingsPage() {
       <div className="mx-auto max-w-md">
         <button type="button" onClick={() => router.push('/dashboard')} className="text-sm font-semibold text-[#4F46E5]">Volver</button>
         <h1 className="mt-3 text-2xl font-bold">Tu hogar</h1>
-        <p className="mt-1 text-sm text-slate-600">Lo que saltaste en el onboarding se completa acá.</p>
+        <p className="mt-1 text-sm text-slate-600">El perfil progresivo afina presupuesto, ritmo y reemplazos.</p>
+        <a href="/onboarding/perfil" className="mt-4 flex items-center justify-between rounded-2xl bg-[#4F46E5] px-4 py-3 text-sm font-semibold text-white">
+          Completar perfil
+          <span aria-hidden>→</span>
+        </a>
         <div className="mt-5 space-y-2">
           {STEPS.map((step) => {
             const status = view?.steps[step.id] || 'pending'
