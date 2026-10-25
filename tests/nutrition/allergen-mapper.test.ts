@@ -3,6 +3,7 @@ import { describe, it } from 'node:test';
 import {
   mapOFFTags,
   extractAllergensFromText,
+  extractAllergensAndTracesFromText,
   mergeAllergens,
   determineAllergenStatus,
 } from '../../src/lib/nutrition/allergen-mapper';
@@ -122,6 +123,87 @@ describe('extractAllergensFromText', () => {
 
   it('returns empty for text without allergens', () => {
     expect(extractAllergensFromText('Agua, sal, pimienta')).toEqual([]);
+  });
+
+  it('mapea especies de pescado en ingredientes y en "puede contener"', () => {
+    const species = [
+      'salmón', 'SALMON', 'merluza', 'merluzas', 'atún', 'Atunes',
+      'anchoa', 'anchoveta', 'sardinas', 'jurel', 'reineta', 'congrio',
+      'bacalao', 'trucha', 'corvina', 'tilapia', 'caballa', 'surimi',
+    ];
+    for (const name of species) {
+      expect(extractAllergensFromText(`Filete de ${name}`)).toEqual(['fish']);
+      expect(extractAllergensFromText(`Puede contener ${name}`)).toEqual(['fish']);
+      expect(extractAllergensFromText(`Puede contener trazas de ${name}`)).toEqual(['fish']);
+    }
+  });
+
+  it('mapea crustáceos sin marcarlos como pescado', () => {
+    const species = [
+      'camarón', 'camarones', 'langostino', 'cangrejo', 'jaiba',
+      'centolla', 'langosta', 'krill', 'crustáceo', 'crustáceos',
+    ];
+    for (const name of species) {
+      expect(extractAllergensFromText(`Contiene ${name}`)).toEqual(['crustacean']);
+      expect(extractAllergensFromText(`Puede contener trazas de ${name}`)).toEqual(['crustacean']);
+    }
+  });
+
+  it('mapea moluscos sin marcarlos como pescado', () => {
+    const species = [
+      'pulpo', 'calamar', 'calamares', 'sepia', 'chorito', 'mejillón',
+      'almeja', 'ostra', 'macha', 'loco', 'ostión', 'ostiones', 'molusco', 'moluscos',
+    ];
+    for (const name of species) {
+      expect(extractAllergensFromText(name)).toEqual(['mollusc']);
+      expect(extractAllergensFromText(`Puede contener ${name}`)).toEqual(['mollusc']);
+    }
+  });
+
+  it('mapea maní y cacahuate a peanut, no a frutos secos', () => {
+    for (const name of ['maní', 'MANI', 'maníes', 'cacahuate', 'cacahuates', 'cacahuete']) {
+      expect(extractAllergensFromText(`Mantequilla de ${name}`)).toEqual(['peanut']);
+      expect(extractAllergensFromText(`Puede contener trazas de ${name}`)).toEqual(['peanut']);
+    }
+  });
+
+  it('mapea frutos secos y no los confunde con maní', () => {
+    const nuts = [
+      'nuez', 'nueces', 'almendra', 'almendras', 'avellana', 'pistacho',
+      'castaña de cajú', 'anacardo', 'pecana', 'pecán', 'macadamia', 'frutos secos',
+    ];
+    for (const name of nuts) {
+      expect(extractAllergensFromText(name)).toEqual(['tree_nut']);
+      expect(extractAllergensFromText(`Puede contener ${name}`)).toEqual(['tree_nut']);
+    }
+  });
+
+  it('respeta límites de palabra: salmonella, maniobra y tapioca no son alérgenos', () => {
+    expect(extractAllergensFromText('Cultivo de salmonella')).toEqual([]);
+    expect(extractAllergensFromText('Maniobra de carga')).toEqual([]);
+    expect(extractAllergensFromText('Tapioca y caballito')).toEqual([]);
+  });
+});
+
+describe('extractAllergensAndTracesFromText', () => {
+  it('deja la frase "puede contener" en trazas y el resto en alérgenos', () => {
+    const result = extractAllergensAndTracesFromText(
+      'Filete de merluza. Puede contener trazas de camarón, pulpo, maní y nueces',
+    );
+    expect(result.allergens).toEqual(['fish']);
+    expect(result.traces).toEqual(['crustacean', 'mollusc', 'peanut', 'tree_nut']);
+  });
+
+  it('un texto que solo es trazas no marca alérgeno contenido', () => {
+    const result = extractAllergensAndTracesFromText('PUEDE CONTENER: salmón y crustáceos');
+    expect(result.allergens).toEqual([]);
+    expect(result.traces).toEqual(['crustacean', 'fish']);
+  });
+
+  it('sin la frase de trazas, traces queda vacío', () => {
+    const result = extractAllergensAndTracesFromText('Harina de trigo, leche');
+    expect(result.allergens).toEqual(['gluten', 'milk']);
+    expect(result.traces).toEqual([]);
   });
 });
 

@@ -1,4 +1,10 @@
-export { mapOFFTags, extractAllergensFromText, mergeAllergens, determineAllergenStatus } from './allergen-mapper';
+export {
+  mapOFFTags,
+  extractAllergensFromText,
+  extractAllergensAndTracesFromText,
+  mergeAllergens,
+  determineAllergenStatus,
+} from './allergen-mapper';
 export { fetchFromOpenFoodFacts, inferSellosChile } from './off-client';
 export {
   checkAllergens,
