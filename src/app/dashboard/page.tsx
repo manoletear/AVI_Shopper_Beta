@@ -136,6 +136,8 @@ export default function DashboardPage() {
     new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', minimumFractionDigits: 0 }).format(n)
 
   const budgetPct = data?.budgetTotal ? Math.round((data.budgetSpent! / data.budgetTotal) * 100) : 0
+  const promo = STORE_DEALS[promoIndex]
+  const nextReplenishment = replenishment[0]
   const hour = new Date().getHours()
   const greeting = hour < 12 ? 'Buenos dias' : hour < 20 ? 'Buenas tardes' : 'Buenas noches'
 
@@ -187,10 +189,10 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {replenishment.length > 0 && (
+        {nextReplenishment && (
           <a href="/reposicion" className="block bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 mb-4">
-            <p className="text-sm font-semibold text-amber-900">{replenishment[0].title}</p>
-            <p className="text-xs text-amber-800 mt-1">{replenishment[0].message}</p>
+            <p className="text-sm font-semibold text-amber-900">{nextReplenishment.title}</p>
+            <p className="text-xs text-amber-800 mt-1">{nextReplenishment.message}</p>
           </a>
         )}
 
@@ -238,26 +240,26 @@ export default function DashboardPage() {
         )}
 
         {/* Promo Banner */}
-        <a href={STORE_DEALS[promoIndex].href} className="block mb-4 active:scale-[0.98] transition-transform relative z-10">
-          {STORE_DEALS[promoIndex].banner ? (
-            <div className="rounded-2xl shadow-md overflow-hidden" style={{ backgroundColor: STORE_DEALS[promoIndex].color, minHeight: 120 }}>
+        {promo && <a href={promo.href} className="block mb-4 active:scale-[0.98] transition-transform relative z-10">
+          {promo.banner ? (
+            <div className="rounded-2xl shadow-md overflow-hidden" style={{ backgroundColor: promo.color, minHeight: 120 }}>
               <img
-                src={STORE_DEALS[promoIndex].banner}
-                alt={`${STORE_DEALS[promoIndex].store} — ${STORE_DEALS[promoIndex].product}`}
+                src={promo.banner}
+                alt={`${promo.store} — ${promo.product}`}
                 className="w-full block"
                 loading="eager"
               />
             </div>
           ) : (
-            <div className="rounded-2xl shadow-md text-white overflow-hidden" style={{ backgroundColor: STORE_DEALS[promoIndex].color }}>
-              <div className="p-5 min-h-[120px] flex justify-between items-start" style={{ background: `linear-gradient(135deg, ${STORE_DEALS[promoIndex].color}, ${STORE_DEALS[promoIndex].color}dd)` }}>
+            <div className="rounded-2xl shadow-md text-white overflow-hidden" style={{ backgroundColor: promo.color }}>
+              <div className="p-5 min-h-[120px] flex justify-between items-start" style={{ background: `linear-gradient(135deg, ${promo.color}, ${promo.color}dd)` }}>
                 <div>
-                  <span className="text-xs font-bold bg-white/20 px-2.5 py-1 rounded-full">{STORE_DEALS[promoIndex].store}</span>
-                  <h2 className="text-xl font-bold mt-2">{STORE_DEALS[promoIndex].product}</h2>
-                  <p className="text-sm text-white/80 mt-0.5">{STORE_DEALS[promoIndex].discount}</p>
-                  <p className="text-xs text-white/60 mt-1">{STORE_DEALS[promoIndex].price}</p>
+                  <span className="text-xs font-bold bg-white/20 px-2.5 py-1 rounded-full">{promo.store}</span>
+                  <h2 className="text-xl font-bold mt-2">{promo.product}</h2>
+                  <p className="text-sm text-white/80 mt-0.5">{promo.discount}</p>
+                  <p className="text-xs text-white/60 mt-1">{promo.price}</p>
                 </div>
-                <span className="text-4xl">{STORE_DEALS[promoIndex].emoji}</span>
+                <span className="text-4xl">{promo.emoji}</span>
               </div>
             </div>
           )}
@@ -271,7 +273,7 @@ export default function DashboardPage() {
               />
             ))}
           </div>
-        </a>
+        </a>}
 
         {/* Category Icons */}
         <div className="grid grid-cols-4 gap-2 mb-5">

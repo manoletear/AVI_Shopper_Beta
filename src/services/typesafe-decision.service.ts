@@ -87,9 +87,11 @@ export async function matchProducts(
     apiKey
   );
 
+  const same = response.answers.is_same;
+  const noul = same?.noul ?? 0;
   return {
-    isMatch: (response.answers.is_same.noul ?? 0) > 0.7,
-    confidence: response.answers.is_same.noul ?? 0,
+    isMatch: noul > 0.7,
+    confidence: noul,
   };
 }
 
@@ -136,7 +138,9 @@ export async function scoreProductHealth(
     apiKey
   );
 
-  const healthScore = response.answers.health.score ?? 2;
+  const health = response.answers.health;
+  const ultra = response.answers.ultra_processed;
+  const healthScore = health?.score ?? 2;
   const levels = [
     'Muy saludable',
     'Saludable',
@@ -148,8 +152,8 @@ export async function scoreProductHealth(
   return {
     healthLevel: levels[Math.round(healthScore)] || 'Moderado',
     score: Math.round((1 - healthScore / 4) * 100),
-    isUltraProcessed: (response.answers.ultra_processed.noul ?? 0) > 0.6,
-    confidence: response.answers.health.confidence ?? 0,
+    isUltraProcessed: (ultra?.noul ?? 0) > 0.6,
+    confidence: health?.confidence ?? 0,
   };
 }
 
@@ -188,9 +192,9 @@ export async function selectSubstitution(
   );
 
   return {
-    selected: response.answers.best_alternative.choice ?? candidates[0].name,
-    confidence: response.answers.best_alternative.confidence ?? 0,
-    probabilities: response.answers.best_alternative.probabilities ?? {},
+    selected: response.answers.best_alternative?.choice ?? candidates[0]?.name ?? '',
+    confidence: response.answers.best_alternative?.confidence ?? 0,
+    probabilities: response.answers.best_alternative?.probabilities ?? {},
   };
 }
 
@@ -222,7 +226,7 @@ export async function detectAllergen(
     apiKey
   );
 
-  const prob = response.answers.contains_allergen.noul ?? 0.5;
+  const prob = response.answers.contains_allergen?.noul ?? 0.5;
   return {
     probability: prob,
     isSafe: prob < 0.3,
@@ -257,7 +261,7 @@ export async function assessUrgency(
     apiKey
   );
 
-  const score = response.answers.urgency.score ?? 0;
+  const score = response.answers.urgency?.score ?? 0;
   const levels = ['No urgente', 'Pronto', 'Urgente'];
   return {
     urgency: levels[Math.round(score)] || 'Pronto',

@@ -124,13 +124,13 @@ export function householdGroupKey(name: string): string {
 
 export function priorFor(name: string): { perPersonDay: number; unit: BaseUnit; category: string } {
   const key = householdGroupKey(name);
-  const category = key.startsWith('huevos') ? 'huevos' : key.split('|')[0];
+  const category = key.startsWith('huevos') ? 'huevos' : key.split('|')[0] ?? 'general';
   const prior = CATEGORY_PRIORS[category] || { perPersonDay: 0.05, unit: 'un' as BaseUnit };
   return { ...prior, category };
 }
 
 /** Adulto 1, mayor 0,8, niño 0,6. Las mascotas no entran en N. */
-export function householdEquivalents(members: HouseholdMember[], elderWeight = ROLE_WEIGHT.elder): number {
+export function householdEquivalents(members: HouseholdMember[], elderWeight = ROLE_WEIGHT.elder ?? 0.8): number {
   const people = members.filter((member) => member.type !== 'pet');
   if (!people.length) return 1;
   const total = people.reduce((sum, member) => {
@@ -147,7 +147,7 @@ export function householdEquivalents(members: HouseholdMember[], elderWeight = R
 export function plannedEquivalents(
   members: HouseholdMember[],
   householdSize: number | null | undefined,
-  elderWeight = ROLE_WEIGHT.elder,
+  elderWeight = ROLE_WEIGHT.elder ?? 0.8,
 ): number {
   const people = members.filter((member) => member.type !== 'pet');
   if (householdSize && householdSize > 0) {
@@ -173,6 +173,7 @@ export function robustEwma(rates: number[], alpha = DEFAULT_ALPHA): { mu: number
   const a = clampAlpha(alpha);
   const sorted = [...rates].sort((left, right) => left - right);
   const med = sorted[Math.floor(sorted.length / 2)];
+  if (med === undefined) return { mu: 0, sd: 0 };
   const deviations = rates.map((rate) => Math.abs(rate - med)).sort((left, right) => left - right);
   const mad = deviations[Math.floor(rates.length / 2)] || Math.abs(med) * 0.2 || 0.01;
   let mu = 0;
@@ -255,7 +256,8 @@ export function applyPurchase(
   const amount = purchase.amount;
   if (!Number.isFinite(amount) || amount <= 0 || Number.isNaN(at.getTime())) return profile;
   const next = { ...profile, monthCounts: [...profile.monthCounts] };
-  next.monthCounts[at.getUTCMonth()] += amount;
+  const monthIndex = at.getUTCMonth();
+  next.monthCounts[monthIndex] = (next.monthCounts[monthIndex] ?? 0) + amount;
   next.nPurchases += 1;
   next.seasonFactor = seasonFactor(next.monthCounts, at.getUTCMonth());
 
@@ -435,7 +437,8 @@ export function seasonFactor(monthCounts: number[], month: number): number {
   if (active < 12) return 1;
   const mean = monthCounts.reduce((sum, count) => sum + count, 0) / 12;
   if (mean <= 0) return 1;
-  return monthCounts[month] / mean || 1;
+  const count = monthCounts[month] ?? 0;
+  return count / mean || 1;
 }
 
 export function eventMultiplier(events: HouseholdEventWindow[], date: Date): number {
@@ -496,7 +499,12 @@ export function purchaseAmount(event: PurchaseEvent): { amount: number; unit: Ba
     if (direct && direct.unit !== 'un') return direct;
   }
   const sizes = [...event.productName.matchAll(SIZE_TOKEN)]
-    .map((match) => toBase(Number(match[1].replace(',', '.')), match[2]))
+    .map((match) => {
+      const rawAmount = match[1];
+      const rawUnit = match[2];
+      if (!rawAmount || !rawUnit) return null;
+      return toBase(Number(rawAmount.replace(',', '.')), rawUnit);
+    })
     .filter((size): size is { amount: number; unit: BaseUnit } => Boolean(size));
   const measured = sizes.filter((size) => size.unit !== 'un');
   const size = measured[measured.length - 1] || sizes[sizes.length - 1];

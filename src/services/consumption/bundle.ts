@@ -211,6 +211,7 @@ export function bundleCart(
     return a.total - b.total;
   });
   const best = priced[0];
+  if (!best) return null;
   return {
     store: best.store,
     status: 'proposed',

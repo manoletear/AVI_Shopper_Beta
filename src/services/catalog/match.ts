@@ -69,23 +69,24 @@ export async function matchListing(
 
   if (isSpecific(normalized)) {
     const exact = candidates.filter((candidate) => candidate.identity === normalized.identity);
-    if (exact.length === 1) {
+    const exactMatch = exact[0];
+    if (exact.length === 1 && exactMatch) {
       return {
         ...base,
         status: 'matched',
         method: 'rules',
         confidence: 0.98,
-        canonicalId: exact[0].id,
+        canonicalId: exactMatch.id,
         reason: 'Mismo nombre normalizado',
       };
     }
-    if (exact.length > 1) {
+    if (exact.length > 1 && exactMatch) {
       return {
         ...base,
         status: 'pending',
         method: 'rules',
         confidence: 0.7,
-        canonicalId: exact[0].id,
+        canonicalId: exactMatch.id,
         reason: 'Hay dos productos canónicos con el mismo formato',
       };
     }
@@ -98,25 +99,27 @@ export async function matchListing(
         && candidate.normalized.sizeUnit === normalized.sizeUnit
         && candidate.normalized.packCount === normalized.packCount;
     });
-    if (relaxed.length === 1 && (normalized.sizeAmount == null || relaxed[0].normalized.sizeAmount == null)) {
+    const relaxedMatch = relaxed[0];
+    if (relaxed.length === 1 && relaxedMatch && (normalized.sizeAmount == null || relaxedMatch.normalized.sizeAmount == null)) {
       return {
         ...base,
         status: 'matched',
         method: 'rules',
         confidence: 0.9,
-        canonicalId: relaxed[0].id,
+        canonicalId: relaxedMatch.id,
         reason: 'Misma marca y variante; a uno de los dos le falta el tamaño',
       };
     }
   } else if (normalized.category !== 'general' && (normalized.brand || normalized.variant)) {
     const relaxed = candidates.filter((candidate) => candidate.normalized.family === normalized.family && candidate.normalized.soldByWeight === normalized.soldByWeight);
-    if (relaxed.length === 1) {
+    const familyMatch = relaxed[0];
+    if (relaxed.length === 1 && familyMatch) {
       return {
         ...base,
         status: 'matched',
         method: 'rules',
         confidence: 0.9,
-        canonicalId: relaxed[0].id,
+        canonicalId: familyMatch.id,
         reason: 'Misma marca y variante; falta el tamaño en el nombre',
       };
     }

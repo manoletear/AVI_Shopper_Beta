@@ -72,7 +72,7 @@ function draftFrom(view: OnboardingView): Draft {
     includesBaby: view.includesBaby,
     includesToddler: view.includesToddler,
     includesPet: view.includesPet,
-    members: view.members.length ? view.members : [{ name: 'Yo', email: '', color: MEMBER_COLORS[0] }],
+    members: view.members.length ? view.members : [{ name: 'Yo', email: '', color: MEMBER_COLORS[0] || '#4F46E5' }],
     allergens: view.allergens,
     dislikes: view.dislikes,
     dislikeDraft: '',
@@ -105,11 +105,14 @@ function payloadFor(step: StepId, draft: Draft) {
   if (step === 'stores') {
     return {
       mode: draft.mode,
-      stores: CHAINS.map((chain) => ({
-        chain: chain.id,
-        enabled: draft.stores[chain.id]?.enabled || false,
-        loyaltyProgram: draft.stores[chain.id]?.enabled ? draft.stores[chain.id].loyaltyProgram || null : null,
-      })),
+      stores: CHAINS.map((chain) => {
+        const store = draft.stores[chain.id]
+        return {
+          chain: chain.id,
+          enabled: store?.enabled || false,
+          loyaltyProgram: store?.enabled ? store.loyaltyProgram || null : null,
+        }
+      }),
     }
   }
   if (step === 'household') {
@@ -229,7 +232,7 @@ export default function OnboardingFlow() {
     )
   }
 
-  if (!draft || !view) {
+  if (!draft || !view || !meta) {
     return <main className="min-h-screen bg-[#F8FAFC] px-4 py-10 text-sm text-slate-500">Cargando tu hogar…</main>
   }
 
@@ -370,7 +373,10 @@ function StoresScreen({ draft, patch }: { draft: Draft; patch: (partial: Partial
             <button
               type="button"
               className="flex w-full items-center justify-between"
-              onClick={() => patch({ stores: { ...draft.stores, [chain.id]: { ...selected, enabled: !selected?.enabled } } })}
+              onClick={() => {
+                const current = selected ?? { enabled: false, loyaltyProgram: '' }
+                patch({ stores: { ...draft.stores, [chain.id]: { ...current, enabled: !current.enabled } } })
+              }}
             >
               <span className="font-semibold">{chain.label}</span>
               <span className={`text-xs font-bold ${selected?.enabled ? 'text-[#4F46E5]' : 'text-slate-400'}`}>{selected?.enabled ? 'Elegida' : 'Elegir'}</span>
@@ -410,9 +416,12 @@ function HouseholdScreen({ draft, patch }: { draft: Draft; patch: (partial: Part
         ['includesBaby', 'También compro para un bebé'],
         ['includesToddler', 'También compro para un niño pequeño'],
         ['includesPet', 'También compro para una mascota'],
-      ].map(([key, label]) => (
-        <Choice key={key} active={Boolean(draft[key as 'includesBaby'])} label={label} onClick={() => patch({ [key]: !draft[key as 'includesBaby'] } as Partial<Draft>)} />
-      ))}
+      ].map(([key, label]) => {
+        if (!key || !label) return null
+        return (
+          <Choice key={key} active={Boolean(draft[key as 'includesBaby'])} label={label} onClick={() => patch({ [key]: !draft[key as 'includesBaby'] } as Partial<Draft>)} />
+        )
+      })}
     </>
   )
 }
@@ -444,7 +453,7 @@ function MembersScreen({
         <button
           type="button"
           className="w-full rounded-2xl border border-dashed border-slate-300 py-3 text-sm font-semibold text-[#4F46E5]"
-          onClick={() => patch({ members: [...draft.members, { name: '', email: '', color: MEMBER_COLORS[draft.members.length % MEMBER_COLORS.length] }] })}
+          onClick={() => patch({ members: [...draft.members, { name: '', email: '', color: MEMBER_COLORS[draft.members.length % MEMBER_COLORS.length] || '#4F46E5' }] })}
         >
           Agregar integrante
         </button>

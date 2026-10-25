@@ -67,6 +67,7 @@ export function pickBestMatch<T extends { name: string; brand?: string }>(
 
   for (let index = 0; index < products.length; index += 1) {
     const product = products[index];
+    if (!product) continue;
     const score = scoreProductName(query, product.name, product.brand);
     const better = score > bestScore + 0.02 || (Math.abs(score - bestScore) <= 0.02 && index < bestIndex);
     if (!bestProduct || better) {

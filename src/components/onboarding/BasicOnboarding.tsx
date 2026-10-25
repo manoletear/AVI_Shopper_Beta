@@ -264,7 +264,9 @@ export default function BasicOnboarding({ editing = false }: { editing?: boolean
       setScreen('pets')
       return
     }
-    setScreen(order[index - 1])
+    const previous = order[index - 1]
+    if (!previous) return
+    setScreen(previous)
   }
 
   if (!draft) {

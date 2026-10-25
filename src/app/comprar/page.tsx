@@ -117,7 +117,8 @@ export default function ComprarPage() {
     if (!list || items.length === 0) return
     setPhase('auto')
     setAutoCart(null)
-    setMessage(`AVI está armando el carrito en ${STORES[store].name}. No va a pagar.`)
+    const storeConfig = STORES[store]
+    setMessage(`AVI está armando el carrito en ${storeConfig?.name || store}. No va a pagar.`)
     try {
       const res = await fetch('/api/checkout/auto', {
         method: 'POST',
@@ -174,6 +175,7 @@ export default function ComprarPage() {
   const openProduct = (idx: number) => {
     const item = items[idx]
     const storeConfig = STORES[store]
+    if (!item || !storeConfig) return
     const url = storeConfig.search(item.name)
     setMessage(`Abriendo: ${item.name}`)
     setPhase('waiting')
@@ -193,8 +195,9 @@ export default function ComprarPage() {
       openProduct(next)
     } else {
       setPhase('done')
-      setMessage(`Listo. AVI abrió el carrito de ${STORES[store].name}. El pago lo haces tú.`)
       const storeConfig = STORES[store]
+      if (!storeConfig) return
+      setMessage(`Listo. AVI abrió el carrito de ${storeConfig.name}. El pago lo haces tú.`)
       if (tabRef.current && !tabRef.current.closed) {
         tabRef.current.location.href = storeConfig.cart
         tabRef.current.focus()

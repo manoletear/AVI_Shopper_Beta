@@ -221,6 +221,7 @@ export default function SmartAlerts() {
     <div className="space-y-2 mb-4">
       {visibleAlerts.slice(0, 2).map((alert) => {
         const colors = COLORS[alert.color] || COLORS.blue
+        if (!colors) return null
         const Icon = ICONS[alert.type] || Bell
 
         return (

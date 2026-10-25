@@ -109,7 +109,9 @@ describe('carro agrupado', () => {
         offers: [{ store: 'Tottus', name: 'Lomo vetado', pricePerUnit: 35605, minPurchase: 1.5, step: 0.5 }],
       }),
     ], { now, leadDays: 2, bufferDays: 2, minimums: { Tottus: 10000 } });
-    assert.equal(cart!.items[0].payable, 53408);
+    const line = cart!.items[0];
+    assert.ok(line);
+    assert.equal(line.payable, 53408);
     assert.equal(cart!.status, 'proposed');
   });
 });

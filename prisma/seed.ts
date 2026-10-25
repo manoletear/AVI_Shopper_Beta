@@ -112,8 +112,11 @@ async function main() {
     { productIdx: 7, storeIdx: 2, price: 219000 },
   ];
   for (const { productIdx, storeIdx, price } of priceData) {
-    const productId = products[productIdx].id;
-    const storeId = stores[storeIdx].id;
+    const product = products[productIdx];
+    const store = stores[storeIdx];
+    if (!product || !store) continue;
+    const productId = product.id;
+    const storeId = store.id;
     await prisma.productPrice.upsert({
       where: { productId_storeId: { productId, storeId } },
       update: {},
@@ -132,12 +135,17 @@ async function main() {
         userId: user.id,
         name: listName,
         items: {
-          create: [0, 1, 2, 3, 4].map((index) => ({
-            productId: products[index].id,
-            name: products[index].name,
-            quantity: [6, 4, 2, 12, 1][index],
-            urgent: index === 0,
-          })),
+          create: [0, 1, 2, 3, 4].flatMap((index) => {
+            const product = products[index];
+            const quantity = [6, 4, 2, 12, 1][index];
+            if (!product || quantity === undefined) return [];
+            return [{
+              productId: product.id,
+              name: product.name,
+              quantity,
+              urgent: index === 0,
+            }];
+          }),
         },
       },
     });

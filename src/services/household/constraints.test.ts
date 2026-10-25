@@ -93,7 +93,9 @@ describe('restricciones del hogar', () => {
     });
     assert.ok(cart);
     assert.equal(cart!.items.some((line) => /leche|maní|mani/i.test(line.name)), false);
-    assert.equal(cart!.items[0].name, 'Bebida de avena 1 L');
+    const line = cart!.items[0];
+    assert.ok(line);
+    assert.equal(line.name, 'Bebida de avena 1 L');
   });
 
   it('el precio más barato no elige un producto con alérgeno', () => {

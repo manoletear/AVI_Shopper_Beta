@@ -69,12 +69,21 @@ function toBase(amount: number, rawUnit: string): ParsedSize | null {
 export function parsePackageSize(name: string): ParsedSize | null {
   const times = name.match(PACK_TIMES);
   if (times) {
-    const each = toBase(Number(times[2].replace(',', '.')), times[3]);
+    const count = times[1];
+    const amount = times[2];
+    const unit = times[3];
+    if (!count || !amount || !unit) return null;
+    const each = toBase(Number(amount.replace(',', '.')), unit);
     if (!each) return null;
-    return { amount: Number(times[1]) * each.amount, unit: each.unit };
+    return { amount: Number(count) * each.amount, unit: each.unit };
   }
   const tokens = [...name.matchAll(SIZE_TOKEN)]
-    .map((match) => toBase(Number(match[1].replace(',', '.')), match[2]))
+    .map((match) => {
+      const amount = match[1];
+      const unit = match[2];
+      if (!amount || !unit) return null;
+      return toBase(Number(amount.replace(',', '.')), unit);
+    })
     .filter((size): size is ParsedSize => Boolean(size));
   const measured = tokens.filter((size) => size.unit !== 'un');
   return (measured.length ? measured[measured.length - 1] : tokens[tokens.length - 1]) || null;
@@ -83,7 +92,10 @@ export function parsePackageSize(name: string): ParsedSize | null {
 export function parseRequestedAmount(query: string): ParsedSize | null {
   const times = query.match(/(\d+(?:[.,]\d+)?)\s*(kg|g|gr|ml|l|lt|litro|litros|un|und)\b/i);
   if (!times) return null;
-  return toBase(Number(times[1].replace(',', '.')), times[2]);
+  const amount = times[1];
+  const unit = times[2];
+  if (!amount || !unit) return null;
+  return toBase(Number(amount.replace(',', '.')), unit);
 }
 
 function isOpenWeight(name: string, explicit?: boolean | null): boolean {
@@ -136,6 +148,17 @@ export function priceQuery<T extends RawOffer>(query: string, offers: T[], const
   const lines = offers.map((offer, index) => {
     const priced = priceOne(offer, request);
     const tag = tags[index];
+    if (!tag) {
+      return {
+        ...priced,
+        matched: false,
+        comparable: false,
+        note: 'No es el mismo producto',
+        catalogRelation: 'other' as const,
+        catalogReason: '',
+        pricePerUnitLabel: null,
+      };
+    }
     if (tag.relation === 'other') {
       return {
         ...priced,

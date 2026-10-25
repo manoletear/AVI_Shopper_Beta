@@ -56,7 +56,8 @@ export default function PagosPage() {
     setMethods((prev) => {
       const filtered = prev.filter((m) => m.id !== id)
       if (filtered.length > 0 && !filtered.some((m) => m.isDefault)) {
-        filtered[0].isDefault = true
+        const first = filtered[0]
+        if (first) first.isDefault = true
       }
       return filtered
     })

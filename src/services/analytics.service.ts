@@ -124,6 +124,7 @@ export async function getSpendingTrends(
 
   for (const order of orders) {
     const dateKey = order.createdAt.toISOString().split('T')[0];
+    if (!dateKey) continue;
     const current = trendMap.get(dateKey) || 0;
     trendMap.set(dateKey, current + order.total);
   }

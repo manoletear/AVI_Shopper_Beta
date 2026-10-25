@@ -26,16 +26,20 @@ describe('jumbo search matching', () => {
   it('lee sku, precio y link desde el HTML de Jumbo', () => {
     const products = parseJumboSearchHtml(SEARCH_HTML);
     assert.equal(products.length, 3);
-    assert.equal(products[0].sku, '6697');
-    assert.equal(products[0].price, 1190);
-    assert.equal(products[0].productUrl, 'https://www.jumbo.cl/leche-entera-colun-caja-1-l-natural/p');
+    const first = products[0];
+    assert.ok(first);
+    assert.equal(first.sku, '6697');
+    assert.equal(first.price, 1190);
+    assert.equal(first.productUrl, 'https://www.jumbo.cl/leche-entera-colun-caja-1-l-natural/p');
   });
 
   it('elige la leche entera y no la de chocolate', () => {
     const products = parseJumboSearchHtml(SEARCH_HTML);
     const chosen = pickBestMatch('Leche Colun Entera 1L', products);
     assert.equal(chosen?.product.sku, '6697');
-    assert.ok(scoreProductName('Leche Colun Entera 1L', products[1].name) < 0.5);
+    const chocolate = products[1];
+    assert.ok(chocolate);
+    assert.ok(scoreProductName('Leche Colun Entera 1L', chocolate.name) < 0.5);
   });
 });
 
@@ -125,7 +129,9 @@ describe('fill de Jumbo con red simulada', () => {
     );
     assert.equal(result.itemsAdded, 1);
     assert.equal(result.totalEstimated, 2380);
-    assert.equal(result.items[0].matchedName, 'Leche Colun Entera 1 L');
+    const added = result.items[0];
+    assert.ok(added);
+    assert.equal(added.matchedName, 'Leche Colun Entera 1 L');
     assert.ok(calls.every((call) => !/transaction|payment|shipping-data|\/checkout/.test(call)));
   });
 });

@@ -276,17 +276,21 @@ describe('evaluateAllergens', () => {
     assert.equal(result.requiresApproval, true);
     assert.equal(result.notice, null);
     assert.equal(result.warnings.length, 1);
-    assert.equal(result.warnings[0].kind, 'contains');
-    assert.equal(result.warnings[0].allergen, 'tree_nut');
-    assert.deepEqual(result.warnings[0].members, [{ id: 'claudia', name: 'Claudia' }]);
-    assert.equal(result.warnings[0].message, 'Contiene frutos secos — Claudia');
+    const warning = result.warnings[0];
+    assert.ok(warning);
+    assert.equal(warning.kind, 'contains');
+    assert.equal(warning.allergen, 'tree_nut');
+    assert.deepEqual(warning.members, [{ id: 'claudia', name: 'Claudia' }]);
+    assert.equal(warning.message, 'Contiene frutos secos — Claudia');
   });
 
   it('uses a traces warning and still requires approval', () => {
     const result = evaluateAllergens([], ['tree_nut'], 'verified', [claudia]);
     assert.equal(result.requiresApproval, true);
-    assert.equal(result.warnings[0].kind, 'traces');
-    assert.equal(result.warnings[0].message, 'Puede contener frutos secos — Claudia');
+    const warning = result.warnings[0];
+    assert.ok(warning);
+    assert.equal(warning.kind, 'traces');
+    assert.equal(warning.message, 'Puede contener frutos secos — Claudia');
   });
 
   it('unverified without match asks for approval and does not warn', () => {
@@ -314,8 +318,10 @@ describe('evaluateAllergens', () => {
     const ana = person('ana', 'Ana', ['peanut']);
     const luis = person('luis', 'Luis', ['mani']);
     const result = evaluateAllergens(['peanut'], [], 'verified', [ana, luis, pedro]);
-    assert.equal(result.warnings[0].message, 'Contiene maní — Ana y Luis');
-    assert.deepEqual(result.warnings[0].members.map((member) => member.name), ['Ana', 'Luis']);
+    const warning = result.warnings[0];
+    assert.ok(warning);
+    assert.equal(warning.message, 'Contiene maní — Ana y Luis');
+    assert.deepEqual(warning.members.map((member) => member.name), ['Ana', 'Luis']);
   });
 });
 
@@ -326,37 +332,47 @@ describe('alergia a mariscos avisa crustáceos y moluscos', () => {
     assert.equal(result.requiresApproval, true);
     assert.equal(result.notice, null);
     assert.equal(result.warnings.length, 1);
-    assert.equal(result.warnings[0].kind, 'contains');
-    assert.equal(result.warnings[0].allergen, 'crustacean');
-    assert.equal(result.warnings[0].members[0].name, 'Claudia');
-    assert.equal(result.warnings[0].message, 'Contiene crustáceos — Claudia');
+    const warning = result.warnings[0];
+    assert.ok(warning);
+    const member = warning.members[0];
+    assert.ok(member);
+    assert.equal(warning.kind, 'contains');
+    assert.equal(warning.allergen, 'crustacean');
+    assert.equal(member.name, 'Claudia');
+    assert.equal(warning.message, 'Contiene crustáceos — Claudia');
   });
 
   it('shellfish warns on a mollusc product', () => {
     const result = evaluateAllergens(['mollusc'], [], 'partial', [claudia]);
     assert.equal(result.requiresApproval, true);
-    assert.equal(result.warnings[0].kind, 'contains');
-    assert.equal(result.warnings[0].allergen, 'mollusc');
-    assert.equal(result.warnings[0].message, 'Contiene moluscos — Claudia');
+    const warning = result.warnings[0];
+    assert.ok(warning);
+    assert.equal(warning.kind, 'contains');
+    assert.equal(warning.allergen, 'mollusc');
+    assert.equal(warning.message, 'Contiene moluscos — Claudia');
   });
 
   it('shellfish warns on crustacean traces when unverified', () => {
     const result = evaluateAllergens([], ['crustacean'], 'unverified', [claudia]);
     assert.equal(result.requiresApproval, true);
     assert.equal(result.warnings.length, 1);
-    assert.equal(result.warnings[0].kind, 'traces');
-    assert.equal(result.warnings[0].allergen, 'crustacean');
-    assert.equal(result.warnings[0].message, 'Puede contener crustáceos — Claudia');
+    const warning = result.warnings[0];
+    assert.ok(warning);
+    assert.equal(warning.kind, 'traces');
+    assert.equal(warning.allergen, 'crustacean');
+    assert.equal(warning.message, 'Puede contener crustáceos — Claudia');
   });
 
   it('mariscos warns on mollusc traces and names the member', () => {
     const ana = person('ana', 'Ana', ['mariscos']);
     const result = evaluateAllergens([], ['mollusc'], 'unverified', [ana, pedro]);
     assert.equal(result.requiresApproval, true);
-    assert.equal(result.warnings[0].kind, 'traces');
-    assert.equal(result.warnings[0].allergen, 'mollusc');
-    assert.deepEqual(result.warnings[0].members, [{ id: 'ana', name: 'Ana' }]);
-    assert.equal(result.warnings[0].message, 'Puede contener moluscos — Ana');
+    const warning = result.warnings[0];
+    assert.ok(warning);
+    assert.equal(warning.kind, 'traces');
+    assert.equal(warning.allergen, 'mollusc');
+    assert.deepEqual(warning.members, [{ id: 'ana', name: 'Ana' }]);
+    assert.equal(warning.message, 'Puede contener moluscos — Ana');
   });
 
   it('a crustacean-only allergy does not warn on mollusc', () => {
@@ -365,7 +381,9 @@ describe('alergia a mariscos avisa crustáceos y moluscos', () => {
     assert.deepEqual(mollusc.warnings, []);
     assert.equal(mollusc.requiresApproval, false);
     const crustacean = evaluateAllergens(['crustacean'], [], 'verified', [onlyCrustacean]);
-    assert.equal(crustacean.warnings[0].kind, 'contains');
+    const crustaceanWarning = crustacean.warnings[0];
+    assert.ok(crustaceanWarning);
+    assert.equal(crustaceanWarning.kind, 'contains');
     assert.equal(crustacean.requiresApproval, true);
   });
 
@@ -383,8 +401,10 @@ describe('alergia a mariscos avisa crustáceos y moluscos', () => {
 
     const fishProduct = evaluateAllergens(['fish'], [], 'verified', [pedro]);
     assert.equal(fishProduct.requiresApproval, true);
-    assert.equal(fishProduct.warnings[0].kind, 'contains');
-    assert.equal(fishProduct.warnings[0].message, 'Contiene pescado — Pedro');
+    const fishWarning = fishProduct.warnings[0];
+    assert.ok(fishWarning);
+    assert.equal(fishWarning.kind, 'contains');
+    assert.equal(fishWarning.message, 'Contiene pescado — Pedro');
 
     const shellfishOnFish = evaluateAllergens(['fish'], [], 'unverified', [claudia]);
     assert.deepEqual(shellfishOnFish.warnings, []);

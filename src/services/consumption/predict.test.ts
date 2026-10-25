@@ -28,6 +28,7 @@ describe('consumo del hogar', () => {
     const [only] = forecastProducts([
       { productName: 'Arroz grado 1 1 kg', quantity: 1, purchasedAt: daysBefore(now, 10), storeName: 'Jumbo' },
     ], now);
+    assert.ok(only);
     assert.equal(only.confidence, 'baja');
     assert.equal(only.alert, false);
     assert.match(only.message, /una sola compra/i);
@@ -45,6 +46,7 @@ describe('consumo del hogar', () => {
       storeName: 'Jumbo',
     }));
     const [milk] = forecastProducts(events, now);
+    assert.ok(milk);
     const rate = shrinkRate(0.25, 6 / 7, 4);
     const stock = 6 - rate * 5;
     assert.equal(milk.daysLeft, Math.round(stock / rate));
@@ -69,6 +71,7 @@ describe('consumo del hogar', () => {
       purchasedAt: daysBefore(now, days),
     }));
     const [sugar] = forecastProducts(events, now);
+    assert.ok(sugar);
     assert.ok((sugar.weeklyAmount || 0) > 0.3);
     assert.ok((sugar.weeklyAmount || 0) < 1.5);
   });
@@ -88,10 +91,17 @@ describe('consumo del hogar', () => {
       { productName: 'Queso', quantity: 500, unit: 'g', purchasedAt: daysBefore(now, 2) },
     ];
     const [cheese] = forecastProducts(events, now);
+    assert.ok(cheese);
+    const firstBuy = cheese.history[0];
+    const secondBuy = cheese.history[1];
+    const thirdBuy = cheese.history[2];
+    assert.ok(firstBuy);
+    assert.ok(secondBuy);
+    assert.ok(thirdBuy);
     assert.equal(cheese.unit, 'kg');
-    assert.equal(cheese.history[0].amount, 0.5);
-    assert.equal(cheese.history[1].amount, 1);
-    assert.equal(cheese.history[2].amount, 0.5);
+    assert.equal(firstBuy.amount, 0.5);
+    assert.equal(secondBuy.amount, 1);
+    assert.equal(thirdBuy.amount, 0.5);
     assert.equal(cheese.purchases, 3);
   });
 
@@ -118,6 +128,8 @@ describe('consumo del hogar', () => {
     const alone = forecastProducts([
       { productName: 'Leche 1 L', quantity: 1, unit: 'L', purchasedAt: daysBefore(now, 1) },
     ], now, { equivalents: 1 })[0];
+    assert.ok(milk);
+    assert.ok(alone);
     assert.ok((milk.ratePerDay || 0) > (alone.ratePerDay || 0));
   });
 
@@ -173,6 +185,7 @@ describe('consumo del hogar', () => {
       { productName: 'Leche 1 L', quantity: 6, unit: 'L', purchasedAt: daysBefore(now, 14) },
       { productName: 'Leche 1 L', quantity: 6, unit: 'L', purchasedAt: daysBefore(now, 7) },
     ], now, { events: [{ multiplier: 0, startsAt: daysBefore(now, 1), endsAt: daysBefore(now, -10) }] });
+    assert.ok(milk);
     assert.equal(milk.alert, false);
     assert.match(milk.message, /pausa/);
   });

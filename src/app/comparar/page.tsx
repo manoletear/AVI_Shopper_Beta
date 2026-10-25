@@ -200,8 +200,11 @@ function CompararInner() {
         setPasteNotice(`${unique.length} producto${unique.length > 1 ? 's' : ''} agregado${unique.length > 1 ? 's' : ''}`)
         setTimeout(() => setPasteNotice(''), 3000)
       }
-    } else if (items.length === 1 && !queries.includes(items[0])) {
-      setQueries((prev) => [...prev, items[0]])
+    } else if (items.length === 1) {
+      const only = items[0]
+      if (only && !queries.includes(only)) {
+        setQueries((prev) => [...prev, only])
+      }
     }
 
     setInputValue('')
@@ -385,7 +388,9 @@ function CompararInner() {
   }, [currentProductIdx, checkoutItems, checkoutStore, cartProgress])
 
   const getProductUrl = (item: BuyItem, storeName: string) => {
-    let url = item.url && !item.url.includes('google.com/search') ? item.url : SEARCH_URLS[storeName]?.(item.name) || SEARCH_URLS.Jumbo(item.name)
+    const search = SEARCH_URLS[storeName] ?? SEARCH_URLS.Jumbo
+    const searched = search ? search(item.name) : `https://www.jumbo.cl/busqueda?ft=${encodeURIComponent(item.name)}`
+    let url = item.url && !item.url.includes('google.com/search') ? item.url : searched
     const separator = url.includes('?') ? '&' : '?'
     return `${url}${separator}avi_add=1&avi_product=${encodeURIComponent(item.name)}`
   }
@@ -398,10 +403,16 @@ function CompararInner() {
     const progress: Array<{ name: string; status: 'pending' | 'adding' | 'done' | 'failed'; url?: string }> = items.map((i) => ({ name: i.name, status: 'pending', url: i.url }))
     setCartProgress([...progress])
 
-    const firstUrl = getProductUrl(items[0], primaryStore)
+    const first = items[0]
+    const firstProgress = progress[0]
+    if (!first || !firstProgress) {
+      setCartBuilding(false)
+      return
+    }
+    const firstUrl = getProductUrl(first, primaryStore || storeName)
     cartWindowRef.current = window.open(firstUrl, 'avi-cart')
 
-    progress[0] = { name: progress[0].name, status: 'adding', url: progress[0].url }
+    progress[0] = { name: firstProgress.name, status: 'adding', url: firstProgress.url }
     setCartProgress([...progress])
     setCurrentProductIdx(0)
     setCartBuilding(false)
@@ -410,14 +421,21 @@ function CompararInner() {
 
   const openNextProduct = () => {
     if (!checkoutItems || currentProductIdx < 0) return
-    const primaryStore = checkoutStore.split(' + ')[0]
+    const primaryStore = checkoutStore.split(' + ')[0] || checkoutStore
 
     const progress = [...cartProgress]
-    progress[currentProductIdx] = { ...progress[currentProductIdx], status: 'done' }
+    const current = progress[currentProductIdx]
+    if (current) progress[currentProductIdx] = { ...current, status: 'done' }
 
     const nextIdx = currentProductIdx + 1
     if (nextIdx < checkoutItems.length) {
-      const nextUrl = getProductUrl(checkoutItems[nextIdx], primaryStore)
+      const nextItem = checkoutItems[nextIdx]
+      const nextProgress = progress[nextIdx]
+      if (!nextItem || !nextProgress) {
+        setCartProgress(progress)
+        return
+      }
+      const nextUrl = getProductUrl(nextItem, primaryStore)
       // Reuse the same tab
       if (cartWindowRef.current && !cartWindowRef.current.closed) {
         cartWindowRef.current.location.href = nextUrl
@@ -425,7 +443,7 @@ function CompararInner() {
       } else {
         cartWindowRef.current = window.open(nextUrl, 'avi-cart')
       }
-      progress[nextIdx] = { ...progress[nextIdx], status: 'adding' }
+      progress[nextIdx] = { ...nextProgress, status: 'adding' }
       setCurrentProductIdx(nextIdx)
     } else {
       // All products added — go to checkout
@@ -438,7 +456,7 @@ function CompararInner() {
         Tottus: 'https://www.tottus.cl/tottus-cl/checkout',
         'Santa Isabel': 'https://www.santaisabel.cl/checkout',
       }
-      const checkoutUrl = CHECKOUT_URLS[primaryStore] || CHECKOUT_URLS.Jumbo
+      const checkoutUrl = CHECKOUT_URLS[primaryStore] || CHECKOUT_URLS.Jumbo || 'https://www.jumbo.cl/mi-carro'
 
       // Navigate the same tab to checkout with avi_add flag
       const checkoutWithAvi = `${checkoutUrl}${checkoutUrl.includes('?') ? '&' : '?'}avi_add=1`
@@ -464,14 +482,18 @@ function CompararInner() {
     const storeTotals: Record<string, { items: BuyItem[]; total: number }> = {}
     for (const comp of completed) {
       for (const r of comp.results) {
-        if (!storeTotals[r.store]) storeTotals[r.store] = { items: [], total: 0 }
-        const existing = storeTotals[r.store].items.find((i) => i.name === comp.query)
+        let bucket = storeTotals[r.store]
+        if (!bucket) {
+          bucket = { items: [], total: 0 }
+          storeTotals[r.store] = bucket
+        }
+        const existing = bucket.items.find((i) => i.name === comp.query)
         if (!existing) {
           const choices = comp.results.filter((x) => x.store === r.store && x.matched !== false && x.catalogRelation !== 'substitute' && x.catalogRelation !== 'other')
           if (choices.length === 0) continue
           const cheapestInStore = choices.reduce((min, x) => (x.payable ?? x.price) < (min.payable ?? min.price) ? x : min)
-          storeTotals[r.store].items.push({ name: comp.query, price: cheapestInStore.payable ?? cheapestInStore.price, url: cheapestInStore.url })
-          storeTotals[r.store].total += cheapestInStore.payable ?? cheapestInStore.price
+          bucket.items.push({ name: comp.query, price: cheapestInStore.payable ?? cheapestInStore.price, url: cheapestInStore.url })
+          bucket.total += cheapestInStore.payable ?? cheapestInStore.price
         }
       }
     }
@@ -762,7 +784,8 @@ function CompararInner() {
                         const storeName = opt.stores.map((s) => s.store).join(' + ')
                         setCheckoutItems(allItems)
                         setCheckoutStore(storeName)
-                        buildCartAuto(allItems, opt.stores[0].store)
+                        const firstStore = opt.stores[0]
+                        if (firstStore) buildCartAuto(allItems, firstStore.store)
                       }}
                       className={`w-full py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all ${
                         opt.isCheapest

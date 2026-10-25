@@ -17,6 +17,7 @@ export default function AdBanner({ variant = 'full' }: { variant?: 'full' | 'com
   }, [])
 
   const ad = ADS[idx]
+  if (!ad) return null
 
   if (variant === 'compact') {
     return (

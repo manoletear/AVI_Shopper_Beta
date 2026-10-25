@@ -280,6 +280,7 @@ export default function FamiliaPage() {
               <div className="space-y-2">
                 {connectedMembers.map((m) => {
                   const config = ROLE_CONFIG[m.role] || ROLE_CONFIG.adult
+                  if (!config) return null
                   const Icon = config.icon
                   return (
                     <div key={m.id} className="avi-card p-4">
@@ -332,6 +333,7 @@ export default function FamiliaPage() {
               <div className="space-y-2">
                 {profileMembers.map((m) => {
                   const config = ROLE_CONFIG[m.role] || ROLE_CONFIG.adult
+                  if (!config) return null
                   const Icon = config.icon
                   const allergies = m.allergies ? JSON.parse(m.allergies) : []
 

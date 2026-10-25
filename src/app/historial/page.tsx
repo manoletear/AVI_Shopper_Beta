@@ -63,6 +63,7 @@ export default function HistorialPage() {
   }
   for (const [key, items] of Array.from(monthMap.entries()).sort((a, b) => b[0].localeCompare(a[0]))) {
     const [y, m] = key.split('-')
+    if (!y || !m) continue
     const label = new Date(parseInt(y), parseInt(m) - 1).toLocaleDateString('es-CL', { month: 'long', year: 'numeric' })
     grouped.push({ label, purchases: items, total: items.reduce((s, p) => s + (p.price || 0) * p.quantity, 0) })
   }

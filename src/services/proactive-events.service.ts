@@ -61,8 +61,11 @@ export async function createBirthdayEvent(
 ): Promise<void> {
   const parts = dateOfBirth.split('-');
   if (parts.length < 2) return;
-  const month = parseInt(parts.length === 3 ? parts[1] : parts[0]);
-  const day = parseInt(parts.length === 3 ? parts[2] : parts[1]);
+  const monthPart = parts.length === 3 ? parts[1] : parts[0];
+  const dayPart = parts.length === 3 ? parts[2] : parts[1];
+  if (!monthPart || !dayPart) return;
+  const month = parseInt(monthPart);
+  const day = parseInt(dayPart);
   if (!month || !day) return;
 
   const exists = await prisma.familyEvent.findFirst({

@@ -317,7 +317,7 @@ export async function predictConsumption(
       product,
       category: data.category,
       avgQuantityPerWeek: Number(avgPerWeek.toFixed(1)),
-      nextPurchaseDate: nextDate.toISOString().split('T')[0],
+      nextPurchaseDate: nextDate.toISOString().split('T')[0] || '',
       confidence: Number(confidence.toFixed(2)),
     });
   }

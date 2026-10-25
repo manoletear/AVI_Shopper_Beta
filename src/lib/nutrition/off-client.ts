@@ -90,7 +90,8 @@ export async function fetchFromOpenFoodFacts(ean: string): Promise<ProductNutrit
     let servingSizeG: number | null = null;
     if (servingSizeStr) {
       const match = servingSizeStr.match(/(\d+(?:\.\d+)?)/);
-      if (match) servingSizeG = parseFloat(match[1]);
+      const grams = match?.[1];
+      if (grams) servingSizeG = parseFloat(grams);
     }
 
     return {

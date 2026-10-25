@@ -39,7 +39,9 @@ function parseMarkdown(markdown: string, query: string): LiderProduct[] {
   let currentProduct: Partial<LiderProduct> = {};
 
   for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
+    const rawLine = lines[i];
+    if (rawLine === undefined) continue;
+    const line = rawLine.trim();
 
     // Detectar link de producto: [Nombre](url)
     const productLink = line.match(/\[([^\]]+)\]\((https:\/\/super\.lider\.cl\/(?:ip|wapcrs)[^\)]+)\)/);
@@ -50,18 +52,22 @@ function parseMarkdown(markdown: string, query: string): LiderProduct[] {
       }
 
       // Extraer URL real del tracking redirect
+      const linkedName = productLink[1];
       let url = productLink[2];
+      if (!linkedName || !url) continue;
       const rdMatch = url.match(/rd=([^&]+)/);
-      if (rdMatch) {
-        url = decodeURIComponent(rdMatch[1]);
+      const redirected = rdMatch?.[1];
+      if (redirected) {
+        url = decodeURIComponent(redirected);
       }
       const ipMatch = url.match(/(\/ip\/[^\?&]+)/);
-      if (ipMatch) {
-        url = `https://super.lider.cl${ipMatch[1]}`;
+      const path = ipMatch?.[1];
+      if (path) {
+        url = `https://super.lider.cl${path}`;
       }
 
       currentProduct = {
-        name: productLink[1],
+        name: linkedName,
         url,
         inStock: true,
         store: 'Lider',
@@ -74,7 +80,8 @@ function parseMarkdown(markdown: string, query: string): LiderProduct[] {
     const priceMatch = line.match(/^\$([0-9.,]+)$/);
     const precioActualMatch = line.match(/precio actual \$([0-9.,]+)/);
     if ((priceMatch || precioActualMatch) && currentProduct.name && !currentProduct.price) {
-      const priceText = priceMatch ? priceMatch[1] : precioActualMatch![1];
+      const priceText = priceMatch?.[1] || precioActualMatch?.[1];
+      if (!priceText) continue;
       currentProduct.price = parseInt(priceText.replace(/[.,]/g, ''));
       continue;
     }
@@ -82,14 +89,18 @@ function parseMarkdown(markdown: string, query: string): LiderProduct[] {
     // Detectar precio anterior: $9.290 (despues de "Costaba")
     const costabaMatch = line.match(/Costaba \$([0-9.,]+)/);
     if (costabaMatch && currentProduct.name) {
-      currentProduct.originalPrice = parseInt(costabaMatch[1].replace(/[.,]/g, ''));
+      const original = costabaMatch[1];
+      if (!original) continue;
+      currentProduct.originalPrice = parseInt(original.replace(/[.,]/g, ''));
       continue;
     }
 
     // Detectar ahorro: Ahorra $2.000
     const ahorroMatch = line.match(/Ahorra \$([0-9.,]+)/);
     if (ahorroMatch && currentProduct.name) {
-      currentProduct.savings = parseInt(ahorroMatch[1].replace(/[.,]/g, ''));
+      const saved = ahorroMatch[1];
+      if (!saved) continue;
+      currentProduct.savings = parseInt(saved.replace(/[.,]/g, ''));
       continue;
     }
 

@@ -150,8 +150,11 @@ export async function getProductProfiles(
     // Frecuencia
     const intervals: number[] = [];
     for (let i = 1; i < items.length; i++) {
+      const current = items[i];
+      const previous = items[i - 1];
+      if (!current || !previous) continue;
       const days = Math.round(
-        (items[i].purchasedAt.getTime() - items[i - 1].purchasedAt.getTime()) / (1000 * 60 * 60 * 24)
+        (current.purchasedAt.getTime() - previous.purchasedAt.getTime()) / (1000 * 60 * 60 * 24)
       );
       if (days > 0) intervals.push(days);
     }
@@ -159,13 +162,16 @@ export async function getProductProfiles(
       ? Math.round(intervals.reduce((s, d) => s + d, 0) / intervals.length)
       : 0;
 
-    const lastPurchased = items[items.length - 1].purchasedAt;
+    const lastItem = items[items.length - 1];
+    const firstItem = items[0];
+    if (!lastItem || !firstItem) continue;
+    const lastPurchased = lastItem.purchasedAt;
     const daysSinceLast = Math.round((now.getTime() - lastPurchased.getTime()) / (1000 * 60 * 60 * 24));
 
     const avgQty = items.reduce((s, i) => s + i.quantity, 0) / items.length;
 
     profiles.push({
-      productName: items[0].productName,
+      productName: firstItem.productName,
       preferredBrand: brands[0]?.brand || null,
       preferredStore: stores[0]?.store || null,
       avgPrice,

@@ -37,7 +37,10 @@ export function queryProfile(query: string): { norm: NormalizedProduct; preferre
   if (hasPack) return { norm: normalizeName(query), preferred: null };
   const tail = query.match(/(\d+(?:[.,]\d+)?)\s*(kg|g|gr|grs|ml|cc|lt|l|litro|litros|un|und)\s*$/i);
   if (!tail || tail.index == null) return { norm: normalizeName(query), preferred: null };
-  const preferred = convertPreferred(Number(tail[1].replace(',', '.')), tail[2]);
+  const amountText = tail[1];
+  const unitText = tail[2];
+  if (!amountText || !unitText) return { norm: normalizeName(query), preferred: null };
+  const preferred = convertPreferred(Number(amountText.replace(',', '.')), unitText);
   const productText = query.slice(0, tail.index).trim();
   return { norm: normalizeName(productText || query), preferred };
 }
@@ -83,6 +86,7 @@ export function shouldShowWithQuery(query: string, name: string, price = 0): boo
   const queryWords = query.toLowerCase().split(/\s+/).filter((word) => word.length > 2);
   if (queryWords.some((word) => name.toLowerCase().includes(word))) return true;
   const tag = tagOffers(query, [{ name, price }])[0];
+  if (!tag) return false;
   if (tag.relation === 'same' || tag.relation === 'substitute') return true;
   const left = queryProfile(query).norm;
   const right = normalizeName(name);
@@ -105,7 +109,7 @@ export function tagOffers<T extends PricedName>(
     return norms.map((norm, index) => ({
       relation: 'same',
       reason: '',
-      pricePerUnitLabel: pricePerUnit(norm, offers[index].price)?.label || null,
+      pricePerUnitLabel: pricePerUnit(norm, offers[index]?.price ?? 0)?.label || null,
     }));
   }
 
@@ -118,8 +122,10 @@ export function tagOffers<T extends PricedName>(
   }
 
   return norms.map((norm, index) => {
-    const unit = pricePerUnit(norm, offers[index].price)?.label || null;
-    const name = offers[index].name;
+    const offer = offers[index];
+    if (!offer) return { relation: 'other', reason: '', pricePerUnitLabel: null };
+    const unit = pricePerUnit(norm, offer.price)?.label || null;
+    const name = offer.name;
     const warning = constraints ? proposalWarning(name, constraints) : null;
     if (constraints && !allowsProposedItem(name, constraints)) {
       return {

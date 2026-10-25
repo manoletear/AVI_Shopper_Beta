@@ -58,14 +58,23 @@ function convert(rawAmount: string, rawUnit: string): { amount: number; unit: Si
 function parseFormat(text: string): { packCount: number; sizeAmount: number | null; sizeUnit: SizeUnit | null } {
   const pack = text.match(/(\d+)\s*[x×]\s*(\d+(?:[.,]\d+)?)\s*(kg|g|gr|grs|ml|cc|lt|l|litro|litros)\b/);
   if (pack) {
-    const each = convert(pack[2], pack[3]);
-    if (each) return { packCount: Number(pack[1]), sizeAmount: each.amount, sizeUnit: each.unit };
+    const count = pack[1];
+    const amount = pack[2];
+    const unit = pack[3];
+    if (count && amount && unit) {
+      const each = convert(amount, unit);
+      if (each) return { packCount: Number(count), sizeAmount: each.amount, sizeUnit: each.unit };
+    }
   }
   const measured = [...text.matchAll(/(\d+(?:[.,]\d+)?)\s*(kg|g|gr|grs|ml|cc|lt|l|litro|litros)\b/g)];
   if (measured.length) {
     const last = measured[measured.length - 1];
-    const size = convert(last[1], last[2]);
-    if (size) return { packCount: 1, sizeAmount: size.amount, sizeUnit: size.unit };
+    const amount = last?.[1];
+    const unit = last?.[2];
+    if (amount && unit) {
+      const size = convert(amount, unit);
+      if (size) return { packCount: 1, sizeAmount: size.amount, sizeUnit: size.unit };
+    }
   }
   const count = text.match(/(\d+)\s*(rollos?|unidades|unidad|uds|und|un|hojas|latas)\b/);
   if (count) return { packCount: Number(count[1]), sizeAmount: 1, sizeUnit: 'un' };

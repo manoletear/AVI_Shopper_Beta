@@ -105,6 +105,9 @@ export default function ReposicionPage() {
   const formatDate = (dateStr: string) => {
     if (/^\d{4}-\d{2}-\d{2}/.test(dateStr)) {
       const [year, month, day] = dateStr.slice(0, 10).split('-').map(Number)
+      if (year === undefined || month === undefined || day === undefined) {
+        return new Date(dateStr).toLocaleDateString('es-CL', { day: 'numeric', month: 'short' })
+      }
       return new Date(Date.UTC(year, month - 1, day)).toLocaleDateString('es-CL', { day: 'numeric', month: 'short', timeZone: 'UTC' })
     }
     return new Date(dateStr).toLocaleDateString('es-CL', { day: 'numeric', month: 'short' })

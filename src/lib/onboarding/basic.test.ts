@@ -34,8 +34,10 @@ describe('onboarding básico', () => {
   it('son 5 pasos y la sustitución recomendada es proponer y aprobar', () => {
     assert.deepEqual(BASIC_STEP_IDS, ['address', 'household', 'allergies', 'stores', 'approver']);
     assert.equal(DEFAULT_SUBSTITUTION_MODE, 'propose_approve');
-    assert.equal(SUBSTITUTION_MODES[0].id, 'propose_approve');
-    assert.equal(SUBSTITUTION_MODES[0].label, 'Proponer reemplazo y que yo apruebe');
+    const recommended = SUBSTITUTION_MODES[0];
+    assert.ok(recommended);
+    assert.equal(recommended.id, 'propose_approve');
+    assert.equal(recommended.label, 'Proponer reemplazo y que yo apruebe');
     const mode = sustitucionSchema.safeParse({ mode: 'propose_approve' });
     assert.equal(mode.success, true);
   });
@@ -58,7 +60,9 @@ describe('onboarding básico', () => {
     const nana = withNana(withFour, 'adentro', 'Manuel');
     assert.equal(nana.people, 4);
     assert.equal(nana.adults + nana.children + 1, 4);
-    assert.equal(nana.members.filter((member) => member.kind === 'nana')[0].nanaMode, 'adentro');
+    const nanaMember = nana.members.filter((member) => member.kind === 'nana')[0];
+    assert.ok(nanaMember);
+    assert.equal(nanaMember.nanaMode, 'adentro');
     const parsed = householdStepSchema.safeParse({
       ...nana,
       members: nana.members.map((member, index) => ({ ...member, name: member.name || `Persona ${index + 1}` })),
@@ -71,7 +75,9 @@ describe('onboarding básico', () => {
     });
     assert.equal(broken.success, false);
     if (broken.success) return;
-    assert.match(broken.error.issues[0].message, /nana cuenta/);
+    const issue = broken.error.issues[0];
+    assert.ok(issue);
+    assert.match(issue.message, /nana cuenta/);
   });
 
   it('las alergias son por persona y producen aviso, no bloqueo', () => {
@@ -96,8 +102,10 @@ describe('onboarding básico', () => {
     if (!ok.success) return;
     const warnings = allergyWarnings(ok.data.assignments);
     assert.equal(warnings.length, 2);
-    assert.match(warnings[0], /Ana/);
-    assert.match(warnings[0], /no bloquea/);
+    const firstWarning = warnings[0];
+    assert.ok(firstWarning);
+    assert.match(firstWarning, /Ana/);
+    assert.match(firstWarning, /no bloquea/);
     const decision = evaluateAllergens(['peanut', 'milk'], [], 'verified', [
       { id: 'ana', name: 'Ana', allergens: ['mani', 'frutos_secos'] },
       { id: 'lucho', name: 'Lucho', allergens: ['lacteos'] },
@@ -118,7 +126,9 @@ describe('onboarding básico', () => {
 
   it('al cerrar el básico guarda basic_done, propose_approve y lo progresivo pendiente', () => {
     const household = withPeople(emptyHousehold('Manuel'), 2, 'Manuel');
-    household.members[1].name = 'Ana';
+    const second = household.members[1];
+    assert.ok(second);
+    second.name = 'Ana';
     const answers = {
       address: home,
       household,

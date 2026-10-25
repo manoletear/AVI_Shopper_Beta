@@ -23,8 +23,10 @@ describe('precio efectivo', () => {
     const priced = priceQuery('lomo vetado 1,75 kg', [
       { name: 'Lomo vetado', store: 'Tottus', price: 35605, soldByWeight: true, minAmount: 1.5, stepAmount: 0.25 },
     ]);
-    assert.equal(priced.lines[0].boughtAmount, 1.75);
-    assert.equal(priced.lines[0].payable, 62309);
+    const line = priced.lines[0];
+    assert.ok(line);
+    assert.equal(line.boughtAmount, 1.75);
+    assert.equal(line.payable, 62309);
   });
 
   it('arma los litros pedidos aunque el formato sea de 1 L', () => {

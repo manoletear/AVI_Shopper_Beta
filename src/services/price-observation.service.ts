@@ -157,8 +157,13 @@ export async function getPriceTrend(
     return { trend: 'unknown', currentPrice: history[0]?.price || null, previousPrice: null, changePercent: 0 };
   }
 
-  const current = history[history.length - 1].price;
-  const previous = history[0].price;
+  const currentEntry = history[history.length - 1];
+  const previousEntry = history[0];
+  if (!currentEntry || !previousEntry) {
+    return { trend: 'unknown', currentPrice: null, previousPrice: null, changePercent: 0 };
+  }
+  const current = currentEntry.price;
+  const previous = previousEntry.price;
   const change = ((current - previous) / previous) * 100;
 
   let trend: 'up' | 'down' | 'stable';

@@ -19,8 +19,10 @@ export function parseJumboSearchHtml(html: string): JumboProduct[] {
 
   while ((match = impression.exec(html))) {
     let data: { name?: string; id?: string | number; price?: number | string; brand?: string };
+    const impressionRaw = match[1];
+    if (!impressionRaw) continue;
     try {
-      data = JSON.parse(decodeHtml(match[1]));
+      data = JSON.parse(decodeHtml(impressionRaw));
     } catch {
       continue;
     }
@@ -40,8 +42,10 @@ export function parseJumboSearchHtml(html: string): JumboProduct[] {
   const urls = new Map<string, string>();
   const scripts = /<script type="application\/ld\+json">([\s\S]*?)<\/script>/g;
   while ((match = scripts.exec(html))) {
+    const scriptRaw = match[1];
+    if (!scriptRaw) continue;
     try {
-      const data = JSON.parse(match[1]);
+      const data = JSON.parse(scriptRaw);
       const elements = Array.isArray(data.itemListElement) ? data.itemListElement : [];
       for (const element of elements) {
         const name = element?.name || element?.item?.name;
