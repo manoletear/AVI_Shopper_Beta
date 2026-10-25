@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "test": "playwright test",
-    "test:unit": "tsx --test src/services/cart-agent/cart-agent.test.ts src/services/offer-pricing.test.ts src/services/consumption/predict.test.ts src/services/consumption/bundle.test.ts src/services/notifications/auth.test.ts src/services/catalog/catalog.test.ts src/services/household/constraints.test.ts src/lib/onboarding/model.test.ts tests/nutrition/allergen-mapper.test.ts",
+    "test:unit": "tsx --test src/services/cart-agent/cart-agent.test.ts src/services/offer-pricing.test.ts src/services/consumption/predict.test.ts src/services/consumption/bundle.test.ts src/services/notifications/auth.test.ts src/services/catalog/catalog.test.ts src/services/household/constraints.test.ts src/lib/onboarding/model.test.ts tests/nutrition/allergen-mapper.test.ts tests/nutrition/product-nutrition.test.ts",
     "test:ui": "playwright test --ui",
     "postinstall": "prisma generate",
     "deploy:prepare": "tsx scripts/prepare-production.ts",

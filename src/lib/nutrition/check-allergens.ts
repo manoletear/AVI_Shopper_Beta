@@ -1,26 +1,121 @@
 import { prisma } from '@/lib/prisma';
-import { AllergenCheckResult, NormalizedAllergen } from '@/types/nutrition';
+import {
+  AllergenCheckResult,
+  AllergenStatus,
+  NormalizedAllergen,
+  NORMALIZED_ALLERGENS,
+} from '@/types/nutrition';
 
-export type AllergenStatus = 'verified' | 'partial' | 'unverified';
+const PRODUCT_VOCAB = new Set<string>(NORMALIZED_ALLERGENS);
+
+/**
+ * Alias de la familia → vocabulario de la tabla.
+ * shellfish y mariscos cubren crustacean Y mollusc.
+ * fish y pescado cubren solo fish: no bloquean mariscos.
+ */
+const FAMILY_ALIAS: Record<string, readonly NormalizedAllergen[]> = {
+  shellfish: ['crustacean', 'mollusc'],
+  mariscos: ['crustacean', 'mollusc'],
+  marisco: ['crustacean', 'mollusc'],
+  crustacean: ['crustacean'],
+  crustaceans: ['crustacean'],
+  crustaceo: ['crustacean'],
+  crustaceos: ['crustacean'],
+  mollusc: ['mollusc'],
+  molluscs: ['mollusc'],
+  mollusk: ['mollusc'],
+  mollusks: ['mollusc'],
+  molusco: ['mollusc'],
+  moluscos: ['mollusc'],
+  fish: ['fish'],
+  pescado: ['fish'],
+  pescados: ['fish'],
+  peanut: ['peanut'],
+  peanuts: ['peanut'],
+  mani: ['peanut'],
+  tree_nut: ['tree_nut'],
+  frutos_secos: ['tree_nut'],
+  gluten: ['gluten'],
+  milk: ['milk'],
+  lacteos: ['milk'],
+  lactosa: ['milk'],
+  egg: ['egg'],
+  huevo: ['egg'],
+  huevos: ['egg'],
+  soy: ['soy'],
+  soya: ['soy'],
+  soja: ['soy'],
+  sesame: ['sesame'],
+  sesamo: ['sesame'],
+  sulfites: ['sulfites'],
+  sulfitos: ['sulfites'],
+  mustard: ['mustard'],
+  mostaza: ['mustard'],
+  celery: ['celery'],
+  apio: ['celery'],
+  lupin: ['lupin'],
+  lupino: ['lupin'],
+  altramuz: ['lupin'],
+};
+
+function foldToken(value: string): string {
+  return value
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .replace(/[\s-]+/g, '_');
+}
+
+export function expandFamilyAllergens(familyAllergens: Iterable<string>): Set<NormalizedAllergen> {
+  const expanded = new Set<NormalizedAllergen>();
+  for (const raw of familyAllergens) {
+    const key = foldToken(raw);
+    const mapped = FAMILY_ALIAS[key];
+    if (mapped) {
+      for (const allergen of mapped) expanded.add(allergen);
+      continue;
+    }
+    if (PRODUCT_VOCAB.has(key)) expanded.add(key as NormalizedAllergen);
+  }
+  return expanded;
+}
+
+function matchingTokens(
+  tokens: readonly string[],
+  family: Set<NormalizedAllergen>,
+): NormalizedAllergen[] {
+  const matched = new Set<NormalizedAllergen>();
+  for (const token of tokens) {
+    for (const allergen of expandFamilyAllergens([token])) {
+      if (family.has(allergen)) matched.add(allergen);
+    }
+  }
+  return Array.from(matched).sort();
+}
 
 /**
  * Pure decision logic. Any allergen OR trace match blocks the product,
  * regardless of allergen_status. Without a match, 'unverified' and 'partial'
  * require explicit human approval; 'verified' is safe.
+ *
+ * Una alergia familiar shellfish/mariscos bloquea crustacean y mollusc.
+ * fish/pescado no bloquea mariscos.
  */
 export function evaluateAllergens(
-  allergens: string[],
-  traces: string[],
+  allergens: readonly string[],
+  traces: readonly string[],
   status: AllergenStatus,
-  familyAllergens: Set<NormalizedAllergen>
+  familyAllergens: Iterable<string>,
 ): {
   matchedAllergens: NormalizedAllergen[];
   matchedTraces: NormalizedAllergen[];
   blocked: boolean;
   requiresApproval: boolean;
 } {
-  const matchedAllergens = (allergens as NormalizedAllergen[]).filter((a) => familyAllergens.has(a));
-  const matchedTraces = (traces as NormalizedAllergen[]).filter((a) => familyAllergens.has(a));
+  const family = expandFamilyAllergens(familyAllergens);
+  const matchedAllergens = matchingTokens(allergens, family);
+  const matchedTraces = matchingTokens(traces, family);
   const hasMatch = matchedAllergens.length > 0 || matchedTraces.length > 0;
   if (hasMatch) {
     return { matchedAllergens, matchedTraces, blocked: true, requiresApproval: false };
@@ -33,34 +128,62 @@ export function evaluateAllergens(
   };
 }
 
+export function collectFamilyAllergenTokens(
+  familyAllergens: Record<string, readonly string[]>,
+): string[] {
+  const tokens: string[] = [];
+  for (const memberAllergens of Object.values(familyAllergens)) {
+    for (const allergen of memberAllergens) tokens.push(allergen);
+  }
+  return tokens;
+}
+
+export function evaluateProductForFamily(
+  product: {
+    allergens: readonly string[];
+    traces: readonly string[];
+    allergenStatus: AllergenStatus;
+  },
+  familyAllergens: Record<string, readonly string[]>,
+) {
+  return evaluateAllergens(
+    product.allergens,
+    product.traces,
+    product.allergenStatus,
+    collectFamilyAllergenTokens(familyAllergens),
+  );
+}
+
+function asStatus(value: string): AllergenStatus {
+  if (value === 'verified' || value === 'partial' || value === 'unverified') return value;
+  return 'unverified';
+}
+
 /**
  * Checks a product's allergens against a family's known allergies.
  *
  * Rules:
- * - Any matching allergen or trace → blocked (whatever the status)
- * - 'unverified' or 'partial' without match → requiresApproval (never auto-added)
- * - 'verified' without match → safe
+ * - shellfish / mariscos → bloquea crustacean y mollusc (alérgeno o traza, cualquier status)
+ * - fish / pescado → solo fish
+ * - 'unverified' o 'partial' sin match → requiresApproval
+ * - 'verified' sin match → safe
  */
 export async function checkAllergens(
   productNutritionId: string,
-  familyAllergens: Record<string, NormalizedAllergen[]>
+  familyAllergens: Record<string, readonly string[]>,
 ): Promise<AllergenCheckResult> {
-  // Get product nutrition data
-  // Using raw query since product_nutrition may not be in Prisma schema yet
-  const rows = await prisma.$queryRaw<Array<{
-    id: string;
-    name: string;
-    allergens: string[];
-    traces: string[];
-    allergen_status: string;
-  }>>`
-    SELECT id, name, allergens, traces, allergen_status
-    FROM product_nutrition
-    WHERE id = ${productNutritionId}::uuid
-    LIMIT 1
-  `;
+  const product = await prisma.productNutrition.findUnique({
+    where: { id: productNutritionId },
+    select: {
+      id: true,
+      name: true,
+      allergens: true,
+      traces: true,
+      allergenStatus: true,
+    },
+  });
 
-  if (rows.length === 0) {
+  if (!product) {
     return {
       productId: productNutritionId,
       productName: 'Unknown',
@@ -73,30 +196,24 @@ export async function checkAllergens(
     };
   }
 
-  const product = rows[0];
-  const status = product.allergen_status as AllergenStatus;
-  const allFamilyAllergens = new Set<NormalizedAllergen>();
-  for (const memberAllergens of Object.values(familyAllergens)) {
-    for (const a of memberAllergens) {
-      allFamilyAllergens.add(a);
-    }
-  }
-
-  const { matchedAllergens, matchedTraces, blocked, requiresApproval } = evaluateAllergens(
-    product.allergens ?? [],
-    product.traces ?? [],
-    status,
-    allFamilyAllergens
+  const status = asStatus(product.allergenStatus);
+  const decision = evaluateProductForFamily(
+    {
+      allergens: product.allergens ?? [],
+      traces: product.traces ?? [],
+      allergenStatus: status,
+    },
+    familyAllergens,
   );
 
   return {
     productId: productNutritionId,
     productName: product.name,
     allergenStatus: status,
-    blocked,
-    requiresApproval,
-    matchedAllergens,
-    matchedTraces,
+    blocked: decision.blocked,
+    requiresApproval: decision.requiresApproval,
+    matchedAllergens: decision.matchedAllergens,
+    matchedTraces: decision.matchedTraces,
     familyMemberAllergens: familyAllergens,
   };
 }
@@ -107,19 +224,19 @@ export async function checkAllergens(
  */
 export async function batchCheckAllergens(
   productNutritionIds: string[],
-  familyAllergens: Record<string, NormalizedAllergen[]>
+  familyAllergens: Record<string, readonly string[]>,
 ): Promise<{
   safe: AllergenCheckResult[];
   blocked: AllergenCheckResult[];
   needsApproval: AllergenCheckResult[];
 }> {
   const results = await Promise.all(
-    productNutritionIds.map((id) => checkAllergens(id, familyAllergens))
+    productNutritionIds.map((id) => checkAllergens(id, familyAllergens)),
   );
 
   return {
-    safe: results.filter((r) => !r.blocked && !r.requiresApproval),
-    blocked: results.filter((r) => r.blocked),
-    needsApproval: results.filter((r) => r.requiresApproval && !r.blocked),
+    safe: results.filter((row) => !row.blocked && !row.requiresApproval),
+    blocked: results.filter((row) => row.blocked),
+    needsApproval: results.filter((row) => row.requiresApproval && !row.blocked),
   };
 }
