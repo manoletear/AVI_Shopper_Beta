@@ -507,6 +507,7 @@ model CanonicalProduct {
   substitutesTo   ProductSubstitute[] @relation("SubstituteTo")
   purchases    PurchaseHistory[]
   preferences  MemberPreference[]
+  nutrition    ProductNutrition[]
 
   @@index([category, variant])
   @@index([brand])
@@ -797,4 +798,44 @@ model FamilySettings {
   updatedAt            DateTime @updatedAt
 
   @@map("family_settings")
+}
+
+// Catálogo de nutrición y alérgenos. La tabla ya existe en soc-chile (public).
+// Nombres de columna con @map: la tabla viva es snake_case.
+// No correr prisma db push contra soc-chile; el SQL vive en supabase/migrations.
+// id es text y lo genera la app (uuid). Los índices únicos parciales de ean y
+// store_sku, el gin_trgm y los CHECK están solo en SQL.
+model ProductNutrition {
+  id                 String   @id @map("id")
+  canonicalProductId String?  @map("canonical_product_id")
+  ean                String?  @map("ean")
+  store              String?  @map("store")
+  storeSku           String?  @map("store_sku")
+  brand              String?  @map("brand")
+  name               String   @map("name")
+  format             String?  @map("format")
+  ingredientsText    String?  @map("ingredients_text")
+  allergens          String[] @default([]) @map("allergens")
+  traces             String[] @default([]) @map("traces")
+  kcal100g           Float?   @map("kcal_100g") @db.DoublePrecision
+  protein100g        Float?   @map("protein_100g") @db.DoublePrecision
+  fat100g            Float?   @map("fat_100g") @db.DoublePrecision
+  carbs100g          Float?   @map("carbs_100g") @db.DoublePrecision
+  sugar100g          Float?   @map("sugar_100g") @db.DoublePrecision
+  sodiumMg100g       Float?   @map("sodium_mg_100g") @db.DoublePrecision
+  servingSizeG       Float?   @map("serving_size_g") @db.DoublePrecision
+  sellosChile        String[] @default([]) @map("sellos_chile")
+  source             String   @map("source")
+  sourceUrl          String?  @map("source_url")
+  sourceDetail       Json     @map("source_detail")
+  allergenStatus     String   @default("unverified") @map("allergen_status")
+  fetchedAt          DateTime @default(now()) @map("fetched_at") @db.Timestamptz(6)
+  createdAt          DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  canonical CanonicalProduct? @relation(fields: [canonicalProductId], references: [id], onDelete: SetNull)
+
+  @@index([canonicalProductId], map: "product_nutrition_canonical_idx")
+  @@index([fetchedAt], map: "product_nutrition_fetched_idx")
+  @@map("product_nutrition")
 }

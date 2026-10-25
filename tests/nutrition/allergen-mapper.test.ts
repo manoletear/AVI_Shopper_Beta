@@ -7,6 +7,8 @@ import {
   determineAllergenStatus,
 } from '../../src/lib/nutrition/allergen-mapper';
 import { evaluateAllergens } from '../../src/lib/nutrition/check-allergens';
+import { ALLERGENS_NOT_VERIFIED_NOTICE, MemberAllergies } from '../../src/types/nutrition';
+import { inferSellosChile } from '../../src/lib/nutrition/off-client';
 
 const expect = (actual: unknown) => ({
   toEqual: (expected: unknown) => assert.deepEqual(actual, expected),
@@ -25,9 +27,19 @@ describe('mapOFFTags', () => {
     expect(mapOFFTags(tags)).toEqual(['tree_nut']);
   });
 
-  it('maps shellfish variants', () => {
-    const tags = ['en:crustaceans', 'en:molluscs'];
-    expect(mapOFFTags(tags)).toEqual(['shellfish']);
+  it('maps crustaceans and molluscs separately', () => {
+    expect(mapOFFTags(['en:crustaceans'])).toEqual(['crustacean']);
+    expect(mapOFFTags(['en:molluscs'])).toEqual(['mollusc']);
+    expect(mapOFFTags(['en:crustaceans', 'en:molluscs'])).toEqual(['crustacean', 'mollusc']);
+  });
+
+  it('maps sulfites, mustard, celery and lupin', () => {
+    expect(mapOFFTags([
+      'en:sulphur-dioxide-and-sulphites',
+      'en:mustard',
+      'en:celery',
+      'en:lupin',
+    ])).toEqual(['celery', 'lupin', 'mustard', 'sulfites']);
   });
 
   it('ignores unknown tags', () => {
@@ -82,6 +94,22 @@ describe('extractAllergensFromText', () => {
     expect(extractAllergensFromText('Semillas de ajonjolí')).toContain('sesame');
   });
 
+  it('separa pescado, crustáceos y moluscos', () => {
+    expect(extractAllergensFromText('Filete de pescado')).toEqual(['fish']);
+    expect(extractAllergensFromText('Camarones pelados')).toEqual(['crustacean']);
+    expect(extractAllergensFromText('Calamares en su tinta')).toEqual(['mollusc']);
+  });
+
+  it('mariscos en el texto marca crustáceo y molusco', () => {
+    expect(extractAllergensFromText('Contiene mariscos')).toEqual(['crustacean', 'mollusc']);
+  });
+
+  it('extracts sulfites, mustard, celery and lupin', () => {
+    expect(extractAllergensFromText('Sulfitos, mostaza, apio y altramuz')).toEqual([
+      'celery', 'lupin', 'mustard', 'sulfites',
+    ]);
+  });
+
   it('extracts multiple allergens from complex text', () => {
     const text = 'Harina de trigo, leche, huevo, soya, maní';
     const result = extractAllergensFromText(text);
@@ -120,36 +148,171 @@ describe('mergeAllergens', () => {
 
 describe('determineAllergenStatus', () => {
   it('returns unverified when no ingredients text', () => {
-    expect(determineAllergenStatus(null, true)).toBe('unverified');
-    expect(determineAllergenStatus('', true)).toBe('unverified');
+    expect(determineAllergenStatus(null, 'manual', true)).toBe('unverified');
+    expect(determineAllergenStatus('', 'store_page', true)).toBe('unverified');
+    expect(determineAllergenStatus('   ', 'manufacturer', true)).toBe('unverified');
   });
 
-  it('returns verified when ingredients exist and sources agree', () => {
-    expect(determineAllergenStatus('Harina, azúcar', true)).toBe('verified');
+  it('returns verified only for store, manufacturer or manual when sources agree', () => {
+    expect(determineAllergenStatus('Harina, azúcar', 'manual', true)).toBe('verified');
+    expect(determineAllergenStatus('Harina, azúcar', 'store_page', true)).toBe('verified');
+    expect(determineAllergenStatus('Harina, azúcar', 'manufacturer', true)).toBe('verified');
   });
 
   it('returns partial when sources disagree', () => {
-    expect(determineAllergenStatus('Harina, azúcar', false)).toBe('partial');
+    expect(determineAllergenStatus('Harina, azúcar', 'manual', false)).toBe('partial');
+  });
+
+  it('Open Food Facts alone is partial, never verified', () => {
+    expect(determineAllergenStatus('Harina, azúcar', 'open_food_facts', true)).toBe('partial');
+    expect(determineAllergenStatus(null, 'open_food_facts', true)).toBe('unverified');
   });
 });
 
+describe('inferSellosChile', () => {
+  it('uses the live sello vocabulary', () => {
+    expect(inferSellosChile({
+      'energy-kcal_100g': 400,
+      sugars_100g: 20,
+      fat_100g: 10,
+      sodium_100g: 0.5,
+    })).toEqual(['alto_calorias', 'alto_azucares', 'alto_grasas_saturadas', 'alto_sodio']);
+  });
+});
+
+function person(id: string, name: string, allergens: string[]): MemberAllergies {
+  return { id, name, allergens };
+}
+
+const claudia = person('claudia', 'Claudia', ['frutos_secos', 'shellfish']);
+const pedro = person('pedro', 'Pedro', ['fish']);
+
 describe('evaluateAllergens', () => {
-  const family = new Set(['peanut', 'shellfish'] as const) as Set<any>;
-  it('blocks unverified product with allergen match', () => {
-    const r = evaluateAllergens(['peanut'], [], 'unverified', family);
-    assert.equal(r.blocked, true);
-    assert.equal(r.requiresApproval, false);
+  it('names the member and does not block when the product contains their allergen', () => {
+    const result = evaluateAllergens(['tree_nut'], [], 'verified', [claudia, pedro]);
+    assert.equal('blocked' in result, false);
+    assert.equal(result.requiresApproval, true);
+    assert.equal(result.notice, null);
+    assert.equal(result.warnings.length, 1);
+    assert.equal(result.warnings[0].kind, 'contains');
+    assert.equal(result.warnings[0].allergen, 'tree_nut');
+    assert.deepEqual(result.warnings[0].members, [{ id: 'claudia', name: 'Claudia' }]);
+    assert.equal(result.warnings[0].message, 'Contiene frutos secos — Claudia');
   });
-  it('blocks partial product with trace match', () => {
-    assert.equal(evaluateAllergens([], ['shellfish'], 'partial', family).blocked, true);
+
+  it('uses a traces warning and still requires approval', () => {
+    const result = evaluateAllergens([], ['tree_nut'], 'verified', [claudia]);
+    assert.equal(result.requiresApproval, true);
+    assert.equal(result.warnings[0].kind, 'traces');
+    assert.equal(result.warnings[0].message, 'Puede contener frutos secos — Claudia');
   });
-  it('unverified without match requires approval', () => {
-    const r = evaluateAllergens(['milk'], [], 'unverified', family);
-    assert.equal(r.blocked, false);
-    assert.equal(r.requiresApproval, true);
+
+  it('unverified without match asks for approval and does not warn', () => {
+    const result = evaluateAllergens(['milk'], [], 'unverified', [claudia]);
+    assert.deepEqual(result.warnings, []);
+    assert.equal(result.requiresApproval, true);
+    assert.equal(result.notice, ALLERGENS_NOT_VERIFIED_NOTICE);
   });
-  it('verified without match is safe', () => {
-    const r = evaluateAllergens(['milk'], [], 'verified', family);
-    assert.equal(r.blocked || r.requiresApproval, false);
+
+  it('partial without match asks for approval with the same notice', () => {
+    const result = evaluateAllergens(['milk'], [], 'partial', [pedro]);
+    assert.deepEqual(result.warnings, []);
+    assert.equal(result.requiresApproval, true);
+    assert.equal(result.notice, ALLERGENS_NOT_VERIFIED_NOTICE);
+  });
+
+  it('verified without match does not ask for approval', () => {
+    const result = evaluateAllergens(['milk'], [], 'verified', [claudia, pedro]);
+    assert.deepEqual(result.warnings, []);
+    assert.equal(result.requiresApproval, false);
+    assert.equal(result.notice, null);
+  });
+
+  it('names every affected member', () => {
+    const ana = person('ana', 'Ana', ['peanut']);
+    const luis = person('luis', 'Luis', ['mani']);
+    const result = evaluateAllergens(['peanut'], [], 'verified', [ana, luis, pedro]);
+    assert.equal(result.warnings[0].message, 'Contiene maní — Ana y Luis');
+    assert.deepEqual(result.warnings[0].members.map((member) => member.name), ['Ana', 'Luis']);
+  });
+});
+
+describe('alergia a mariscos avisa crustáceos y moluscos', () => {
+  it('shellfish warns on a crustacean product even when unverified', () => {
+    const result = evaluateAllergens(['crustacean'], [], 'unverified', [claudia]);
+    assert.equal('blocked' in result, false);
+    assert.equal(result.requiresApproval, true);
+    assert.equal(result.notice, null);
+    assert.equal(result.warnings.length, 1);
+    assert.equal(result.warnings[0].kind, 'contains');
+    assert.equal(result.warnings[0].allergen, 'crustacean');
+    assert.equal(result.warnings[0].members[0].name, 'Claudia');
+    assert.equal(result.warnings[0].message, 'Contiene crustáceos — Claudia');
+  });
+
+  it('shellfish warns on a mollusc product', () => {
+    const result = evaluateAllergens(['mollusc'], [], 'partial', [claudia]);
+    assert.equal(result.requiresApproval, true);
+    assert.equal(result.warnings[0].kind, 'contains');
+    assert.equal(result.warnings[0].allergen, 'mollusc');
+    assert.equal(result.warnings[0].message, 'Contiene moluscos — Claudia');
+  });
+
+  it('shellfish warns on crustacean traces when unverified', () => {
+    const result = evaluateAllergens([], ['crustacean'], 'unverified', [claudia]);
+    assert.equal(result.requiresApproval, true);
+    assert.equal(result.warnings.length, 1);
+    assert.equal(result.warnings[0].kind, 'traces');
+    assert.equal(result.warnings[0].allergen, 'crustacean');
+    assert.equal(result.warnings[0].message, 'Puede contener crustáceos — Claudia');
+  });
+
+  it('mariscos warns on mollusc traces and names the member', () => {
+    const ana = person('ana', 'Ana', ['mariscos']);
+    const result = evaluateAllergens([], ['mollusc'], 'unverified', [ana, pedro]);
+    assert.equal(result.requiresApproval, true);
+    assert.equal(result.warnings[0].kind, 'traces');
+    assert.equal(result.warnings[0].allergen, 'mollusc');
+    assert.deepEqual(result.warnings[0].members, [{ id: 'ana', name: 'Ana' }]);
+    assert.equal(result.warnings[0].message, 'Puede contener moluscos — Ana');
+  });
+
+  it('a crustacean-only allergy does not warn on mollusc', () => {
+    const onlyCrustacean = person('c', 'Claudia', ['crustacean']);
+    const mollusc = evaluateAllergens(['mollusc'], [], 'verified', [onlyCrustacean]);
+    assert.deepEqual(mollusc.warnings, []);
+    assert.equal(mollusc.requiresApproval, false);
+    const crustacean = evaluateAllergens(['crustacean'], [], 'verified', [onlyCrustacean]);
+    assert.equal(crustacean.warnings[0].kind, 'contains');
+    assert.equal(crustacean.requiresApproval, true);
+  });
+
+  it('fish does not warn on crustacean or mollusc, and shellfish does not warn on fish', () => {
+    const fishOnly = evaluateAllergens(['crustacean', 'mollusc'], ['crustacean'], 'unverified', [pedro]);
+    assert.deepEqual(fishOnly.warnings, []);
+    assert.equal(fishOnly.requiresApproval, true);
+    assert.equal(fishOnly.notice, ALLERGENS_NOT_VERIFIED_NOTICE);
+
+    const pescado = evaluateAllergens(['mollusc'], ['crustacean'], 'verified', [
+      person('p', 'Pedro', ['pescado']),
+    ]);
+    assert.deepEqual(pescado.warnings, []);
+    assert.equal(pescado.requiresApproval, false);
+
+    const fishProduct = evaluateAllergens(['fish'], [], 'verified', [pedro]);
+    assert.equal(fishProduct.requiresApproval, true);
+    assert.equal(fishProduct.warnings[0].kind, 'contains');
+    assert.equal(fishProduct.warnings[0].message, 'Contiene pescado — Pedro');
+
+    const shellfishOnFish = evaluateAllergens(['fish'], [], 'unverified', [claudia]);
+    assert.deepEqual(shellfishOnFish.warnings, []);
+    assert.equal(shellfishOnFish.requiresApproval, true);
+    assert.equal(shellfishOnFish.notice, ALLERGENS_NOT_VERIFIED_NOTICE);
+
+    const mariscosOnFish = evaluateAllergens(['fish'], [], 'verified', [
+      person('ana', 'Ana', ['mariscos']),
+    ]);
+    assert.deepEqual(mariscosOnFish.warnings, []);
+    assert.equal(mariscosOnFish.requiresApproval, false);
   });
 });
