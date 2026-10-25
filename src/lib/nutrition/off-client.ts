@@ -1,5 +1,10 @@
 import { offProductSchema, ProductNutrition, SelloChile } from '@/types/nutrition';
-import { mapOFFTags, extractAllergensFromText, mergeAllergens, determineAllergenStatus } from './allergen-mapper';
+import {
+  mapOFFTags,
+  extractAllergensAndTracesFromText,
+  mergeAllergens,
+  determineAllergenStatus,
+} from './allergen-mapper';
 
 const OFF_BASE_URL = 'https://world.openfoodfacts.org/api/v2/product';
 const RATE_LIMIT_MS = 1000;
@@ -74,14 +79,12 @@ export async function fetchFromOpenFoodFacts(ean: string): Promise<ProductNutrit
 
     const offAllergens = mapOFFTags(product.allergens_tags || []);
     const offTraces = mapOFFTags(product.traces_tags || []);
-    const textAllergens = product.ingredients_text
-      ? extractAllergensFromText(product.ingredients_text)
-      : [];
+    const fromText = extractAllergensAndTracesFromText(product.ingredients_text || '');
 
-    const allergens = mergeAllergens(offAllergens, textAllergens);
+    const allergens = mergeAllergens(offAllergens, fromText.allergens);
     const sourcesAgree =
-      textAllergens.length === 0 ||
-      textAllergens.every((allergen) => offAllergens.includes(allergen));
+      fromText.allergens.length === 0 ||
+      fromText.allergens.every((allergen) => offAllergens.includes(allergen));
 
     const servingSizeStr = nutriments?.['serving-size'];
     let servingSizeG: number | null = null;
@@ -97,7 +100,7 @@ export async function fetchFromOpenFoodFacts(ean: string): Promise<ProductNutrit
       format: product.quantity || null,
       ingredients_text: product.ingredients_text || null,
       allergens,
-      traces: offTraces,
+      traces: mergeAllergens(offTraces, fromText.traces),
       kcal_100g: nutriments?.['energy-kcal_100g'] ?? null,
       protein_100g: nutriments?.proteins_100g ?? null,
       fat_100g: nutriments?.fat_100g ?? null,

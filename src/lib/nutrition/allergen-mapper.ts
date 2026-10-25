@@ -57,27 +57,114 @@ const OFF_TAG_MAP: Record<string, readonly NormalizedAllergen[]> = {
   'en:lupins': ['lupin'],
 };
 
+function fold(value: string): string {
+  return value
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+}
+
+/** Plural +s (palabra que termina en vocal): merluza → merluzas. */
+function pluralS(stem: string): string {
+  return `${stem}s?`;
+}
+
+/** Plural +es (palabra que termina en consonante): salmón → salmones. */
+function pluralEs(stem: string): string {
+  return `${stem}(?:es)?`;
+}
+
+function wordPattern(parts: string[]): RegExp {
+  return new RegExp(`\\b(?:${parts.join('|')})\\b`, 'i');
+}
+
+/**
+ * Patrones sobre texto ya plegado (sin acentos, en minúsculas) y con
+ * límite de palabra. Así "salmón" es pescado y "salmonella" no.
+ */
 const ES_ALLERGEN_PATTERNS: Array<[RegExp, NormalizedAllergen]> = [
-  [/man[ií]/, 'peanut'],
-  [/cacahuet/, 'peanut'],
-  [/nuez|nueces|almendra|avellana|casta[ñn]a|pistacho|pec[aá]n/, 'tree_nut'],
-  [/frutos?\s*secos/, 'tree_nut'],
-  [/pescado/, 'fish'],
+  [wordPattern(['mani(?:es|s)?', pluralS('cacahuate'), pluralS('cacahuete')]), 'peanut'],
+  [wordPattern([
+    'nueces',
+    'nuez',
+    pluralS('almendra'),
+    pluralS('avellana'),
+    pluralS('pistacho'),
+    pluralS('castana'),
+    'caju',
+    pluralS('anacardo'),
+    pluralS('pecana'),
+    'pecan(?:es|s)?',
+    pluralS('macadamia'),
+    'frutos?\\s+secos?',
+  ]), 'tree_nut'],
+  [wordPattern([
+    pluralS('pescado'),
+    pluralEs('salmon'),
+    pluralS('merluza'),
+    pluralEs('atun'),
+    pluralS('anchoveta'),
+    pluralS('anchoa'),
+    pluralS('sardina'),
+    pluralEs('jurel'),
+    pluralS('reineta'),
+    pluralS('congrio'),
+    pluralS('bacalao'),
+    pluralS('trucha'),
+    pluralS('corvina'),
+    pluralS('tilapia'),
+    pluralS('caballa'),
+    'surimi',
+  ]), 'fish'],
   // "mariscos" en Chile cubre crustáceos y moluscos. Se marcan los dos.
-  [/mariscos?/, 'crustacean'],
-  [/mariscos?/, 'mollusc'],
-  [/crust[aá]ceo|camar[oó]n|langost|jaiba/, 'crustacean'],
-  [/molusco|almeja|mejill[oó]n|calamar|pulpo|ostra|chorito|cholga/, 'mollusc'],
-  [/gluten|trigo|cebada|centeno|avena/, 'gluten'],
-  [/leche|l[aá]cte/, 'milk'],
-  [/huevo/, 'egg'],
-  [/soja|soya/, 'soy'],
-  [/s[eé]samo|ajonjol[ií]/, 'sesame'],
-  [/sulfit/, 'sulfites'],
-  [/mostaza/, 'mustard'],
-  [/\bapio\b/, 'celery'],
-  [/altramuz|lupino|\blupin\b/, 'lupin'],
+  [wordPattern([pluralS('marisco')]), 'crustacean'],
+  [wordPattern([pluralS('marisco')]), 'mollusc'],
+  [wordPattern([
+    pluralS('crustaceo'),
+    pluralEs('camaron'),
+    pluralS('langostino'),
+    pluralS('cangrejo'),
+    pluralS('jaiba'),
+    pluralS('centolla'),
+    pluralS('langosta'),
+    'krill',
+  ]), 'crustacean'],
+  [wordPattern([
+    pluralS('molusco'),
+    pluralS('pulpo'),
+    pluralEs('calamar'),
+    pluralS('sepia'),
+    pluralS('chorito'),
+    pluralS('cholga'),
+    pluralEs('mejillon'),
+    pluralS('almeja'),
+    pluralS('ostra'),
+    pluralS('macha'),
+    pluralS('loco'),
+    pluralEs('ostion'),
+  ]), 'mollusc'],
+  [wordPattern(['gluten', 'trigo', 'cebada', 'centeno', 'avena']), 'gluten'],
+  [wordPattern([pluralS('leche'), pluralS('lactea'), pluralS('lacteo')]), 'milk'],
+  [wordPattern([pluralS('huevo')]), 'egg'],
+  [wordPattern(['soja', 'soya']), 'soy'],
+  [wordPattern(['sesamo', 'ajonjoli']), 'sesame'],
+  [wordPattern(['sulfito', 'sulfitos', 'sulfite', 'sulfites']), 'sulfites'],
+  [wordPattern(['mostaza']), 'mustard'],
+  [wordPattern(['apio']), 'celery'],
+  [wordPattern(['altramuz', 'lupin(?:os?)?']), 'lupin'],
 ];
+
+const PUEDE_CONTENER = /\bpuede\s+contener\b/;
+
+function matchPatterns(folded: string): NormalizedAllergen[] {
+  const result = new Set<NormalizedAllergen>();
+
+  for (const [pattern, allergen] of ES_ALLERGEN_PATTERNS) {
+    if (pattern.test(folded)) result.add(allergen);
+  }
+
+  return Array.from(result).sort();
+}
 
 /**
  * Maps Open Food Facts allergens_tags / traces_tags to the live vocabulary.
@@ -96,19 +183,32 @@ export function mapOFFTags(tags: string[]): NormalizedAllergen[] {
 }
 
 /**
- * Extracts allergens from Spanish ingredient text.
+ * Extracts allergen mentions from Spanish ingredient or traces text.
+ * Accent- and case-insensitive, with word boundaries.
+ * "Puede contener salmón" también marca fish: la frase de trazas
+ * usa el mismo matcher.
  */
 export function extractAllergensFromText(text: string): NormalizedAllergen[] {
-  const result = new Set<NormalizedAllergen>();
-  const lower = text.toLowerCase();
+  return matchPatterns(fold(text));
+}
 
-  for (const [pattern, allergen] of ES_ALLERGEN_PATTERNS) {
-    if (pattern.test(lower)) {
-      result.add(allergen);
-    }
+/**
+ * Separa ingredientes de la frase "puede contener".
+ * Lo que va después de la frase queda en trazas, con las mismas especies.
+ */
+export function extractAllergensAndTracesFromText(text: string): {
+  allergens: NormalizedAllergen[];
+  traces: NormalizedAllergen[];
+} {
+  const folded = fold(text);
+  const marker = PUEDE_CONTENER.exec(folded);
+  if (!marker) {
+    return { allergens: matchPatterns(folded), traces: [] };
   }
-
-  return Array.from(result).sort();
+  return {
+    allergens: matchPatterns(folded.slice(0, marker.index)),
+    traces: matchPatterns(folded.slice(marker.index + marker[0].length)),
+  };
 }
 
 /**
