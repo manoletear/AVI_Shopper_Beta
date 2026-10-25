@@ -6,5 +6,5 @@ export {
   evaluateAllergens,
   evaluateProductForFamily,
   expandFamilyAllergens,
-  collectFamilyAllergenTokens,
+  formatAllergenWarning,
 } from './check-allergens';

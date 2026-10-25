@@ -6,7 +6,8 @@ import {
   mergeAllergens,
   determineAllergenStatus,
 } from '../../src/lib/nutrition/allergen-mapper';
-import { evaluateAllergens, evaluateProductForFamily } from '../../src/lib/nutrition/check-allergens';
+import { evaluateAllergens } from '../../src/lib/nutrition/check-allergens';
+import { ALLERGENS_NOT_VERIFIED_NOTICE, MemberAllergies } from '../../src/types/nutrition';
 import { inferSellosChile } from '../../src/lib/nutrition/off-client';
 
 const expect = (actual: unknown) => ({
@@ -179,106 +180,139 @@ describe('inferSellosChile', () => {
   });
 });
 
+function person(id: string, name: string, allergens: string[]): MemberAllergies {
+  return { id, name, allergens };
+}
+
+const claudia = person('claudia', 'Claudia', ['frutos_secos', 'shellfish']);
+const pedro = person('pedro', 'Pedro', ['fish']);
+
 describe('evaluateAllergens', () => {
-  const family = new Set(['peanut', 'shellfish']);
-
-  it('blocks unverified product with allergen match', () => {
-    const result = evaluateAllergens(['peanut'], [], 'unverified', family);
-    assert.equal(result.blocked, true);
-    assert.equal(result.requiresApproval, false);
-  });
-
-  it('blocks partial product with trace match', () => {
-    assert.equal(evaluateAllergens([], ['crustacean'], 'partial', family).blocked, true);
-  });
-
-  it('unverified without match requires approval', () => {
-    const result = evaluateAllergens(['milk'], [], 'unverified', family);
-    assert.equal(result.blocked, false);
+  it('names the member and does not block when the product contains their allergen', () => {
+    const result = evaluateAllergens(['tree_nut'], [], 'verified', [claudia, pedro]);
+    assert.equal('blocked' in result, false);
     assert.equal(result.requiresApproval, true);
+    assert.equal(result.notice, null);
+    assert.equal(result.warnings.length, 1);
+    assert.equal(result.warnings[0].kind, 'contains');
+    assert.equal(result.warnings[0].allergen, 'tree_nut');
+    assert.deepEqual(result.warnings[0].members, [{ id: 'claudia', name: 'Claudia' }]);
+    assert.equal(result.warnings[0].message, 'Contiene frutos secos — Claudia');
   });
 
-  it('verified without match is safe', () => {
-    const result = evaluateAllergens(['milk'], [], 'verified', family);
-    assert.equal(result.blocked || result.requiresApproval, false);
+  it('uses a traces warning and still requires approval', () => {
+    const result = evaluateAllergens([], ['tree_nut'], 'verified', [claudia]);
+    assert.equal(result.requiresApproval, true);
+    assert.equal(result.warnings[0].kind, 'traces');
+    assert.equal(result.warnings[0].message, 'Puede contener frutos secos — Claudia');
+  });
+
+  it('unverified without match asks for approval and does not warn', () => {
+    const result = evaluateAllergens(['milk'], [], 'unverified', [claudia]);
+    assert.deepEqual(result.warnings, []);
+    assert.equal(result.requiresApproval, true);
+    assert.equal(result.notice, ALLERGENS_NOT_VERIFIED_NOTICE);
+  });
+
+  it('partial without match asks for approval with the same notice', () => {
+    const result = evaluateAllergens(['milk'], [], 'partial', [pedro]);
+    assert.deepEqual(result.warnings, []);
+    assert.equal(result.requiresApproval, true);
+    assert.equal(result.notice, ALLERGENS_NOT_VERIFIED_NOTICE);
+  });
+
+  it('verified without match does not ask for approval', () => {
+    const result = evaluateAllergens(['milk'], [], 'verified', [claudia, pedro]);
+    assert.deepEqual(result.warnings, []);
+    assert.equal(result.requiresApproval, false);
+    assert.equal(result.notice, null);
+  });
+
+  it('names every affected member', () => {
+    const ana = person('ana', 'Ana', ['peanut']);
+    const luis = person('luis', 'Luis', ['mani']);
+    const result = evaluateAllergens(['peanut'], [], 'verified', [ana, luis, pedro]);
+    assert.equal(result.warnings[0].message, 'Contiene maní — Ana y Luis');
+    assert.deepEqual(result.warnings[0].members.map((member) => member.name), ['Ana', 'Luis']);
   });
 });
 
-describe('alergia a mariscos bloquea crustáceos y moluscos', () => {
-  it('shellfish blocks a crustacean product even when unverified', () => {
-    const result = evaluateAllergens(['crustacean'], [], 'unverified', ['shellfish']);
-    assert.equal(result.blocked, true);
-    assert.equal(result.requiresApproval, false);
-    assert.deepEqual(result.matchedAllergens, ['crustacean']);
+describe('alergia a mariscos avisa crustáceos y moluscos', () => {
+  it('shellfish warns on a crustacean product even when unverified', () => {
+    const result = evaluateAllergens(['crustacean'], [], 'unverified', [claudia]);
+    assert.equal('blocked' in result, false);
+    assert.equal(result.requiresApproval, true);
+    assert.equal(result.notice, null);
+    assert.equal(result.warnings.length, 1);
+    assert.equal(result.warnings[0].kind, 'contains');
+    assert.equal(result.warnings[0].allergen, 'crustacean');
+    assert.equal(result.warnings[0].members[0].name, 'Claudia');
+    assert.equal(result.warnings[0].message, 'Contiene crustáceos — Claudia');
   });
 
-  it('shellfish blocks a mollusc product', () => {
-    const result = evaluateAllergens(['mollusc'], [], 'partial', ['shellfish']);
-    assert.equal(result.blocked, true);
-    assert.deepEqual(result.matchedAllergens, ['mollusc']);
+  it('shellfish warns on a mollusc product', () => {
+    const result = evaluateAllergens(['mollusc'], [], 'partial', [claudia]);
+    assert.equal(result.requiresApproval, true);
+    assert.equal(result.warnings[0].kind, 'contains');
+    assert.equal(result.warnings[0].allergen, 'mollusc');
+    assert.equal(result.warnings[0].message, 'Contiene moluscos — Claudia');
   });
 
-  it('shellfish blocks crustacean traces on an unverified product', () => {
-    const result = evaluateAllergens([], ['crustacean'], 'unverified', ['shellfish']);
-    assert.equal(result.blocked, true);
-    assert.equal(result.requiresApproval, false);
-    assert.deepEqual(result.matchedTraces, ['crustacean']);
-    assert.deepEqual(result.matchedAllergens, []);
+  it('shellfish warns on crustacean traces when unverified', () => {
+    const result = evaluateAllergens([], ['crustacean'], 'unverified', [claudia]);
+    assert.equal(result.requiresApproval, true);
+    assert.equal(result.warnings.length, 1);
+    assert.equal(result.warnings[0].kind, 'traces');
+    assert.equal(result.warnings[0].allergen, 'crustacean');
+    assert.equal(result.warnings[0].message, 'Puede contener crustáceos — Claudia');
   });
 
-  it('shellfish blocks mollusc traces', () => {
-    const result = evaluateAllergens([], ['mollusc'], 'unverified', ['shellfish']);
-    assert.equal(result.blocked, true);
-    assert.deepEqual(result.matchedTraces, ['mollusc']);
+  it('mariscos warns on mollusc traces and names the member', () => {
+    const ana = person('ana', 'Ana', ['mariscos']);
+    const result = evaluateAllergens([], ['mollusc'], 'unverified', [ana, pedro]);
+    assert.equal(result.requiresApproval, true);
+    assert.equal(result.warnings[0].kind, 'traces');
+    assert.equal(result.warnings[0].allergen, 'mollusc');
+    assert.deepEqual(result.warnings[0].members, [{ id: 'ana', name: 'Ana' }]);
+    assert.equal(result.warnings[0].message, 'Puede contener moluscos — Ana');
   });
 
-  it('mariscos blocks both crustacean and mollusc, including traces', () => {
-    const byAllergen = evaluateProductForFamily(
-      { allergens: ['crustacean'], traces: [], allergenStatus: 'unverified' },
-      { ana: ['mariscos'] },
-    );
-    const byTrace = evaluateProductForFamily(
-      { allergens: [], traces: ['mollusc'], allergenStatus: 'unverified' },
-      { ana: ['mariscos'] },
-    );
-    assert.equal(byAllergen.blocked, true);
-    assert.deepEqual(byAllergen.matchedAllergens, ['crustacean']);
-    assert.equal(byTrace.blocked, true);
-    assert.deepEqual(byTrace.matchedTraces, ['mollusc']);
+  it('a crustacean-only allergy does not warn on mollusc', () => {
+    const onlyCrustacean = person('c', 'Claudia', ['crustacean']);
+    const mollusc = evaluateAllergens(['mollusc'], [], 'verified', [onlyCrustacean]);
+    assert.deepEqual(mollusc.warnings, []);
+    assert.equal(mollusc.requiresApproval, false);
+    const crustacean = evaluateAllergens(['crustacean'], [], 'verified', [onlyCrustacean]);
+    assert.equal(crustacean.warnings[0].kind, 'contains');
+    assert.equal(crustacean.requiresApproval, true);
   });
 
-  it('a crustacean-only allergy does not block mollusc', () => {
-    const result = evaluateAllergens(['mollusc'], [], 'verified', ['crustacean']);
-    assert.equal(result.blocked, false);
-    assert.equal(evaluateAllergens(['crustacean'], [], 'verified', ['crustacean']).blocked, true);
-  });
+  it('fish does not warn on crustacean or mollusc, and shellfish does not warn on fish', () => {
+    const fishOnly = evaluateAllergens(['crustacean', 'mollusc'], ['crustacean'], 'unverified', [pedro]);
+    assert.deepEqual(fishOnly.warnings, []);
+    assert.equal(fishOnly.requiresApproval, true);
+    assert.equal(fishOnly.notice, ALLERGENS_NOT_VERIFIED_NOTICE);
 
-  it('fish does not block crustacean or mollusc, and shellfish does not block fish', () => {
-    const fishFamily = evaluateAllergens(
-      ['crustacean', 'mollusc'],
-      ['crustacean'],
-      'unverified',
-      ['fish'],
-    );
-    assert.equal(fishFamily.blocked, false);
-    assert.equal(fishFamily.requiresApproval, true);
-
-    const pescado = evaluateAllergens(['mollusc'], ['crustacean'], 'verified', ['pescado']);
-    assert.equal(pescado.blocked, false);
+    const pescado = evaluateAllergens(['mollusc'], ['crustacean'], 'verified', [
+      person('p', 'Pedro', ['pescado']),
+    ]);
+    assert.deepEqual(pescado.warnings, []);
     assert.equal(pescado.requiresApproval, false);
 
-    const fishProduct = evaluateAllergens(['fish'], [], 'verified', ['fish']);
-    assert.equal(fishProduct.blocked, true);
-    assert.deepEqual(fishProduct.matchedAllergens, ['fish']);
+    const fishProduct = evaluateAllergens(['fish'], [], 'verified', [pedro]);
+    assert.equal(fishProduct.requiresApproval, true);
+    assert.equal(fishProduct.warnings[0].kind, 'contains');
+    assert.equal(fishProduct.warnings[0].message, 'Contiene pescado — Pedro');
 
-    const shellfishOnFish = evaluateAllergens(['fish'], [], 'unverified', ['shellfish']);
-    assert.equal(shellfishOnFish.blocked, false);
+    const shellfishOnFish = evaluateAllergens(['fish'], [], 'unverified', [claudia]);
+    assert.deepEqual(shellfishOnFish.warnings, []);
     assert.equal(shellfishOnFish.requiresApproval, true);
+    assert.equal(shellfishOnFish.notice, ALLERGENS_NOT_VERIFIED_NOTICE);
 
-    const mariscosOnFish = evaluateProductForFamily(
-      { allergens: ['fish'], traces: [], allergenStatus: 'verified' },
-      { hijo: ['mariscos'] },
-    );
-    assert.equal(mariscosOnFish.blocked, false);
+    const mariscosOnFish = evaluateAllergens(['fish'], [], 'verified', [
+      person('ana', 'Ana', ['mariscos']),
+    ]);
+    assert.deepEqual(mariscosOnFish.warnings, []);
+    assert.equal(mariscosOnFish.requiresApproval, false);
   });
 });

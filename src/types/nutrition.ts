@@ -146,13 +146,40 @@ export const offProductSchema = z.object({
 
 export type OFFProduct = z.infer<typeof offProductSchema>;
 
-export interface AllergenCheckResult {
+export interface AllergenMemberRef {
+  id: string;
+  name: string;
+}
+
+/** Alergias de un integrante. No son de la familia completa. */
+export interface MemberAllergies extends AllergenMemberRef {
+  allergens: readonly string[];
+}
+
+export type AllergenWarningKind = 'contains' | 'traces';
+
+export const ALLERGENS_NOT_VERIFIED_NOTICE = 'allergens not verified';
+
+export interface AllergenWarning {
+  allergen: NormalizedAllergen;
+  kind: AllergenWarningKind;
+  members: AllergenMemberRef[];
+  /** Ej. "Contiene frutos secos — Claudia" o "Puede contener frutos secos — Claudia". */
+  message: string;
+}
+
+/**
+ * Un match no bloquea el producto: avisa y pide aprobación.
+ * Sin match, unverified/partial también piden aprobación con notice.
+ */
+export interface AllergenDecision {
+  warnings: AllergenWarning[];
+  requiresApproval: boolean;
+  notice: typeof ALLERGENS_NOT_VERIFIED_NOTICE | null;
+}
+
+export interface AllergenCheckResult extends AllergenDecision {
   productId: string;
   productName: string;
   allergenStatus: AllergenStatus;
-  blocked: boolean;
-  requiresApproval: boolean;
-  matchedAllergens: NormalizedAllergen[];
-  matchedTraces: NormalizedAllergen[];
-  familyMemberAllergens: Record<string, readonly string[]>;
 }
