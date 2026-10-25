@@ -4,6 +4,7 @@
  * Nadie paga ni hace el pedido.
  */
 
+import { parseBasicState } from '@/lib/onboarding/basic';
 import { prisma } from '@/lib/prisma';
 import { productIdentity } from '../catalog/normalize';
 import { loadProposalConstraints } from '../household/load-constraints';
@@ -412,8 +413,18 @@ export async function approveProposedCart(cartId: string, userId: string) {
   });
   const settings = await prisma.familySettings.findUnique({ where: { familyId: cart.familyId } });
   const approver = settings?.approverRole || 'master';
-  if (!member || member.role !== approver) {
-    const error = new Error('Solo quien administra la familia puede aprobar el carro') as Error & { statusCode?: number };
+  const chosen = parseBasicState(settings?.stepState).answers.approver;
+  let allowed = Boolean(member) && member?.role === approver;
+  if (chosen?.memberId || chosen?.memberName) {
+    const chosenMember = chosen.memberId
+      ? await prisma.familyMember.findFirst({ where: { id: chosen.memberId, familyId: cart.familyId, isActive: true } })
+      : null;
+    const matchesChosen = member?.id === chosen.memberId || (!chosen.memberId && member?.name === chosen.memberName);
+    const masterCoversGuest = member?.role === 'master' && chosenMember != null && !chosenMember.userId;
+    allowed = Boolean(matchesChosen || masterCoversGuest);
+  }
+  if (!member || !allowed) {
+    const error = new Error('Solo quien aprueba el carro de la familia puede hacerlo') as Error & { statusCode?: number };
     error.statusCode = 403;
     throw error;
   }
