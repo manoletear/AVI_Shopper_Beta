@@ -731,6 +731,9 @@ model ProposedCartItem {
   payable            Int
   runOutAt           DateTime?
   pulledForward      Boolean  @default(false)
+  // Decisión del aprobador por ítem (MCP approve_item). null = pendiente.
+  // Columna agregada por 20261101000000_proposed_cart_item_approval.sql.
+  approved           Boolean?
 
   @@index([cartId])
   @@map("proposed_cart_items")
