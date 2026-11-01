@@ -1,6 +1,8 @@
 import { prisma } from '@/lib/prisma';
 import { parseBasicState } from '@/lib/onboarding/basic';
 import { checkAllergens } from '@/lib/nutrition/check-allergens';
+import { callStoreWorker, StoreWorkerError } from '@/lib/stores/remote';
+import type { WorkerJob } from '@/lib/stores/worker';
 import type { AllergenCheckResult, MemberAllergies, StoreName } from '@/types/nutrition';
 import type {
   HouseholdResult,
@@ -291,4 +293,42 @@ export async function getPantry(familyId: string): Promise<PantryItem[]> {
     confidence: profile.confidence,
     kcal100g: kcalByGroup.get(profile.groupId) ?? null,
   }));
+}
+
+/**
+ * Llenar el carro real y ver despacho: delegan al worker de tiendas (Playwright).
+ * Solo carros aprobados por el aprobador; se detiene en el carro lleno. Nunca paga.
+ */
+async function viaWorker(job: WorkerJob): Promise<unknown> {
+  try {
+    return await callStoreWorker(job);
+  } catch (error) {
+    if (error instanceof StoreWorkerError) throw new McpToolError(error.message);
+    throw error;
+  }
+}
+
+export async function fillStoreCart(familyId: string, cartId: string) {
+  const cart = await prisma.proposedCart.findFirst({ where: { id: cartId, familyId }, select: { status: true } });
+  if (!cart) throw new McpToolError('No encontré ese carro en esta familia');
+  if (cart.status !== 'approved') {
+    throw new McpToolError(`El carro debe estar aprobado por quien aprueba en la familia (estado: "${cart.status}")`);
+  }
+  return viaWorker({ op: 'fill_cart', familyId, cartId });
+}
+
+export async function getStoreDeliveryWindows(
+  familyId: string,
+  input: { store: StoreName; street?: string; number?: string; comuna?: string },
+) {
+  let address = input.street ? { street: input.street, number: input.number, comuna: input.comuna } : null;
+  if (!address) {
+    const primary = await prisma.familyAddress.findFirst({
+      where: { familyId },
+      orderBy: [{ isPrimary: 'desc' }, { createdAt: 'asc' }],
+    });
+    if (!primary) throw new McpToolError('La familia no tiene dirección de despacho');
+    address = { street: primary.street, number: primary.number || undefined, comuna: primary.comuna };
+  }
+  return viaWorker({ op: 'get_delivery_windows', familyId, store: input.store, address });
 }

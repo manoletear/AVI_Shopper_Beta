@@ -97,3 +97,16 @@ export interface PantryItem {
   confidence: string;
   kcal100g: number | null;
 }
+
+// Carro real en la tienda (lo ejecuta el worker de tiendas, nunca paga).
+export const fillCartShape = {
+  cartId: z.string().trim().min(1),
+};
+
+export const deliveryWindowsShape = {
+  store: z.enum(STORE_NAMES),
+  /** Si no viene, se usa la dirección principal de la familia. */
+  street: z.string().trim().min(1).max(200).optional(),
+  number: z.string().trim().max(20).optional(),
+  comuna: z.string().trim().max(100).optional(),
+};
