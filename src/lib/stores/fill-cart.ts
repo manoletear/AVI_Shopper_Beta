@@ -106,6 +106,9 @@ export function compareCarts(approved: Array<{ name: string; quantity: number; p
 async function openSession(deps: StoreDeps, familyId: string, storeSlug: StoreSlug) {
   const connection = await deps.repo.getConnection(familyId, storeSlug);
   if (!connection) throw new StoreToolError(`La familia no ha conectado su cuenta de ${storeSlug}`);
+  if (connection.status === 'pending' || !connection.encryptedSession) {
+    throw new StoreToolError(`La conexión con ${storeSlug} aún no se completa en el worker`);
+  }
   if (connection.status === 'needs_user_action') {
     return { adapter: null, status: 'needs_user_action' as const };
   }

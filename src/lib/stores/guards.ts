@@ -59,3 +59,20 @@ export function sameProduct(approvedName: string, storeName: string): boolean {
   const target = ` ${normalizeName(storeName)} `;
   return tokens.length > 0 && tokens.every((t) => target.includes(` ${t} `));
 }
+
+/** Error explícito si algún flujo intenta pagar o cerrar el pedido. */
+export class CheckoutAttemptError extends Error {
+  constructor() {
+    super('Regla dura: AVI nunca hace checkout ni paga. Operación prohibida.');
+    this.name = 'CheckoutAttemptError';
+  }
+}
+
+const FORBIDDEN_ACTION = /\b(checkout|pay|payment|pagar|pago|place order|finalizar compra|confirmar (pedido|compra))\b/i;
+
+/** Lanza CheckoutAttemptError si la acción (o URL) suena a pagar o cerrar el pedido. */
+export function assertNoCheckout(action: string): void {
+  if (FORBIDDEN_ACTION.test(action) || FORBIDDEN_BUTTON_TEXT.test(action) || isForbiddenCheckoutUrl(action)) {
+    throw new CheckoutAttemptError();
+  }
+}
