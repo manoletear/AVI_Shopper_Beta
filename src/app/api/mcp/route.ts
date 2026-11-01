@@ -5,16 +5,27 @@ import {
   approveCart,
   approveItem,
   checkAllergensForFamily,
+  fillStoreCart,
+  getStoreDeliveryWindows,
   getHousehold,
   getLockedProducts,
   getPantry,
   McpToolError,
   proposeCart,
 } from '@/lib/mcp/tools';
-import { approveCartShape, approveItemShape, checkAllergensShape, proposeCartShape } from '@/types/mcp';
+import {
+  approveCartShape,
+  approveItemShape,
+  checkAllergensShape,
+  deliveryWindowsShape,
+  fillCartShape,
+  proposeCartShape,
+} from '@/types/mcp';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+// fill_cart espera al worker de tiendas (navegador real): puede tardar minutos.
+export const maxDuration = 300;
 
 type ToolResult = { content: { type: 'text'; text: string }[]; isError?: boolean };
 
@@ -84,6 +95,26 @@ function createServer(familyId: string) {
     'get_pantry',
     { description: 'Despensa estimada: qué se está acabando primero, con calorías desde product_nutrition.' },
     () => run(() => getPantry(familyId)),
+  );
+
+  server.registerTool(
+    'fill_cart',
+    {
+      description:
+        'Llena el carro real en la tienda con los ítems APROBADOS de un carro aprobado (productos fijos). Si algo no hay, propone sustituto pendiente de aprobación y no lo agrega. Compara el carro de la tienda con lo aprobado. Se detiene en el carro lleno: NUNCA hace checkout ni paga. Si la tienda pide captcha o 2FA devuelve needs_user_action.',
+      inputSchema: fillCartShape,
+    },
+    (args) => run(() => fillStoreCart(familyId, args.cartId)),
+  );
+
+  server.registerTool(
+    'get_delivery_windows',
+    {
+      description:
+        'Horarios de despacho de la tienda con la sesión de la familia (por defecto su dirección principal). Solo lee; no reserva ni paga.',
+      inputSchema: deliveryWindowsShape,
+    },
+    (args) => run(() => getStoreDeliveryWindows(familyId, args)),
   );
 
   return server;

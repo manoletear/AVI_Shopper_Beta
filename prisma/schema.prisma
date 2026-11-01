@@ -398,6 +398,8 @@ model Family {
   addresses  FamilyAddress[]
   stores     FamilyStore[]
   settings   FamilySettings?
+  storeConnections StoreConnection[]
+  storeCartFills   StoreCartFill[]
 
   @@map("families")
 }
@@ -713,6 +715,7 @@ model ProposedCart {
 
   items         ProposedCartItem[]
   alerts        ReplenishmentAlert[]
+  fills         StoreCartFill[]
 
   @@index([familyId, status])
   @@map("proposed_carts")
@@ -849,4 +852,48 @@ model ProductNutrition {
   @@index([canonicalProductId], map: "product_nutrition_canonical_idx")
   @@index([fetchedAt], map: "product_nutrition_fetched_idx")
   @@map("product_nutrition")
+}
+
+// Sesión cifrada (AES-256-GCM, AVI_STORE_KEY) de la cuenta de supermercado de la familia.
+// Nunca guarda contraseñas. Creada por 20261101120000_store_connections.sql.
+model StoreConnection {
+  id               String    @id @default(cuid())
+  familyId         String
+  family           Family    @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  storeSlug        String
+  encryptedSession String
+  // active, expired, needs_user_action
+  status           String    @default("active")
+  lastVerifiedAt   DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@unique([familyId, storeSlug])
+  @@map("store_connections")
+}
+
+// Resultado de llenar el carro real desde un proposed_cart aprobado. Nunca paga.
+model StoreCartFill {
+  id             String       @id @default(cuid())
+  familyId       String
+  family         Family       @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  cartId         String
+  cart           ProposedCart @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  storeSlug      String
+  // filled, partial, needs_user_action, failed
+  status         String
+  itemsRequested Int          @default(0)
+  itemsAdded     Int          @default(0)
+  approvedTotal  Int          @default(0)
+  storeTotal     Int?
+  // JSON: sustitutos propuestos, pendientes de aprobación
+  substitutes    String       @default("[]")
+  // JSON: comparación carro aprobado vs carro de la tienda
+  comparison     String?
+  message        String?
+  createdAt      DateTime     @default(now())
+
+  @@index([cartId])
+  @@index([familyId, createdAt])
+  @@map("store_cart_fills")
 }
