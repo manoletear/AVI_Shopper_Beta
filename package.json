@@ -28,6 +28,7 @@
     "@anthropic-ai/sdk": "^0.88.0",
     "@modelcontextprotocol/sdk": "^1.32.2",
     "@prisma/client": "^6.19.0",
+    "@react-email/components": "^1.0.12",
     "@types/jsonwebtoken": "^9.0.10",
     "autoprefixer": "^10.6.1",
     "bcryptjs": "^3.0.3",
@@ -39,6 +40,7 @@
     "prisma": "^6.19.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "resend": "^6.37.0",
     "zod": "^4.1.12"
   },
   "devDependencies": {
