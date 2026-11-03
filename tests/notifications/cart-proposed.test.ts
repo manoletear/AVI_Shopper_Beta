@@ -7,16 +7,22 @@ describe('buildAllergenWarnings', () => {
     const checks = [
       {
         productName: 'Galletas',
+        productId: 'p1',
         allergenStatus: 'verified' as const,
+        requiresApproval: true,
+        notice: null,
         warnings: [
-          { memberName: 'Claudia', detail: 'Contiene gluten', severity: 'contains' as const, allergen: 'gluten' },
-          { memberName: 'Sofi', detail: 'Puede contener frutos secos', severity: 'may_contain' as const, allergen: 'tree_nut' },
+          { allergen: 'gluten', kind: 'contains' as const, message: 'Contiene gluten — Claudia', members: [{ id: 'm1', name: 'Claudia' }] },
+          { allergen: 'tree_nut', kind: 'traces' as const, message: 'Puede contener frutos secos — Sofi', members: [{ id: 'm2', name: 'Sofi' }] },
         ],
       },
       null,
       {
         productName: 'Leche',
+        productId: 'p2',
         allergenStatus: 'verified' as const,
+        requiresApproval: false,
+        notice: null,
         warnings: [],
       },
     ];
@@ -24,9 +30,9 @@ describe('buildAllergenWarnings', () => {
     const result = buildAllergenWarnings(checks as any);
     assert.equal(result.length, 2);
     assert.equal(result[0].memberName, 'Claudia');
-    assert.equal(result[0].message, 'Contiene gluten');
+    assert.equal(result[0].message, 'Contiene gluten — Claudia');
     assert.equal(result[1].memberName, 'Sofi');
-    assert.equal(result[1].message, 'Puede contener frutos secos');
+    assert.equal(result[1].message, 'Puede contener frutos secos — Sofi');
   });
 
   it('returns empty array when no warnings', () => {

@@ -31,9 +31,10 @@ export function buildAllergenWarnings(checks: (AllergenCheckResult | null)[]): A
   for (const check of checks) {
     if (!check?.warnings.length) continue;
     for (const w of check.warnings) {
+      const memberNames = w.members.map((m) => m.name).join(', ') || 'familia';
       warnings.push({
-        message: w.detail,
-        memberName: w.memberName,
+        message: w.message,
+        memberName: memberNames,
       });
     }
   }
