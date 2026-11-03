@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma';
 import { parseBasicState } from '@/lib/onboarding/basic';
 import { checkAllergens } from '@/lib/nutrition/check-allergens';
 import { callStoreWorker, StoreWorkerError } from '@/lib/stores/remote';
+import { notifyCartProposed } from '@/lib/notifications/cart-proposed';
 import type { WorkerJob } from '@/lib/stores/worker';
 import type { AllergenCheckResult, MemberAllergies, StoreName } from '@/types/nutrition';
 import type {
@@ -192,6 +193,17 @@ export async function proposeCart(familyId: string, input: ProposeCartInput): Pr
     payable: row.payable,
     allergenCheck: checks[index],
   }));
+
+  // Fire-and-forget: notificar aprobadores por email
+  notifyCartProposed({
+    cartId: cart.id,
+    familyId,
+    storeName: cart.storeName,
+    items: items.map((i) => ({ name: i.name, quantity: i.quantity, unit: i.unit, payable: i.payable })),
+    subtotal,
+    allergenChecks: checks,
+    note: note || undefined,
+  }).catch(() => {});
 
   return {
     cartId: cart.id,
