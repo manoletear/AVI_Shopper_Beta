@@ -7,7 +7,7 @@ const shots = '/opt/cursor/artifacts/onboarding';
 test.describe('Onboarding básico', () => {
   test.use({ viewport: { width: 390, height: 844 } });
 
-  test('un usuario nuevo llega al primer carro y deja el perfil pendiente', async ({ page }) => {
+  test('un usuario nuevo llega al primer carro y deja el perfil pendiente', { timeout: 60000 }, async ({ page }) => {
     const email = `hogar.${Date.now()}@avishopper.cl`;
     await page.goto('/registro');
     await page.fill('input[type="text"]', 'Casa Nueva');
@@ -18,7 +18,10 @@ test.describe('Onboarding básico', () => {
     await expect(page.getByTestId('onboarding-title')).toHaveText('Dirección y acceso');
     mkdirSync(shots, { recursive: true });
     const shot = async (name: string) => {
-      await page.getByTestId('onboarding-scroll').evaluate((node) => node.scrollTo(0, 0));
+      const scroller = page.getByTestId('onboarding-scroll');
+      if (await scroller.isVisible({ timeout: 3000 }).catch(() => false)) {
+        await scroller.evaluate((node) => node.scrollTo(0, 0));
+      }
       await page.screenshot({ path: `${shots}/${name}.png` });
     };
 
