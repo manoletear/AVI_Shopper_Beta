@@ -7,7 +7,8 @@ const shots = '/opt/cursor/artifacts/onboarding';
 test.describe('Onboarding básico', () => {
   test.use({ viewport: { width: 390, height: 844 } });
 
-  test('un usuario nuevo llega al primer carro y deja el perfil pendiente', { timeout: 60000 }, async ({ page }) => {
+  test('un usuario nuevo llega al primer carro y deja el perfil pendiente', async ({ page }) => {
+    test.setTimeout(60000);
     const email = `hogar.${Date.now()}@avishopper.cl`;
     await page.goto('/registro');
     await page.fill('input[type="text"]', 'Casa Nueva');
