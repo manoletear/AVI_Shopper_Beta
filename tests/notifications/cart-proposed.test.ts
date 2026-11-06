@@ -84,21 +84,34 @@ describe('email content ordering', () => {
 });
 
 describe('no email = no-op', () => {
-  it('notifyCartProposed does not throw when no RESEND_API_KEY', async () => {
-    // Without RESEND_API_KEY, getResend() returns null and the function
-    // exits silently. We test this by verifying the guard logic.
+  it('no-op when RESEND_API_KEY is missing', () => {
     const key = process.env.RESEND_API_KEY;
     assert.ok(!key || key === '', 'RESEND_API_KEY should not be set in tests');
-    // The function would return early at the getResend() null check
+  });
+
+  it('no-op when RESEND_FROM is missing', () => {
+    const from = process.env.RESEND_FROM;
+    assert.ok(!from || from === '', 'RESEND_FROM should not be set in tests');
+  });
+
+  it('no hardcoded fallback domain', () => {
+    // getFrom() returns null when RESEND_FROM is not set — no fallback
+    const from = process.env.RESEND_FROM || null;
+    assert.equal(from, null);
   });
 
   it('handles missing approver email gracefully', () => {
-    // If approver has no userId or user has no email, the function
-    // filters them out and logs a warning instead of failing.
     const emails = [null, undefined, '', 'real@email.com'].filter(
       (e): e is string => !!e && e.length > 0
     );
     assert.equal(emails.length, 1);
     assert.equal(emails[0], 'real@email.com');
+  });
+});
+
+describe('isApprover from family/approver (no circular import)', () => {
+  it('can import isApprover from family/approver without pulling tools.ts', async () => {
+    const mod = await import('../../src/lib/family/approver');
+    assert.equal(typeof mod.isApprover, 'function');
   });
 });

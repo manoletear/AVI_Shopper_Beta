@@ -3,7 +3,7 @@ import { authOptions } from '@/lib/auth-options';
 import { prisma } from '@/lib/prisma';
 import { AppError, ForbiddenError, UnauthorizedError } from '@/lib/errors';
 import { errorResponse } from '@/lib/responses';
-import { isApprover } from '@/lib/mcp/tools';
+import { isApprover } from '@/lib/family/approver';
 
 /**
  * Pertenencia a la familia verificada en el servidor.

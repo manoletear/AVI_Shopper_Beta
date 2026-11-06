@@ -1,6 +1,6 @@
 import { Resend } from 'resend';
 import { prisma } from '@/lib/prisma';
-import { isApprover } from '@/lib/mcp/tools';
+import { isApprover } from '@/lib/family/approver';
 import { CartProposedEmail, type CartItemProps, type AllergenWarningProps } from '@/emails/CartProposedEmail';
 import type { AllergenCheckResult } from '@/types/nutrition';
 
@@ -8,12 +8,20 @@ const APP_URL = 'https://avi-shopper-beta.vercel.app';
 
 function getResend(): Resend | null {
   const key = process.env.RESEND_API_KEY;
-  if (!key) return null;
+  const from = process.env.RESEND_FROM;
+  if (!key) {
+    console.warn('[notify] RESEND_API_KEY no configurada, saltando email');
+    return null;
+  }
+  if (!from) {
+    console.warn('[notify] RESEND_FROM no configurada, saltando email');
+    return null;
+  }
   return new Resend(key);
 }
 
-function getFrom(): string {
-  return process.env.RESEND_FROM || 'AVI Shopper <avi@avishopper.cl>';
+function getFrom(): string | null {
+  return process.env.RESEND_FROM || null;
 }
 
 export interface CartNotificationPayload {
@@ -46,13 +54,15 @@ export function buildApproveUrl(cartId: string): string {
 }
 
 /**
- * Fire-and-forget: notifica por email a los aprobadores de la familia.
- * Si Resend falla o no hay email, registra y no tira error.
+ * Notifica por email a los aprobadores de la familia.
+ * Si Resend falla o no hay email/config, registra y no tira error.
  * Idempotente: no envía si notifiedAt ya tiene valor.
+ *
+ * Se llama con await desde proposeCart; el try/catch interno
+ * garantiza que el carro se crea igual si Resend falla.
  */
 export async function notifyCartProposed(payload: CartNotificationPayload): Promise<void> {
   try {
-    // Idempotency: check notifiedAt
     const cart = await prisma.proposedCart.findUnique({
       where: { id: payload.cartId },
       select: { id: true, notifiedAt: true },
@@ -61,12 +71,11 @@ export async function notifyCartProposed(payload: CartNotificationPayload): Prom
     if (cart.notifiedAt) return;
 
     const resend = getResend();
-    if (!resend) {
-      console.warn('[notify] RESEND_API_KEY no configurada, saltando email');
-      return;
-    }
+    if (!resend) return;
 
-    // Find approvers with email
+    const from = getFrom();
+    if (!from) return;
+
     const family = await prisma.family.findUnique({
       where: { id: payload.familyId },
       select: { name: true, settings: true },
@@ -92,7 +101,7 @@ export async function notifyCartProposed(payload: CartNotificationPayload): Prom
     const approveUrl = buildApproveUrl(payload.cartId);
 
     await resend.emails.send({
-      from: getFrom(),
+      from,
       to: emails,
       subject: `🛒 AVI propone un carro en ${payload.storeName} — revísalo`,
       react: CartProposedEmail({
@@ -107,7 +116,6 @@ export async function notifyCartProposed(payload: CartNotificationPayload): Prom
       }),
     });
 
-    // Mark as notified
     await prisma.proposedCart.update({
       where: { id: payload.cartId },
       data: { notifiedAt: new Date() },

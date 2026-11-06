@@ -3,6 +3,7 @@ import { parseBasicState } from '@/lib/onboarding/basic';
 import { checkAllergens } from '@/lib/nutrition/check-allergens';
 import { callStoreWorker, StoreWorkerError } from '@/lib/stores/remote';
 import { notifyCartProposed } from '@/lib/notifications/cart-proposed';
+import { isApprover } from '@/lib/family/approver';
 import type { WorkerJob } from '@/lib/stores/worker';
 import type { AllergenCheckResult, MemberAllergies, StoreName } from '@/types/nutrition';
 import type {
@@ -38,25 +39,8 @@ export function parseMemberAllergies(raw: string | null | undefined): string[] {
   }
 }
 
-interface ApproverMember {
-  id: string;
-  name: string;
-  role: string;
-}
-
-/**
- * Misma regla que approveProposedCart: manda quien se eligió en el onboarding
- * (por id o por nombre); si no hay elección, el rol approverRole (master por defecto).
- */
-export function isApprover(
-  member: ApproverMember,
-  settings: { approverRole?: string | null; stepState?: string | null } | null,
-): boolean {
-  const chosen = parseBasicState(settings?.stepState).answers.approver;
-  if (chosen?.memberId) return member.id === chosen.memberId;
-  if (chosen?.memberName) return member.name === chosen.memberName;
-  return member.role === (settings?.approverRole || 'master');
-}
+// Re-export para mantener compatibilidad con imports existentes.
+export { isApprover } from '@/lib/family/approver';
 
 export function payableFor(quantity: number, unitPriceClp: number | undefined): number {
   if (unitPriceClp == null) return 0;
@@ -194,8 +178,8 @@ export async function proposeCart(familyId: string, input: ProposeCartInput): Pr
     allergenCheck: checks[index],
   }));
 
-  // Fire-and-forget: notificar aprobadores por email
-  notifyCartProposed({
+  // Await: notifyCartProposed tiene try/catch interno, nunca falla el carro.
+  await notifyCartProposed({
     cartId: cart.id,
     familyId,
     storeName: cart.storeName,
@@ -203,7 +187,7 @@ export async function proposeCart(familyId: string, input: ProposeCartInput): Pr
     subtotal,
     allergenChecks: checks,
     note: note || undefined,
-  }).catch(() => {});
+  });
 
   return {
     cartId: cart.id,
