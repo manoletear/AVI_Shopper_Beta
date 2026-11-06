@@ -34,7 +34,7 @@ export default function CarroPage() {
 
   const fetchCart = useCallback(async () => {
     try {
-      const res = await fetch(`/api/carts/proposed/${cartId}/approve`);
+      const res = await fetch(`/api/carts/${cartId}`);
       if (!res.ok) {
         setError('No se pudo cargar el carro');
         return;
