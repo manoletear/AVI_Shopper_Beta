@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { extractMessage, sendTextMessage, sendButtonMessage, markAsRead } from '@/services/whatsapp.service';
+import { extractMessage, sendTextMessage, sendButtonMessage, markAsRead, verifyWebhookSignature } from '@/services/whatsapp.service';
 import { processAgentMessage } from '@/services/agent.service';
 
 // GET /api/whatsapp — Verificacion del webhook de Meta
@@ -24,6 +24,16 @@ export async function GET(request: NextRequest) {
 // POST /api/whatsapp — Recibir mensajes de WhatsApp
 export async function POST(request: NextRequest) {
   try {
+    const appSecret = process.env.WHATSAPP_APP_SECRET;
+    if (appSecret) {
+      const signature = request.headers.get('x-hub-signature-256') || '';
+      const rawBody = await request.clone().text();
+      if (!verifyWebhookSignature(signature, rawBody, appSecret)) {
+        console.warn('[WhatsApp] Firma inválida — request rechazado');
+        return new NextResponse('Forbidden', { status: 403 });
+      }
+    }
+
     const body = await request.json();
     const message = extractMessage(body);
 
