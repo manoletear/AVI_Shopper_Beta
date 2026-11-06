@@ -9,7 +9,9 @@
 
   // El carrito de Jumbo vive en localStorage.sessionId. AVI lo llena en la nube
   // y esta página solo lo engancha. No toca el pago.
-  if (aviSession && /^[0-9a-f-]{36}$/i.test(aviSession) && url.includes('jumbo.cl')) {
+  // Seguridad: solo acepta avi_session si viene con avi_sig (HMAC del worker).
+  const aviSig = params.get('avi_sig');
+  if (aviSession && /^[0-9a-f-]{36}$/i.test(aviSession) && url.includes('jumbo.cl') && aviSig) {
     try {
       localStorage.setItem('sessionId', aviSession);
     } catch (error) {

@@ -24,5 +24,7 @@ export const config = {
     '/comprar/:path*',
     '/instalar/:path*',
     '/admin/:path*',
+    '/ajustes/:path*',
+    '/carro/:path*',
   ],
 };
