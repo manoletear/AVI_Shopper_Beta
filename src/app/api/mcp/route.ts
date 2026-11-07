@@ -2,6 +2,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js';
 import { z } from 'zod';
 import { authenticateToken } from '@/lib/mcp/auth';
+import { AVI_MCP_INSTRUCTIONS } from '@/lib/mcp/instructions';
 import {
   approveCart,
   approveItem,
@@ -44,7 +45,10 @@ async function run(fn: () => Promise<unknown>): Promise<ToolResult> {
 
 /** Un servidor por request y por familia: el familyId sale del token, nunca de los argumentos. */
 function createServer(familyId: string) {
-  const server = new McpServer({ name: 'avi-shopper', version: '1.0.0' });
+  const server = new McpServer(
+    { name: 'avi-shopper', version: '1.0.0' },
+    { instructions: AVI_MCP_INSTRUCTIONS },
+  );
 
   server.registerTool(
     'get_household',
