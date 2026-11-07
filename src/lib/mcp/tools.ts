@@ -328,3 +328,15 @@ export async function getStoreDeliveryWindows(
   }
   return viaWorker({ op: 'get_delivery_windows', familyId, store: input.store, address });
 }
+
+export async function connectStoreForFamily(
+  familyId: string,
+  input: { store: StoreName; email: string; password: string },
+) {
+  return viaWorker({
+    op: 'connect_store',
+    familyId,
+    store: input.store,
+    credentials: { email: input.email, password: input.password },
+  });
+}

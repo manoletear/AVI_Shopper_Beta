@@ -27,6 +27,7 @@ export async function GET(
     return successResponse({
       id: cart.id,
       storeName: cart.storeName,
+      storeSlug: cart.storeSlug,
       status: cart.status,
       subtotal: cart.subtotal,
       total: cart.total,
