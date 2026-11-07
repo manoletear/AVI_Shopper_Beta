@@ -137,13 +137,15 @@ export default function CarroPage() {
           <span className="font-semibold text-slate-900">{formatClp(cart.subtotal)}</span>
         </div>
 
-        {/* Sustitutos link */}
-        <a
-          href={`/carro/${cartId}/sustitutos`}
-          className="block rounded-xl bg-indigo-600 text-white text-center py-3 font-medium hover:bg-indigo-700"
-        >
-          Revisar sustitutos y aprobar
-        </a>
+        {/* Action button */}
+        {cart.status === 'proposed' && (
+          <a
+            href={`/carro/${cartId}/sustitutos`}
+            className="block rounded-xl bg-indigo-600 text-white text-center py-3 font-medium hover:bg-indigo-700"
+          >
+            Revisar y aprobar
+          </a>
+        )}
 
         {/* Date */}
         <div className="text-center text-xs text-slate-400">
