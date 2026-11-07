@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js';
+import { z } from 'zod';
 import { authenticateToken } from '@/lib/mcp/auth';
 import {
   approveCart,
@@ -7,6 +8,7 @@ import {
   checkAllergensForFamily,
   fillStoreCart,
   getStoreDeliveryWindows,
+  connectStoreForFamily,
   getHousehold,
   getLockedProducts,
   getPantry,
@@ -115,6 +117,20 @@ function createServer(familyId: string) {
       inputSchema: deliveryWindowsShape,
     },
     (args) => run(() => getStoreDeliveryWindows(familyId, args)),
+  );
+
+  server.registerTool(
+    'connect_store',
+    {
+      description:
+        'Conecta la cuenta del supermercado de la familia. Las credenciales se usan una vez para obtener cookies de sesión; luego se descartan. Solo se guardan cookies cifradas (AES-256-GCM). Si hay captcha o 2FA devuelve needs_user_action. Nunca guarda ni loguea email/password.',
+      inputSchema: {
+        store: z.enum(['jumbo', 'lider', 'unimarc', 'tottus']),
+        email: z.string().email(),
+        password: z.string().min(1),
+      },
+    },
+    (args) => run(() => connectStoreForFamily(familyId, args)),
   );
 
   return server;
