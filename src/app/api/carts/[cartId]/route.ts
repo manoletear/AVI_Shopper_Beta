@@ -15,7 +15,7 @@ export async function GET(
       where: { id: params.cartId, familyId },
       include: {
         items: {
-          orderBy: { createdAt: 'asc' },
+          orderBy: { id: 'asc' },
         },
       },
     });
