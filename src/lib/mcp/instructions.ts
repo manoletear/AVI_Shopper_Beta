@@ -25,10 +25,11 @@ Si el carro se llena, la familia revisa y paga ella misma en la tienda.
 5. La familia va a la tienda online a revisar y pagar. AVI se detiene.
 
 ## Antes de proponer un carro
+- Llama get_purchase_history para ver qué compra la familia normalmente.
+- Llama get_pantry para ver qué se está acabando.
+- Usa get_locked_products para incluir los productos fijos.
 - Llama check_allergens para cada producto que tenga ficha nutricional.
 - Si hay alérgenos que afectan a un miembro, AVISA en el carro. No bloquees.
-- Usa get_locked_products para incluir los productos fijos de la familia.
-- Usa get_pantry para ver qué se está acabando.
 
 ## Conexión de tienda
 - Si la familia no tiene cuenta de supermercado conectada, usa connect_store.

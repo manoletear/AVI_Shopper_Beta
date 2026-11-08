@@ -8,6 +8,7 @@ export const maxDuration = 60;
 
 export async function GET(request: NextRequest) {
   if (!isCronAuthorized(request.headers.get('authorization'), process.env.CRON_SECRET)) {
+    console.warn('[cron/replenishment] 401: CRON_SECRET no configurado o no coincide');
     return errorResponse('No autorizado', 401);
   }
   try {

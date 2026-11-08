@@ -4,6 +4,7 @@ import { checkAllergens } from '@/lib/nutrition/check-allergens';
 import { callStoreWorker, StoreWorkerError } from '@/lib/stores/remote';
 import { notifyCartProposed } from '@/lib/notifications/cart-proposed';
 import { isApprover } from '@/lib/family/approver';
+import { applyPendingPurchases, refreshProfiles } from '@/services/consumption/sync';
 import type { WorkerJob } from '@/lib/stores/worker';
 import type { AllergenCheckResult, MemberAllergies, StoreName } from '@/types/nutrition';
 import type {
@@ -261,6 +262,21 @@ export async function approveCart(
  * Calorías desde product_nutrition del producto fijo del grupo, si existe.
  */
 export async function getPantry(familyId: string): Promise<PantryItem[]> {
+  // Aplicar compras pendientes de esta familia en loop (take 500 por pasada)
+  const MAX_PASSES = 5;
+  for (let pass = 0; pass < MAX_PASSES; pass++) {
+    const pending = await prisma.purchaseHistory.count({ where: { familyId, appliedAt: null } });
+    if (pending === 0) break;
+    try {
+      const result = await applyPendingPurchases();
+      await refreshProfiles();
+      if (result.applied === 0) break; // no progress — remaining rows are waiting (no family context)
+    } catch (error) {
+      console.warn('[getPantry] Error aplicando compras pendientes:', error instanceof Error ? error.message : 'unknown');
+      break;
+    }
+  }
+
   const profiles = await prisma.consumptionProfile.findMany({
     where: { familyId, frozen: false },
     include: { group: true },
@@ -327,6 +343,52 @@ export async function getStoreDeliveryWindows(
     address = { street: primary.street, number: primary.number || undefined, comuna: primary.comuna };
   }
   return viaWorker({ op: 'get_delivery_windows', familyId, store: input.store, address });
+}
+
+export async function getPurchaseHistory(
+  familyId: string,
+  opts: { limit?: number; storeSlug?: string; from?: string; to?: string } = {},
+) {
+  const limit = Math.min(opts.limit || 50, 200);
+  const where: any = { familyId };
+  if (opts.storeSlug) where.storeSlug = opts.storeSlug;
+  if (opts.from || opts.to) {
+    where.purchasedAt = {};
+    if (opts.from) where.purchasedAt.gte = new Date(opts.from);
+    if (opts.to) where.purchasedAt.lte = new Date(opts.to);
+  }
+
+  const rows = await prisma.purchaseHistory.findMany({
+    where,
+    orderBy: { purchasedAt: 'desc' },
+    take: limit,
+    select: {
+      id: true,
+      productName: true,
+      brand: true,
+      storeSlug: true,
+      storeName: true,
+      quantity: true,
+      unit: true,
+      price: true,
+      purchasedAt: true,
+      source: true,
+      appliedAt: true,
+      groupKey: true,
+      canonicalProductId: true,
+    },
+  });
+
+  return {
+    familyId,
+    count: rows.length,
+    purchases: rows.map((r) => ({
+      ...r,
+      purchasedAt: r.purchasedAt.toISOString(),
+      appliedAt: r.appliedAt?.toISOString() ?? null,
+      applied: !!r.appliedAt,
+    })),
+  };
 }
 
 export async function connectStoreForFamily(

@@ -13,6 +13,7 @@ import {
   getHousehold,
   getLockedProducts,
   getPantry,
+  getPurchaseHistory,
   McpToolError,
   proposeCart,
 } from '@/lib/mcp/tools';
@@ -135,6 +136,21 @@ function createServer(familyId: string) {
       },
     },
     (args) => run(() => connectStoreForFamily(familyId, args)),
+  );
+
+  server.registerTool(
+    'get_purchase_history',
+    {
+      description:
+        'Historial de compras de la familia. Muestra qué compran, en qué tienda, a qué precio, y si ya se aplicó al perfil de consumo. Úsalo junto con get_pantry antes de proponer un carro.',
+      inputSchema: {
+        limit: z.number().int().positive().max(200).optional(),
+        storeSlug: z.enum(['jumbo', 'lider', 'unimarc', 'tottus']).optional(),
+        from: z.string().optional(),
+        to: z.string().optional(),
+      },
+    },
+    (args) => run(() => getPurchaseHistory(familyId, args)),
   );
 
   return server;
