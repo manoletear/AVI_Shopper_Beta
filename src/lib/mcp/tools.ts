@@ -329,6 +329,52 @@ export async function getStoreDeliveryWindows(
   return viaWorker({ op: 'get_delivery_windows', familyId, store: input.store, address });
 }
 
+export async function getPurchaseHistory(
+  familyId: string,
+  opts: { limit?: number; storeSlug?: string; from?: string; to?: string } = {},
+) {
+  const limit = Math.min(opts.limit || 50, 200);
+  const where: any = { familyId };
+  if (opts.storeSlug) where.storeSlug = opts.storeSlug;
+  if (opts.from || opts.to) {
+    where.purchasedAt = {};
+    if (opts.from) where.purchasedAt.gte = new Date(opts.from);
+    if (opts.to) where.purchasedAt.lte = new Date(opts.to);
+  }
+
+  const rows = await prisma.purchaseHistory.findMany({
+    where,
+    orderBy: { purchasedAt: 'desc' },
+    take: limit,
+    select: {
+      id: true,
+      productName: true,
+      brand: true,
+      storeSlug: true,
+      storeName: true,
+      quantity: true,
+      unit: true,
+      price: true,
+      purchasedAt: true,
+      source: true,
+      appliedAt: true,
+      groupKey: true,
+      canonicalProductId: true,
+    },
+  });
+
+  return {
+    familyId,
+    count: rows.length,
+    purchases: rows.map((r) => ({
+      ...r,
+      purchasedAt: r.purchasedAt.toISOString(),
+      appliedAt: r.appliedAt?.toISOString() ?? null,
+      applied: !!r.appliedAt,
+    })),
+  };
+}
+
 export async function connectStoreForFamily(
   familyId: string,
   input: { store: StoreName; email: string; password: string },
