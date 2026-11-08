@@ -262,17 +262,18 @@ export async function approveCart(
  * Calorías desde product_nutrition del producto fijo del grupo, si existe.
  */
 export async function getPantry(familyId: string): Promise<PantryItem[]> {
-  // Lazy init: si no hay profiles para esta familia, aplicar compras pendientes
-  const profileCount = await prisma.consumptionProfile.count({ where: { familyId } });
-  if (profileCount === 0) {
+  // Aplicar compras pendientes de esta familia en loop (take 500 por pasada)
+  const MAX_PASSES = 5;
+  for (let pass = 0; pass < MAX_PASSES; pass++) {
     const pending = await prisma.purchaseHistory.count({ where: { familyId, appliedAt: null } });
-    if (pending > 0) {
-      try {
-        await applyPendingPurchases();
-        await refreshProfiles();
-      } catch (error) {
-        console.warn('[getPantry] Error aplicando compras pendientes:', error instanceof Error ? error.message : 'unknown');
-      }
+    if (pending === 0) break;
+    try {
+      const result = await applyPendingPurchases();
+      await refreshProfiles();
+      if (result.applied === 0) break; // no progress — remaining rows are waiting (no family context)
+    } catch (error) {
+      console.warn('[getPantry] Error aplicando compras pendientes:', error instanceof Error ? error.message : 'unknown');
+      break;
     }
   }
 

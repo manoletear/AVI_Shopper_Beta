@@ -81,7 +81,13 @@ async function main() {
   const deleted = await prisma.purchaseHistory.deleteMany({
     where: { familyId: FAMILY_ID, source: SOURCE },
   });
-  console.log(`Eliminadas ${deleted.count} filas existentes (source=${SOURCE}, family=${FAMILY_ID})`);
+  console.log(`Eliminadas ${deleted.count} filas de purchase_history (source=${SOURCE}, family=${FAMILY_ID})`);
+
+  // Delete derived data so it regenerates from the new CSV
+  const deletedProfiles = await prisma.consumptionProfile.deleteMany({ where: { familyId: FAMILY_ID } });
+  console.log(`Eliminados ${deletedProfiles.count} consumption_profiles`);
+  const deletedAlerts = await prisma.replenishmentAlert.deleteMany({ where: { familyId: FAMILY_ID } });
+  console.log(`Eliminados ${deletedAlerts.count} replenishment_alerts`);
 
   // Read CSV
   const rl = createInterface({ input: createReadStream(csvPath, 'utf-8') });
@@ -95,8 +101,9 @@ async function main() {
 
     const row = parseCsvLine(header, line);
 
-    // Skip non-delivered or cancelled
+    // Skip non-delivered, cancelled, or not for prediction
     if (row.estado === 'cancelada' || row.estado === 'no_encontrado') continue;
+    if (row.cuenta_para_prediccion === '0' || row.cuenta_para_prediccion === 'false') continue;
 
     const userId = COMPRADOR_USER[row.comprador] || COMPRADOR_USER.Manu;
     const storeSlug = STORE_SLUG_MAP[row.tienda] || row.tienda.toLowerCase().replace(/\s+/g, '_');
