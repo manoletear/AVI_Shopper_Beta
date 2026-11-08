@@ -38,9 +38,16 @@ export async function recordPurchase(
   userId: string,
   purchase: PurchaseInput
 ): Promise<void> {
+  // Infer familyId from user's family membership
+  const member = await prisma.familyMember.findFirst({
+    where: { userId, isActive: true, type: 'person' },
+    select: { familyId: true },
+  });
+
   await prisma.purchaseHistory.create({
     data: {
       userId,
+      familyId: member?.familyId ?? null,
       productName: purchase.productName,
       brand: purchase.brand || null,
       category: purchase.category || null,

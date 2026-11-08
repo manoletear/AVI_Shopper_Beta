@@ -4,6 +4,7 @@ import { checkAllergens } from '@/lib/nutrition/check-allergens';
 import { callStoreWorker, StoreWorkerError } from '@/lib/stores/remote';
 import { notifyCartProposed } from '@/lib/notifications/cart-proposed';
 import { isApprover } from '@/lib/family/approver';
+import { applyPendingPurchases, refreshProfiles } from '@/services/consumption/sync';
 import type { WorkerJob } from '@/lib/stores/worker';
 import type { AllergenCheckResult, MemberAllergies, StoreName } from '@/types/nutrition';
 import type {
@@ -261,6 +262,20 @@ export async function approveCart(
  * Calorías desde product_nutrition del producto fijo del grupo, si existe.
  */
 export async function getPantry(familyId: string): Promise<PantryItem[]> {
+  // Lazy init: si no hay profiles para esta familia, aplicar compras pendientes
+  const profileCount = await prisma.consumptionProfile.count({ where: { familyId } });
+  if (profileCount === 0) {
+    const pending = await prisma.purchaseHistory.count({ where: { familyId, appliedAt: null } });
+    if (pending > 0) {
+      try {
+        await applyPendingPurchases();
+        await refreshProfiles();
+      } catch (error) {
+        console.warn('[getPantry] Error aplicando compras pendientes:', error instanceof Error ? error.message : 'unknown');
+      }
+    }
+  }
+
   const profiles = await prisma.consumptionProfile.findMany({
     where: { familyId, frozen: false },
     include: { group: true },
