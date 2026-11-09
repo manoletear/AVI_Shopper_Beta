@@ -120,11 +120,29 @@ Esto cierra el onboarding. A partir de ahora AVI funciona solo.
 
 ## Flujo de compra
 1. Propón la lista basada en pantry.red + pantry.yellow.
-2. propose_cart → crea el carro en la tienda más conveniente.
-3. El aprobador revisa: approve_item / approve_cart.
-4. fill_cart → llena el carro REAL (solo ítems aprobados).
-5. Si falta stock → propone sustituto, NO lo agrega sin aprobación.
-6. La familia revisa y paga. AVI se detiene.
+2. ANTES de armar el carro, pregunta: "¿Esta compra es para la casa o para algo especial?"
+   - 🏠 Para la casa (reposición normal)
+   - 🔥 Asado
+   - 🎂 Cumple
+   - 🍻 Carrete / junta
+   - 🇨🇱 Dieciocho
+   - 🎄 Navidad
+   - 🔄 Lo que faltó
+   - 🧒 Colaciones
+3. propose_cart → incluye el motivo. Esto es CLAVE: los productos de un asado
+   (carbón, carne extra, pan extra) NO inflan el consumo diario de la familia.
+   Solo "para_la_casa", "lo_que_falto" y "colaciones" ajustan las tasas.
+4. El aprobador revisa: approve_item / approve_cart.
+5. fill_cart → llena el carro REAL (solo ítems aprobados).
+6. Si falta stock → propone sustituto, NO lo agrega sin aprobación.
+7. La familia revisa y paga. AVI se detiene.
+
+## Motivo de compra (importante para la predicción)
+Cada carro tiene un motivo. AVI aprende diferente según el motivo:
+- para_la_casa / lo_que_falto / colaciones → ajustan consumo diario
+- asado / cumple / carrete / dieciocho / navidad → NO ajustan consumo diario,
+  se trackean aparte como "eventos". AVI aprende: "hacen asado cada ~3 semanas
+  y compran carbón + 2kg carne + vino". Cuando toca el próximo, sugiere lo mismo.
 
 ## Aprobación
 - Solo quienes tienen isApprover = true pueden aprobar.

@@ -186,6 +186,7 @@ export async function getHouseholdIntelligence(familyId: string): Promise<Househ
       select: {
         orderRef: true, userId: true, purchasedAt: true, price: true,
         quantity: true, groupKey: true, category: true, storeSlug: true, unit: true,
+        motivo: true,
       },
       orderBy: { purchasedAt: 'asc' },
     }),
@@ -246,16 +247,31 @@ export async function getHouseholdIntelligence(familyId: string): Promise<Househ
   // If next shop is in the past, assume it's overdue and shopping should happen today
   const effectiveNextShopDays = Math.max(1, nextShopDays);
 
+  // Motivos que afectan la tasa diaria de consumo
+  const MOTIVOS_COTIDIANOS = new Set(['para_la_casa', 'lo_que_falto', 'colaciones']);
+
   // ── Build per-product intelligence ──
   const byProduct = new Map<string, {
     dates: Date[]; quantities: number[]; prices: number[];
     stores: string[]; category: string | null; unit: string | null;
+    motivoCounts: Map<string, number>;
+    cotidianoDates: Date[]; cotidianoQuantities: number[];
   }>();
 
   for (const r of purchases) {
     const gk = r.groupKey || 'unknown';
-    if (!byProduct.has(gk)) byProduct.set(gk, { dates: [], quantities: [], prices: [], stores: [], category: null, unit: null });
+    if (!byProduct.has(gk)) byProduct.set(gk, {
+      dates: [], quantities: [], prices: [], stores: [],
+      category: null, unit: null,
+      motivoCounts: new Map(), cotidianoDates: [], cotidianoQuantities: [],
+    });
     const pd = byProduct.get(gk)!;
+    const motivo = (r as any).motivo || 'para_la_casa';
+    pd.motivoCounts.set(motivo, (pd.motivoCounts.get(motivo) || 0) + 1);
+    if (MOTIVOS_COTIDIANOS.has(motivo)) {
+      pd.cotidianoDates.push(r.purchasedAt);
+      pd.cotidianoQuantities.push(r.quantity ?? 1);
+    };
     pd.dates.push(r.purchasedAt);
     pd.quantities.push(r.quantity ?? 1);
     pd.prices.push(r.price ?? 0);
@@ -286,17 +302,20 @@ export async function getHouseholdIntelligence(familyId: string): Promise<Househ
     const consumers = consumersForContext(ctx, family);
     if (consumers === 0) continue;
 
-    // Compute median interval
+    // Tasa diaria usa SOLO compras cotidianas (para_la_casa, lo_que_falto, colaciones).
+    // Compras de evento (asado, cumple, carrete) no inflan el consumo diario.
+    const useDates = pd.cotidianoDates.length >= 2 ? pd.cotidianoDates : pd.dates;
+    const useQtys = pd.cotidianoQuantities.length >= 2 ? pd.cotidianoQuantities : pd.quantities;
+
     const intervals: number[] = [];
-    for (let i = 1; i < pd.dates.length; i++) {
-      const d = Math.round((pd.dates[i].getTime() - pd.dates[i - 1].getTime()) / 86400000);
+    for (let i = 1; i < useDates.length; i++) {
+      const d = Math.round((useDates[i].getTime() - useDates[i - 1].getTime()) / 86400000);
       if (d > 0 && d < 120) intervals.push(d);
     }
     const medInterval = intervals.length > 0 ? [...intervals].sort((a, b) => a - b)[Math.floor(intervals.length / 2)] : 30;
 
-    // Adaptive rate: weighted average of recent quantities (last 5 heavier)
-    const recentN = Math.min(5, pd.quantities.length);
-    const recentQtys = pd.quantities.slice(-recentN);
+    const recentN = Math.min(5, useQtys.length);
+    const recentQtys = useQtys.slice(-recentN);
     const avgQty = recentQtys.reduce((s, q) => s + q, 0) / recentQtys.length;
     const dailyRate = medInterval > 0 ? avgQty / medInterval : 0;
     const perPersonPerDay = consumers > 0 ? dailyRate / consumers : dailyRate;

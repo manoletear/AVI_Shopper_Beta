@@ -150,6 +150,7 @@ export async function proposeCart(familyId: string, input: ProposeCartInput): Pr
         subtotal,
         total: subtotal,
         note,
+        motivo: input.motivo || 'para_la_casa',
       },
     });
     const createdRows = [];
