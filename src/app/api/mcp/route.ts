@@ -15,6 +15,7 @@ import {
   getLockedProducts,
   getPantry,
   getPurchaseHistory,
+  importPurchases,
   McpToolError,
   proposeCart,
 } from '@/lib/mcp/tools';
@@ -158,6 +159,34 @@ function createServer(familyId: string) {
       },
     },
     (args) => run(() => getPurchaseHistory(familyId, args)),
+  );
+
+  server.registerTool(
+    'import_purchases',
+    {
+      description:
+        'Importa historial de compras desde una fuente externa (Uber Eats, Jumbo, Lider, Cornershop, Rappi, etc.). Grok extrae los datos usando las credenciales del vault del usuario y los pasa normalizados a AVI. AVI nunca accede a credenciales — solo recibe los productos. Máximo 2.000 por llamada. Después de importar, get_pantry refleja los nuevos datos automáticamente.',
+      inputSchema: {
+        source: z.enum(['ubereats', 'jumbo', 'lider', 'unimarc', 'tottus', 'cornershop', 'rappi', 'pedidosya', 'manual']),
+        buyer: z.string().optional().describe('Nombre del comprador (ej: "Claudia"). Si no se indica, se asigna al master.'),
+        purchases: z.array(z.object({
+          productName: z.string(),
+          brand: z.string().optional(),
+          category: z.string().optional(),
+          storeSlug: z.string().optional(),
+          storeName: z.string().optional(),
+          price: z.number().optional().describe('Precio unitario en CLP enteros'),
+          quantity: z.number().optional().default(1),
+          unit: z.string().optional().describe('g, kg, l, ml, un'),
+          baseAmount: z.number().optional(),
+          baseUnit: z.string().optional(),
+          groupKey: z.string().optional().describe('Producto canónico: yoghurt, pan_molde, leche_entera, etc.'),
+          orderRef: z.string().optional().describe('ID de la orden para agrupar items de una misma compra'),
+          purchasedAt: z.string().describe('Fecha ISO de la compra'),
+        })).min(1).max(2000),
+      },
+    },
+    (args) => run(() => importPurchases(familyId, args)),
   );
 
   return server;

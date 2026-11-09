@@ -125,7 +125,7 @@ describe('/api/mcp', () => {
     const json = (await list.json()) as { result: { tools: { name: string; inputSchema: { properties?: object } }[] } };
     const names = json.result.tools.map((tool) => tool.name).sort();
     assert.deepEqual(names, [
-      'approve_cart', 'approve_item', 'check_allergens', 'connect_store', 'fill_cart', 'get_delivery_windows', 'get_household', 'get_locked_products', 'get_pantry', 'get_purchase_history', 'get_store_connection_status', 'propose_cart',
+      'approve_cart', 'approve_item', 'check_allergens', 'connect_store', 'fill_cart', 'get_delivery_windows', 'get_household', 'get_locked_products', 'get_pantry', 'get_purchase_history', 'get_store_connection_status', 'import_purchases', 'propose_cart',
     ]);
     for (const tool of json.result.tools) {
       assert.equal(Object.keys(tool.inputSchema.properties ?? {}).includes('familyId'), false, tool.name);
