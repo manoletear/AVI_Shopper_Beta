@@ -362,6 +362,101 @@ export async function connectStoreForFamily(
   });
 }
 
+/**
+ * Importar historial de compras. Grok extrae los datos desde el vault
+ * (Uber Eats, supermercado, Cornershop, Rappi) y los pasa normalizados.
+ * AVI nunca accede a las credenciales — solo recibe los productos.
+ */
+export async function importPurchases(
+  familyId: string,
+  input: {
+    source: string;
+    buyer?: string;
+    purchases: {
+      productName: string;
+      brand?: string;
+      category?: string;
+      storeSlug?: string;
+      storeName?: string;
+      price?: number;
+      quantity?: number;
+      unit?: string;
+      baseAmount?: number;
+      baseUnit?: string;
+      groupKey?: string;
+      orderRef?: string;
+      purchasedAt: string;
+    }[];
+  },
+) {
+  if (!input.purchases?.length) throw new McpToolError('No hay compras para importar');
+  if (input.purchases.length > 2000) throw new McpToolError('Máximo 2.000 compras por llamada');
+
+  // Resolve buyer userId
+  let userId: string | undefined;
+  if (input.buyer) {
+    const member = await prisma.familyMember.findFirst({
+      where: { familyId, name: { contains: input.buyer, mode: 'insensitive' }, isActive: true },
+      select: { userId: true },
+    });
+    userId = member?.userId || undefined;
+  }
+  if (!userId) {
+    const master = await prisma.familyMember.findFirst({
+      where: { familyId, role: 'master', isActive: true },
+      select: { userId: true },
+    });
+    userId = master?.userId || 'unknown';
+  }
+
+  const STORE_NORMALIZE: Record<string, { slug: string; name: string }> = {
+    jumbo: { slug: 'jumbo', name: 'Jumbo' },
+    lider: { slug: 'lider', name: 'Lider' },
+    'lider express': { slug: 'lider', name: 'Lider Express' },
+    unimarc: { slug: 'unimarc', name: 'Unimarc' },
+    tottus: { slug: 'tottus', name: 'Tottus' },
+    'uber eats': { slug: 'ubereats', name: 'Uber Eats' },
+    ubereats: { slug: 'ubereats', name: 'Uber Eats' },
+    cornershop: { slug: 'cornershop', name: 'Cornershop' },
+    rappi: { slug: 'rappi', name: 'Rappi' },
+    pedidosya: { slug: 'pedidosya', name: 'PedidosYa' },
+  };
+
+  const data = input.purchases
+    .filter((r) => r.productName && r.purchasedAt)
+    .map((r) => {
+      const storeKey = (r.storeSlug || r.storeName || '').toLowerCase().trim();
+      const store = STORE_NORMALIZE[storeKey] || { slug: storeKey.replace(/\s+/g, '_'), name: r.storeName || storeKey };
+      return {
+        userId: userId!,
+        familyId,
+        productName: r.productName,
+        brand: r.brand || null,
+        category: r.category || null,
+        storeSlug: store.slug,
+        storeName: store.name,
+        price: r.price ? Math.round(r.price) : null,
+        quantity: r.quantity || 1,
+        unit: r.unit || null,
+        baseAmount: r.baseAmount || null,
+        baseUnit: r.baseUnit || null,
+        groupKey: r.groupKey || null,
+        orderRef: r.orderRef || null,
+        source: input.source || 'import',
+        purchasedAt: new Date(r.purchasedAt),
+      };
+    });
+
+  const result = await prisma.purchaseHistory.createMany({ data });
+
+  return {
+    imported: result.count,
+    source: input.source,
+    buyer: input.buyer || 'master',
+    message: `${result.count} compras importadas desde ${input.source}. La despensa se actualiza automáticamente.`,
+  };
+}
+
 export async function getStoreConnectionStatus(familyId: string) {
   const connections = await prisma.storeConnection.findMany({
     where: { familyId },
