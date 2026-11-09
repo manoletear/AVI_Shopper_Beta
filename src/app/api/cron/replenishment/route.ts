@@ -1,10 +1,10 @@
 import { NextRequest } from 'next/server';
+import { prisma } from '@/lib/prisma';
 import { successResponse, errorResponse } from '@/lib/responses';
 import { isCronAuthorized } from '@/services/notifications/auth';
-import { applyPendingPurchases, refreshProfiles } from '@/services/consumption/sync';
 
 export const dynamic = 'force-dynamic';
-export const maxDuration = 300;
+export const maxDuration = 60;
 
 export async function GET(request: NextRequest) {
   if (!isCronAuthorized(request.headers.get('authorization'), process.env.CRON_SECRET)) {
@@ -12,20 +12,14 @@ export async function GET(request: NextRequest) {
     return errorResponse('No autorizado', 401);
   }
   try {
-    let totalApplied = 0;
-    let waiting = 0;
-    for (let pass = 0; pass < 10; pass++) {
-      const result = await applyPendingPurchases();
-      totalApplied += result.applied;
-      waiting = result.waiting;
-      if (result.applied === 0) break;
-    }
-    let profilesRefreshed = 0;
-    if (totalApplied > 0) {
-      const result = await refreshProfiles();
-      profilesRefreshed = result.opened + result.dismissed;
-    }
-    return successResponse({ applied: totalApplied, waiting, profilesRefreshed });
+    // Marcar compras pendientes como aplicadas en bulk.
+    // El modelo Gran Compra lee directo de purchase_history — no necesita
+    // el procesamiento pesado de consumption_profiles row-by-row.
+    const result = await prisma.purchaseHistory.updateMany({
+      where: { appliedAt: null },
+      data: { appliedAt: new Date() },
+    });
+    return successResponse({ applied: result.count });
   } catch (error) {
     console.error('Replenishment cron error:', error);
     return errorResponse('No pude revisar el consumo', 500);
