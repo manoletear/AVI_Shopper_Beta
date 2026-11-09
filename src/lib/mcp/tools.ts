@@ -4,7 +4,7 @@ import { checkAllergens } from '@/lib/nutrition/check-allergens';
 import { callStoreWorker, StoreWorkerError } from '@/lib/stores/remote';
 import { notifyCartProposed } from '@/lib/notifications/cart-proposed';
 import { isApprover } from '@/lib/family/approver';
-import { applyPendingPurchases, refreshProfiles } from '@/services/consumption/sync';
+import { granCompraForecast } from '@/services/consumption/gran-compra';
 import type { WorkerJob } from '@/lib/stores/worker';
 import type { AllergenCheckResult, MemberAllergies, StoreName } from '@/types/nutrition';
 import type {
@@ -261,50 +261,9 @@ export async function approveCart(
  * Despensa estimada desde consumption_profiles (lo que se acaba primero arriba).
  * Calorías desde product_nutrition del producto fijo del grupo, si existe.
  */
-export async function getPantry(familyId: string): Promise<PantryItem[]> {
-  // Aplicar compras pendientes de esta familia en loop (take 500 por pasada)
-  const MAX_PASSES = 5;
-  for (let pass = 0; pass < MAX_PASSES; pass++) {
-    const pending = await prisma.purchaseHistory.count({ where: { familyId, appliedAt: null } });
-    if (pending === 0) break;
-    try {
-      const result = await applyPendingPurchases();
-      await refreshProfiles();
-      if (result.applied === 0) break; // no progress — remaining rows are waiting (no family context)
-    } catch (error) {
-      console.warn('[getPantry] Error aplicando compras pendientes:', error instanceof Error ? error.message : 'unknown');
-      break;
-    }
-  }
-
-  const profiles = await prisma.consumptionProfile.findMany({
-    where: { familyId, frozen: false },
-    include: { group: true },
-    orderBy: { runOutAt: { sort: 'asc', nulls: 'last' } },
-  });
-  const prefs = await prisma.memberPreference.findMany({
-    where: {
-      avoid: false,
-      preferredCanonicalId: { not: null },
-      groupId: { in: profiles.map((profile) => profile.groupId) },
-      member: { familyId, isActive: true },
-    },
-    select: { groupId: true, preferredCanonical: { select: { nutrition: { select: { kcal100g: true } } } } },
-  });
-  const kcalByGroup = new Map<string, number>();
-  for (const pref of prefs) {
-    const kcal = pref.preferredCanonical?.nutrition.find((row) => row.kcal100g != null)?.kcal100g;
-    if (kcal != null && !kcalByGroup.has(pref.groupId)) kcalByGroup.set(pref.groupId, kcal);
-  }
-  return profiles.map((profile) => ({
-    group: profile.group.familyKey,
-    category: profile.group.category,
-    estStock: profile.estStock,
-    baseUnit: profile.group.defaultBaseUnit,
-    runOutAt: profile.runOutAt ? profile.runOutAt.toISOString() : null,
-    confidence: profile.confidence,
-    kcal100g: kcalByGroup.get(profile.groupId) ?? null,
-  }));
+export async function getPantry(familyId: string) {
+  const forecast = await granCompraForecast(familyId);
+  return forecast;
 }
 
 /**
@@ -400,5 +359,24 @@ export async function connectStoreForFamily(
     familyId,
     store: input.store,
     credentials: { email: input.email, password: input.password },
+  });
+}
+
+export async function getStoreConnectionStatus(familyId: string) {
+  const connections = await prisma.storeConnection.findMany({
+    where: { familyId },
+    select: { storeSlug: true, status: true, lastVerifiedAt: true, updatedAt: true },
+    orderBy: { storeSlug: 'asc' },
+  });
+  const allStores: StoreName[] = ['jumbo', 'lider', 'unimarc', 'tottus'];
+  return allStores.map((slug) => {
+    const conn = connections.find((c) => c.storeSlug === slug);
+    return {
+      store: slug,
+      storeName: STORE_LABELS[slug],
+      connected: !!conn,
+      status: conn?.status ?? 'not_connected',
+      lastVerifiedAt: conn?.lastVerifiedAt?.toISOString() ?? null,
+    };
   });
 }

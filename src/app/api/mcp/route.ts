@@ -10,6 +10,7 @@ import {
   fillStoreCart,
   getStoreDeliveryWindows,
   connectStoreForFamily,
+  getStoreConnectionStatus,
   getHousehold,
   getLockedProducts,
   getPantry,
@@ -136,6 +137,12 @@ function createServer(familyId: string) {
       },
     },
     (args) => run(() => connectStoreForFamily(familyId, args)),
+  );
+
+  server.registerTool(
+    'get_store_connection_status',
+    { description: 'Estado de conexión de cada supermercado: si está conectado, activo, expirado o necesita acción del usuario.' },
+    () => run(() => getStoreConnectionStatus(familyId)),
   );
 
   server.registerTool(

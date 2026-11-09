@@ -94,7 +94,7 @@ describe('/api/mcp', () => {
     ...(token ? { authorization: `Bearer ${token}` } : {}),
   });
 
-  it('401 sin token y lista las 12 herramientas con token', async () => {
+  it('401 sin token y lista las herramientas con token', async () => {
     process.env.AVI_MCP_TOKENS = ENV;
     const { POST, GET } = await import('../../src/app/api/mcp/route');
     const denied = await POST(new Request('http://x/api/mcp', { method: 'POST', headers: headers(), body: body('tools/list') }));
@@ -125,7 +125,7 @@ describe('/api/mcp', () => {
     const json = (await list.json()) as { result: { tools: { name: string; inputSchema: { properties?: object } }[] } };
     const names = json.result.tools.map((tool) => tool.name).sort();
     assert.deepEqual(names, [
-      'approve_cart', 'approve_item', 'check_allergens', 'connect_store', 'fill_cart', 'get_delivery_windows', 'get_household', 'get_locked_products', 'get_pantry', 'get_purchase_history', 'propose_cart',
+      'approve_cart', 'approve_item', 'check_allergens', 'connect_store', 'fill_cart', 'get_delivery_windows', 'get_household', 'get_locked_products', 'get_pantry', 'get_purchase_history', 'get_store_connection_status', 'propose_cart',
     ]);
     for (const tool of json.result.tools) {
       assert.equal(Object.keys(tool.inputSchema.properties ?? {}).includes('familyId'), false, tool.name);
