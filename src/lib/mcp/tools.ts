@@ -4,6 +4,7 @@ import { checkAllergens } from '@/lib/nutrition/check-allergens';
 import { callStoreWorker, StoreWorkerError } from '@/lib/stores/remote';
 import { notifyCartProposed } from '@/lib/notifications/cart-proposed';
 import { isApprover } from '@/lib/family/approver';
+import { granCompraForecast } from '@/services/consumption/gran-compra';
 import type { WorkerJob } from '@/lib/stores/worker';
 import type { AllergenCheckResult, MemberAllergies, StoreName } from '@/types/nutrition';
 import type {
@@ -260,38 +261,9 @@ export async function approveCart(
  * Despensa estimada desde consumption_profiles (lo que se acaba primero arriba).
  * Calorías desde product_nutrition del producto fijo del grupo, si existe.
  */
-export async function getPantry(familyId: string): Promise<{ pending: number; items: PantryItem[] }> {
-  const pending = await prisma.purchaseHistory.count({ where: { familyId, appliedAt: null } });
-
-  const profiles = await prisma.consumptionProfile.findMany({
-    where: { familyId, frozen: false },
-    include: { group: true },
-    orderBy: { runOutAt: { sort: 'asc', nulls: 'last' } },
-  });
-  const prefs = await prisma.memberPreference.findMany({
-    where: {
-      avoid: false,
-      preferredCanonicalId: { not: null },
-      groupId: { in: profiles.map((profile) => profile.groupId) },
-      member: { familyId, isActive: true },
-    },
-    select: { groupId: true, preferredCanonical: { select: { nutrition: { select: { kcal100g: true } } } } },
-  });
-  const kcalByGroup = new Map<string, number>();
-  for (const pref of prefs) {
-    const kcal = pref.preferredCanonical?.nutrition.find((row) => row.kcal100g != null)?.kcal100g;
-    if (kcal != null && !kcalByGroup.has(pref.groupId)) kcalByGroup.set(pref.groupId, kcal);
-  }
-  const items = profiles.map((profile) => ({
-    group: profile.group.familyKey,
-    category: profile.group.category,
-    estStock: profile.estStock,
-    baseUnit: profile.group.defaultBaseUnit,
-    runOutAt: profile.runOutAt ? profile.runOutAt.toISOString() : null,
-    confidence: profile.confidence,
-    kcal100g: kcalByGroup.get(profile.groupId) ?? null,
-  }));
-  return { pending, items };
+export async function getPantry(familyId: string) {
+  const forecast = await granCompraForecast(familyId);
+  return forecast;
 }
 
 /**
