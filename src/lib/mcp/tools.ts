@@ -4,7 +4,7 @@ import { checkAllergens } from '@/lib/nutrition/check-allergens';
 import { callStoreWorker, StoreWorkerError } from '@/lib/stores/remote';
 import { notifyCartProposed } from '@/lib/notifications/cart-proposed';
 import { isApprover } from '@/lib/family/approver';
-import { granCompraForecast } from '@/services/consumption/gran-compra';
+import { getHouseholdIntelligence } from '@/services/consumption/household-intelligence';
 import type { WorkerJob } from '@/lib/stores/worker';
 import type { AllergenCheckResult, MemberAllergies, StoreName } from '@/types/nutrition';
 import type {
@@ -258,12 +258,12 @@ export async function approveCart(
 }
 
 /**
- * Despensa estimada desde consumption_profiles (lo que se acaba primero arriba).
- * Calorías desde product_nutrition del producto fijo del grupo, si existe.
+ * Despensa inteligente: stock estimado, días restantes, semáforo,
+ * consumo por persona/día según contexto (colación, cotidiano, asado).
+ * Se auto-actualiza con cada compra.
  */
 export async function getPantry(familyId: string) {
-  const forecast = await granCompraForecast(familyId);
-  return forecast;
+  return getHouseholdIntelligence(familyId);
 }
 
 /**
