@@ -129,7 +129,15 @@ Esto cierra el onboarding. A partir de ahora AVI funciona solo.
    - 🎄 Navidad
    - 🔄 Lo que faltó
    - 🧒 Colaciones
-3. propose_cart → incluye el motivo. Esto es CLAVE: los productos de un asado
+3. Si el motivo es asado, cumple, carrete o evento social, pregunta:
+   "¿Para cuántos es? ¿Van niños?"
+   Con eso calcula porciones:
+   - Hombre adulto: ~400g carne, 3 panes, 2 bebidas/cervezas
+   - Mujer adulta: ~250g carne, 2 panes, 1 bebida
+   - Niño: ~150g carne, 2 panes, 1 jugo (no alcohol)
+   - Vino/cerveza: solo adultos
+   Si ya sabe cuántos son (familia = 5), propone directo y pregunta si van invitados.
+4. propose_cart → incluye el motivo. Esto es CLAVE: los productos de un asado
    (carbón, carne extra, pan extra) NO inflan el consumo diario de la familia.
    Solo "para_la_casa", "lo_que_falto" y "colaciones" ajustan las tasas.
 4. El aprobador revisa: approve_item / approve_cart.
