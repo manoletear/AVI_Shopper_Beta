@@ -1,21 +1,26 @@
-import { createHash, timingSafeEqual } from 'node:crypto';
+import { createHash, timingSafeEqual, randomBytes } from 'node:crypto';
+import { prisma } from '@/lib/prisma';
 
 /**
- * Token Bearer por familia para el MCP.
+ * Auth MCP por familia.
  *
- * AVI_MCP_TOKENS = "familyId:token,familyId:token"
+ * Busca tokens en la tabla mcp_tokens (DB) primero.
+ * Fallback al env var AVI_MCP_TOKENS para compatibilidad.
  * El familyId sale del token, nunca de los argumentos de la herramienta.
- * Tokens de menos de MIN_TOKEN_LENGTH caracteres se ignoran.
  */
 export const MIN_TOKEN_LENGTH = 32;
+
+function digestHex(value: string): string {
+  return createHash('sha256').update(value, 'utf8').digest('hex');
+}
+
+function digestBuf(value: string): Buffer {
+  return createHash('sha256').update(value, 'utf8').digest();
+}
 
 interface TokenEntry {
   familyId: string;
   digest: Buffer;
-}
-
-function digest(value: string): Buffer {
-  return createHash('sha256').update(value, 'utf8').digest();
 }
 
 export function parseTokens(raw: string | undefined): TokenEntry[] {
@@ -27,15 +32,44 @@ export function parseTokens(raw: string | undefined): TokenEntry[] {
     const familyId = trimmed.slice(0, colon).trim();
     const token = trimmed.slice(colon + 1).trim();
     if (!familyId || token.length < MIN_TOKEN_LENGTH) continue;
-    entries.push({ familyId, digest: digest(token) });
+    entries.push({ familyId, digest: digestBuf(token) });
   }
   return entries;
 }
 
 /**
- * Devuelve el familyId del token o null.
- * Compara contra todas las entradas con timingSafeEqual sobre sha256,
- * sin cortar en la primera coincidencia.
+ * Autenticación MCP. Busca primero en DB, luego en env.
+ * Actualiza lastUsedAt en DB (fire-and-forget).
+ */
+export async function authenticateMcpToken(authHeader: string | null): Promise<string | null> {
+  if (!authHeader) return null;
+  const match = /^Bearer\s+(\S+)\s*$/i.exec(authHeader);
+  if (!match) return null;
+  const token = match[1];
+  if (token.length < MIN_TOKEN_LENGTH) return null;
+
+  const hash = digestHex(token);
+
+  // 1. Buscar en DB
+  try {
+    const row = await prisma.mcpToken.findFirst({
+      where: { tokenHash: hash, isActive: true },
+      select: { id: true, familyId: true },
+    });
+    if (row) {
+      prisma.mcpToken.update({ where: { id: row.id }, data: { lastUsedAt: new Date() } }).catch(() => {});
+      return row.familyId;
+    }
+  } catch {
+    // DB no disponible o tabla no creada: continuar con env
+  }
+
+  // 2. Fallback: env var AVI_MCP_TOKENS
+  return authenticateToken(authHeader);
+}
+
+/**
+ * Auth legacy contra env var. Se mantiene para compatibilidad y tests.
  */
 export function authenticateToken(
   authHeader: string | null,
@@ -44,7 +78,7 @@ export function authenticateToken(
   if (!authHeader) return null;
   const match = /^Bearer\s+(\S+)\s*$/i.exec(authHeader);
   if (!match) return null;
-  const candidate = digest(match[1]);
+  const candidate = digestBuf(match[1]);
   let found: string | null = null;
   for (const entry of parseTokens(raw)) {
     if (timingSafeEqual(candidate, entry.digest) && found === null) {
@@ -52,4 +86,17 @@ export function authenticateToken(
     }
   }
   return found;
+}
+
+/**
+ * Genera un token MCP para una familia y lo guarda en DB.
+ * Retorna el token plano (se muestra una sola vez al usuario).
+ */
+export async function generateMcpToken(familyId: string, label = 'default'): Promise<string> {
+  const token = randomBytes(32).toString('base64url');
+  const hash = digestHex(token);
+  await prisma.mcpToken.create({
+    data: { familyId, tokenHash: hash, label },
+  });
+  return token;
 }
