@@ -14,10 +14,13 @@ export const proposeCartItemSchema = z.object({
 });
 export type ProposeCartItemInput = z.infer<typeof proposeCartItemSchema>;
 
+export const MOTIVOS = ['para_la_casa', 'asado', 'cumple', 'carrete', 'dieciocho', 'navidad', 'lo_que_falto', 'colaciones'] as const;
+
 export const proposeCartShape = {
   store: z.enum(STORE_NAMES),
   items: z.array(proposeCartItemSchema).min(1).max(100),
   note: z.string().trim().max(500).optional(),
+  motivo: z.enum(MOTIVOS).default('para_la_casa'),
 };
 export const proposeCartSchema = z.object(proposeCartShape);
 export type ProposeCartInput = z.infer<typeof proposeCartSchema>;

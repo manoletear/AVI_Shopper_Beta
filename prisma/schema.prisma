@@ -370,10 +370,11 @@ model PurchaseHistory {
   baseAmount  Float?
   baseUnit    String?
   source      String   @default("manual")
+  // para_la_casa, asado, cumple, carrete, dieciocho, navidad, lo_que_falto, colaciones
+  motivo      String   @default("para_la_casa")
 
   purchasedAt DateTime @default(now())
   createdAt   DateTime @default(now())
-  // Se llena cuando esa línea ya actualizó el perfil. No se reprocesa.
   appliedAt   DateTime?
 
   @@index([userId, purchasedAt(sort: Desc)])
@@ -711,6 +712,7 @@ model ProposedCart {
   minOrder      Int      @default(0)
   meetsMinimum  Boolean  @default(false)
   note          String   @default("")
+  motivo        String   @default("para_la_casa")
   notifiedAt    DateTime?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
