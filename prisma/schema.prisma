@@ -400,6 +400,7 @@ model Family {
   settings   FamilySettings?
   storeConnections StoreConnection[]
   storeCartFills   StoreCartFill[]
+  mcpTokens    McpToken[]
 
   @@map("families")
 }
@@ -897,4 +898,21 @@ model StoreCartFill {
   @@index([cartId])
   @@index([familyId, createdAt])
   @@map("store_cart_fills")
+}
+
+// Token MCP por familia. Reemplaza el env var AVI_MCP_TOKENS.
+// tokenHash es sha256 hex del token (64 chars). El token plano se muestra una sola vez.
+model McpToken {
+  id         String    @id @default(cuid())
+  familyId   String
+  family     Family    @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  tokenHash  String
+  label      String    @default("default")
+  isActive   Boolean   @default(true)
+  createdAt  DateTime  @default(now())
+  lastUsedAt DateTime?
+
+  @@index([familyId])
+  @@index([tokenHash])
+  @@map("mcp_tokens")
 }

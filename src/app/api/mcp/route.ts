@@ -1,7 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js';
 import { z } from 'zod';
-import { authenticateToken } from '@/lib/mcp/auth';
+import { authenticateMcpToken } from '@/lib/mcp/auth';
 import { AVI_MCP_INSTRUCTIONS } from '@/lib/mcp/instructions';
 import {
   approveCart,
@@ -172,7 +172,7 @@ function unauthorized() {
 
 // Sin sesiones en memoria: en Vercel cada request puede caer en otra instancia.
 export async function POST(request: Request) {
-  const familyId = authenticateToken(request.headers.get('authorization'));
+  const familyId = await authenticateMcpToken(request.headers.get('authorization'));
   if (!familyId) return unauthorized();
 
   const server = createServer(familyId);
