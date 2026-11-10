@@ -5,6 +5,7 @@ import { callStoreWorker, StoreWorkerError } from '@/lib/stores/remote';
 import { notifyCartProposed } from '@/lib/notifications/cart-proposed';
 import { isApprover } from '@/lib/family/approver';
 import { getHouseholdIntelligence } from '@/services/consumption/household-intelligence';
+import { notifyReplenishment } from '@/services/notifications/replenishment-alerts';
 import type { WorkerJob } from '@/lib/stores/worker';
 import type { AllergenCheckResult, MemberAllergies, StoreName } from '@/types/nutrition';
 import type {
@@ -264,7 +265,17 @@ export async function approveCart(
  * Se auto-actualiza con cada compra.
  */
 export async function getPantry(familyId: string) {
-  return getHouseholdIntelligence(familyId);
+  const intel = await getHouseholdIntelligence(familyId);
+  // Notificar por email/in-app si hay productos críticos (fire-and-forget)
+  if (intel.alerts.length > 0) {
+    notifyReplenishment({
+      familyId,
+      red: intel.alerts.filter((p) => p.status === 'red'),
+      yellow: intel.alerts.filter((p) => p.status === 'yellow'),
+      estimatedCartTotal: intel.estimatedCartTotal,
+    }).catch((e) => console.warn('[getPantry] notify error:', e instanceof Error ? e.message : e));
+  }
+  return intel;
 }
 
 /**
