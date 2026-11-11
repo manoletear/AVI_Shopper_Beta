@@ -5,6 +5,7 @@ import { callStoreWorker, StoreWorkerError } from '@/lib/stores/remote';
 import { notifyCartProposed } from '@/lib/notifications/cart-proposed';
 import { isApprover } from '@/lib/family/approver';
 import { getHouseholdIntelligence } from '@/services/consumption/household-intelligence';
+import { notifyReplenishment } from '@/services/notifications/replenishment-alerts';
 import type { WorkerJob } from '@/lib/stores/worker';
 import type { AllergenCheckResult, MemberAllergies, StoreName } from '@/types/nutrition';
 import type {
@@ -264,7 +265,17 @@ export async function approveCart(
  * Se auto-actualiza con cada compra.
  */
 export async function getPantry(familyId: string) {
-  return getHouseholdIntelligence(familyId);
+  const intel = await getHouseholdIntelligence(familyId);
+  // Notificar por email/in-app si hay productos críticos (fire-and-forget)
+  if (intel.alerts.length > 0) {
+    notifyReplenishment({
+      familyId,
+      red: intel.alerts.filter((p) => p.status === 'red'),
+      yellow: intel.alerts.filter((p) => p.status === 'yellow'),
+      estimatedCartTotal: intel.estimatedCartTotal,
+    }).catch((e) => console.warn('[getPantry] notify error:', e instanceof Error ? e.message : e));
+  }
+  return intel;
 }
 
 /**
@@ -475,4 +486,142 @@ export async function getStoreConnectionStatus(familyId: string) {
       lastVerifiedAt: conn?.lastVerifiedAt?.toISOString() ?? null,
     };
   });
+}
+
+const DELIVERY_ESTIMATE: Record<string, number> = {
+  jumbo: 3990,
+  lider: 2990,
+  unimarc: 2990,
+  tottus: 2990,
+};
+
+/**
+ * Compara precios de una lista de productos en todos los supermercados.
+ * Usa precios del historial de compras (lo que la familia ha pagado) y
+ * observaciones de precios (scraping). Incluye delivery estimado.
+ */
+export async function comparePrices(
+  familyId: string,
+  input: { products: { groupKey: string; quantity: number }[] },
+) {
+  if (!input.products?.length) throw new McpToolError('Necesito al menos un producto para comparar');
+
+  const groupKeys = input.products.map((p) => p.groupKey);
+
+  // Get last prices from purchase history per product per store
+  const historyPrices = await prisma.$queryRaw<{
+    groupKey: string; storeSlug: string; price: number; productName: string; purchasedAt: Date;
+  }[]>`
+    SELECT DISTINCT ON ("groupKey", "storeSlug")
+      "groupKey", "storeSlug", price, "productName", "purchasedAt"
+    FROM purchase_history
+    WHERE "familyId" = ${familyId}
+      AND "groupKey" = ANY(${groupKeys})
+      AND price IS NOT NULL
+      AND "storeSlug" IS NOT NULL
+    ORDER BY "groupKey", "storeSlug", "purchasedAt" DESC
+  `;
+
+  // Get latest price observations (from scraping)
+  const observations = await prisma.priceObservation.findMany({
+    where: { storeSlug: { in: ['jumbo', 'lider', 'unimarc', 'tottus'] } },
+    orderBy: { observedAt: 'desc' },
+    take: 500,
+  });
+
+  // Build price map: groupKey → store → { price, name, source }
+  type PriceEntry = { price: number; name: string; source: 'historial' | 'catalogo'; date: string };
+  const priceMap = new Map<string, Map<string, PriceEntry>>();
+
+  for (const h of historyPrices) {
+    if (!priceMap.has(h.groupKey)) priceMap.set(h.groupKey, new Map());
+    const storeMap = priceMap.get(h.groupKey)!;
+    if (!storeMap.has(h.storeSlug)) {
+      storeMap.set(h.storeSlug, {
+        price: h.price, name: h.productName, source: 'historial',
+        date: h.purchasedAt.toISOString().slice(0, 10),
+      });
+    }
+  }
+
+  // Build per-store totals
+  const stores: StoreName[] = ['jumbo', 'lider', 'unimarc', 'tottus'];
+  const storeResults = stores.map((store) => {
+    const items: { groupKey: string; name: string; unitPrice: number; quantity: number; subtotal: number; source: string }[] = [];
+    let subtotal = 0;
+    let found = 0;
+
+    for (const p of input.products) {
+      const storeMap = priceMap.get(p.groupKey);
+      const entry = storeMap?.get(store);
+      if (entry) {
+        const sub = Math.round(entry.price * p.quantity);
+        items.push({
+          groupKey: p.groupKey,
+          name: entry.name,
+          unitPrice: entry.price,
+          quantity: p.quantity,
+          subtotal: sub,
+          source: entry.source,
+        });
+        subtotal += sub;
+        found++;
+      }
+    }
+
+    const delivery = DELIVERY_ESTIMATE[store] || 3990;
+    return {
+      store,
+      storeName: STORE_LABELS[store],
+      items,
+      found,
+      missing: input.products.length - found,
+      subtotal,
+      delivery,
+      total: subtotal + delivery,
+      coverage: input.products.length > 0 ? Math.round((found / input.products.length) * 100) : 0,
+    };
+  });
+
+  // Sort by total (cheapest first), but only stores with decent coverage
+  const viable = storeResults.filter((s) => s.coverage >= 50).sort((a, b) => a.total - b.total);
+  const cheapest = viable[0] || null;
+
+  // Check if splitting between 2 stores saves money
+  let splitSuggestion: { stores: string[]; total: number; savings: number; note: string } | null = null;
+  if (viable.length >= 2 && cheapest) {
+    const storeA = viable[0];
+    const storeB = viable[1];
+    // Products cheaper in store B
+    const savings = storeA.items.reduce((total, item) => {
+      const bItem = storeB.items.find((b) => b.groupKey === item.groupKey);
+      if (bItem && bItem.unitPrice < item.unitPrice) {
+        return total + (item.unitPrice - bItem.unitPrice) * item.quantity;
+      }
+      return total;
+    }, 0);
+    // Split only makes sense if savings > extra delivery cost
+    const extraDelivery = storeB.delivery;
+    if (savings > extraDelivery) {
+      splitSuggestion = {
+        stores: [storeA.storeName, storeB.storeName],
+        total: storeA.total + storeB.delivery - savings,
+        savings: savings - extraDelivery,
+        note: `Dividir entre ${storeA.storeName} y ${storeB.storeName} ahorra $${(savings - extraDelivery).toLocaleString('es-CL')} neto (ya descontado el delivery extra).`,
+      };
+    }
+  }
+
+  return {
+    productsRequested: input.products.length,
+    comparison: storeResults,
+    recommendation: cheapest ? {
+      store: cheapest.storeName,
+      total: cheapest.total,
+      subtotal: cheapest.subtotal,
+      delivery: cheapest.delivery,
+      coverage: cheapest.coverage,
+    } : null,
+    splitSuggestion,
+  };
 }

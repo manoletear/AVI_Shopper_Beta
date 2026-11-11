@@ -16,6 +16,7 @@ import {
   getPantry,
   getPurchaseHistory,
   importPurchases,
+  comparePrices,
   McpToolError,
   proposeCart,
 } from '@/lib/mcp/tools';
@@ -187,6 +188,21 @@ function createServer(familyId: string) {
       },
     },
     (args) => run(() => importPurchases(familyId, args)),
+  );
+
+  server.registerTool(
+    'compare_prices',
+    {
+      description:
+        'Compara precios de una lista de productos en Jumbo, Lider, Unimarc y Tottus. Usa precios del historial de la familia + catálogo. Incluye delivery estimado. Retorna la tienda más barata y si conviene dividir entre dos tiendas (ahorro neto > costo del delivery extra). Úsalo ANTES de propose_cart cuando el usuario quiere ahorrar.',
+      inputSchema: {
+        products: z.array(z.object({
+          groupKey: z.string().describe('Producto canónico: yoghurt, leche_entera, pan_molde, etc.'),
+          quantity: z.number().positive().describe('Cantidad a comprar'),
+        })).min(1).max(50),
+      },
+    },
+    (args) => run(() => comparePrices(familyId, args)),
   );
 
   return server;
