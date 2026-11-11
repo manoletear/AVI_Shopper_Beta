@@ -402,6 +402,9 @@ model Family {
   storeConnections StoreConnection[]
   storeCartFills   StoreCartFill[]
   mcpTokens    McpToken[]
+  memberTokens MemberToken[]
+  memberInvites MemberInvite[]
+  activity     FamilyActivity[]
 
   @@map("families")
 }
@@ -437,6 +440,11 @@ model FamilyMember {
   purchases   PurchaseHistory[]
   preferences MemberPreference[]
   feedback    AlertFeedback[]
+  memberTokens MemberToken[]
+  memberInvites MemberInvite[]
+  activity     FamilyActivity[]
+  proposedCarts ProposedCart[] @relation("ProposedByMember")
+  approvedCarts ProposedCart[] @relation("ApprovedByMember")
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -714,6 +722,13 @@ model ProposedCart {
   note          String   @default("")
   motivo        String   @default("para_la_casa")
   notifiedAt    DateTime?
+
+  proposedByMemberId  String?
+  proposedByMember    FamilyMember? @relation("ProposedByMember", fields: [proposedByMemberId], references: [id])
+  approvedByMemberId  String?
+  approvedByMember    FamilyMember? @relation("ApprovedByMember", fields: [approvedByMemberId], references: [id])
+  approvedAt          DateTime?
+
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -902,8 +917,8 @@ model StoreCartFill {
   @@map("store_cart_fills")
 }
 
-// Token MCP por familia. Reemplaza el env var AVI_MCP_TOKENS.
-// tokenHash es sha256 hex del token (64 chars). El token plano se muestra una sola vez.
+// DEPRECATED: Token MCP legacy por familia. Usar MemberToken para nuevos tokens.
+// Se mantiene para compatibilidad con AVI_MCP_TOKENS env var.
 model McpToken {
   id         String    @id @default(cuid())
   familyId   String
@@ -917,4 +932,60 @@ model McpToken {
   @@index([familyId])
   @@index([tokenHash])
   @@map("mcp_tokens")
+}
+
+// Token MCP por integrante. Cada persona tiene su token y rol.
+model MemberToken {
+  id         String    @id @default(cuid())
+  familyId   String
+  family     Family    @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  memberId   String
+  member     FamilyMember @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  tokenHash  String
+  label      String    @default("default")
+  // approver: aprueba carros. member: propone y ve. viewer: solo lectura.
+  role       String    @default("member")
+  createdAt  DateTime  @default(now())
+  lastUsedAt DateTime?
+  revokedAt  DateTime?
+
+  @@index([familyId])
+  @@index([tokenHash])
+  @@index([memberId])
+  @@map("member_tokens")
+}
+
+// Invitación de un solo uso para que otro integrante conecte su Grok Bot.
+model MemberInvite {
+  id        String    @id @default(cuid())
+  familyId  String
+  family    Family    @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  memberId  String
+  member    FamilyMember @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  codeHash  String
+  role      String    @default("member")
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([codeHash])
+  @@map("member_invites")
+}
+
+// Log de actividad: quién hizo qué en la familia.
+model FamilyActivity {
+  id         String    @id @default(cuid())
+  familyId   String
+  family     Family    @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  memberId   String?
+  member     FamilyMember? @relation(fields: [memberId], references: [id], onDelete: SetNull)
+  action     String
+  entityType String?
+  entityId   String?
+  payload    Json      @default("{}")
+  createdAt  DateTime  @default(now())
+
+  @@index([familyId, createdAt(sort: Desc)])
+  @@index([memberId])
+  @@map("family_activity")
 }
