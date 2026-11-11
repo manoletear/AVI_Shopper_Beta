@@ -5,11 +5,11 @@ import { prisma } from '@/lib/prisma';
 import {
   authenticateMcpToken,
   generateInviteCode,
-  generateMemberToken,
-  redeemInviteCode,
+  McpAuthDbError,
   type McpIdentity,
   type McpRole,
 } from '@/lib/mcp/auth';
+import { isFamilyApproverById } from '@/lib/family/approver';
 import { AVI_MCP_INSTRUCTIONS } from '@/lib/mcp/instructions';
 import {
   approveCart,
@@ -63,6 +63,14 @@ function requireRole(identity: McpIdentity, ...allowed: McpRole[]) {
   }
 }
 
+async function requireFamilyApprover(identity: McpIdentity, familyId: string) {
+  requireRole(identity, 'approver');
+  if (identity.memberId) {
+    const ok = await isFamilyApproverById(identity.memberId, familyId);
+    if (!ok) throw new McpToolError('Tu token dice approver, pero no eres aprobador de esta familia.');
+  }
+}
+
 async function logActivity(familyId: string, memberId: string | null, action: string, entityType?: string, entityId?: string, payload?: object) {
   prisma.familyActivity.create({
     data: { familyId, memberId, action, entityType, entityId, payload: payload ?? {} },
@@ -76,13 +84,16 @@ async function notifyOtherApprovers(familyId: string, excludeMemberId: string | 
     const from = process.env.RESEND_FROM;
     if (!key || !from) return;
     const resend = new Resend(key);
-    const approvers = await prisma.familyMember.findMany({
-      where: { familyId, isActive: true, role: 'master' },
+    const members = await prisma.familyMember.findMany({
+      where: { familyId, isActive: true },
       include: { user: { select: { email: true } } },
     });
-    for (const a of approvers) {
-      if (a.id === excludeMemberId || !a.user?.email) continue;
-      await resend.emails.send({ from, to: a.user.email, subject, text });
+    const settings = await prisma.familySettings.findUnique({ where: { familyId } });
+    for (const m of members) {
+      if (m.id === excludeMemberId || !m.user?.email) continue;
+      const { isApprover } = await import('@/lib/family/approver');
+      if (!isApprover(m, settings)) continue;
+      await resend.emails.send({ from, to: m.user.email, subject, text });
     }
   } catch (e) {
     console.warn('[notify-approvers]', e instanceof Error ? e.message : e);
@@ -91,7 +102,7 @@ async function notifyOtherApprovers(familyId: string, excludeMemberId: string | 
 
 function createServer(familyId: string, identity: McpIdentity) {
   const server = new McpServer(
-    { name: 'avi-shopper', version: '2.0.0' },
+    { name: 'avi-shopper', version: '2.1.0' },
     { instructions: AVI_MCP_INSTRUCTIONS },
   );
 
@@ -150,7 +161,7 @@ function createServer(familyId: string, identity: McpIdentity) {
   server.registerTool(
     'get_activity',
     {
-      description: 'Log de actividad: quién propuso, aprobó o importó qué en la familia. Para coordinar entre integrantes.',
+      description: 'Log de actividad: quién propuso, aprobó o importó qué. Para coordinar entre integrantes.',
       inputSchema: {
         since: z.string().optional().describe('Fecha ISO desde la que buscar. Por defecto últimas 24h.'),
       },
@@ -164,24 +175,6 @@ function createServer(familyId: string, identity: McpIdentity) {
         orderBy: { createdAt: 'desc' },
         take: 50,
       });
-    }),
-  );
-
-  server.registerTool(
-    'redeem_invite',
-    {
-      description: 'Redime un código de invitación para conectar tu bot a esta familia. El código lo genera un aprobador con invite_member.',
-      inputSchema: { code: z.string().min(1) },
-    },
-    (args) => run(async () => {
-      const result = await redeemInviteCode(args.code);
-      await logActivity(result.familyId, result.memberId, 'redeemed_invite');
-      return {
-        token: `Bearer ${result.token}`,
-        mcpUrl: 'https://avi-shopper-beta.vercel.app/api/mcp',
-        role: result.role,
-        message: 'Token generado. Guárdalo — no se puede recuperar después. Usa este token en el header Authorization de tu conector MCP.',
-      };
     }),
   );
 
@@ -224,9 +217,97 @@ function createServer(familyId: string, identity: McpIdentity) {
     );
 
     server.registerTool(
+      'get_delivery_windows',
+      {
+        description: 'Horarios de despacho de la tienda.',
+        inputSchema: deliveryWindowsShape,
+      },
+      (args) => run(() => getStoreDeliveryWindows(familyId, args)),
+    );
+
+    server.registerTool(
+      'compare_prices',
+      {
+        description: 'Compara precios en Jumbo, Lider, Unimarc y Tottus. Incluye delivery. Sugiere la tienda más barata o dividir entre dos.',
+        inputSchema: {
+          products: z.array(z.object({
+            groupKey: z.string(),
+            quantity: z.number().positive(),
+          })).min(1).max(50),
+        },
+      },
+      (args) => run(() => comparePrices(familyId, args)),
+    );
+  }
+
+  // ── Solo aprobadores ──
+
+  if (identity.role === 'approver') {
+    server.registerTool(
+      'approve_item',
+      {
+        description: 'Aprueba o rechaza un ítem del carro propuesto. Solo aprobadores.',
+        inputSchema: approveItemShape,
+      },
+      (args) => run(async () => {
+        await requireFamilyApprover(identity, familyId);
+        const result = await approveItem(familyId, args);
+        if (identity.memberId) {
+          await prisma.proposedCartItem.updateMany({
+            where: { id: args.itemId },
+            data: { approvedByMemberId: identity.memberId, approvedAt: new Date() },
+          }).catch(() => {});
+        }
+        await logActivity(familyId, identity.memberId, 'approved_item', 'proposed_cart_item', args.itemId, {
+          approved: args.approved,
+        });
+        return result;
+      }),
+    );
+
+    server.registerTool(
+      'approve_cart',
+      {
+        description: 'Aprueba el carro propuesto completo. Solo aprobadores. AVI no paga.',
+        inputSchema: approveCartShape,
+      },
+      (args) => run(async () => {
+        await requireFamilyApprover(identity, familyId);
+        const result = await approveCart(familyId, args);
+        if (identity.memberId) {
+          await prisma.proposedCart.update({
+            where: { id: args.cartId },
+            data: { approvedByMemberId: identity.memberId, approvedAt: new Date() },
+          }).catch(() => {});
+        }
+        await logActivity(familyId, identity.memberId, 'approved_cart', 'proposed_cart', args.cartId);
+        notifyOtherApprovers(
+          familyId, identity.memberId,
+          `✅ Carro aprobado por ${identity.memberName || 'un aprobador'}`,
+          `El carro fue aprobado. La familia puede revisar y pagar.\n\nhttps://avi-shopper-beta.vercel.app/carro/${args.cartId}`,
+        );
+        return result;
+      }),
+    );
+
+    server.registerTool(
+      'fill_cart',
+      {
+        description: 'Llena el carro real en la tienda. Solo aprobadores. NUNCA hace checkout.',
+        inputSchema: fillCartShape,
+      },
+      (args) => run(async () => {
+        await requireFamilyApprover(identity, familyId);
+        const result = await fillStoreCart(familyId, args.cartId);
+        await logActivity(familyId, identity.memberId, 'filled_cart', 'proposed_cart', args.cartId);
+        return result;
+      }),
+    );
+
+    server.registerTool(
       'connect_store',
       {
-        description: 'Conecta la cuenta del supermercado de la familia.',
+        description: 'Conecta la cuenta del supermercado de la familia. Solo aprobadores.',
         inputSchema: {
           store: z.enum(['jumbo', 'lider', 'unimarc', 'tottus']),
           email: z.string().email(),
@@ -237,18 +318,9 @@ function createServer(familyId: string, identity: McpIdentity) {
     );
 
     server.registerTool(
-      'get_delivery_windows',
-      {
-        description: 'Horarios de despacho de la tienda.',
-        inputSchema: deliveryWindowsShape,
-      },
-      (args) => run(() => getStoreDeliveryWindows(familyId, args)),
-    );
-
-    server.registerTool(
       'import_purchases',
       {
-        description: 'Importa historial de compras desde una fuente externa.',
+        description: 'Importa historial de compras desde una fuente externa. Solo aprobadores.',
         inputSchema: {
           source: z.enum(['ubereats', 'jumbo', 'lider', 'unimarc', 'tottus', 'cornershop', 'rappi', 'pedidosya', 'manual']),
           buyer: z.string().optional(),
@@ -279,70 +351,6 @@ function createServer(familyId: string, identity: McpIdentity) {
     );
 
     server.registerTool(
-      'compare_prices',
-      {
-        description: 'Compara precios en Jumbo, Lider, Unimarc y Tottus. Incluye delivery. Sugiere la tienda más barata o dividir entre dos.',
-        inputSchema: {
-          products: z.array(z.object({
-            groupKey: z.string(),
-            quantity: z.number().positive(),
-          })).min(1).max(50),
-        },
-      },
-      (args) => run(() => comparePrices(familyId, args)),
-    );
-  }
-
-  // ── Solo aprobadores ──
-
-  if (identity.role === 'approver') {
-    server.registerTool(
-      'approve_item',
-      {
-        description: 'Aprueba o rechaza un ítem del carro propuesto. Solo aprobadores.',
-        inputSchema: approveItemShape,
-      },
-      (args) => run(() => approveItem(familyId, args)),
-    );
-
-    server.registerTool(
-      'approve_cart',
-      {
-        description: 'Aprueba el carro propuesto completo. Solo aprobadores. AVI no paga.',
-        inputSchema: approveCartShape,
-      },
-      (args) => run(async () => {
-        const result = await approveCart(familyId, args);
-        if (identity.memberId) {
-          await prisma.proposedCart.update({
-            where: { id: args.cartId },
-            data: { approvedByMemberId: identity.memberId, approvedAt: new Date() },
-          }).catch(() => {});
-        }
-        await logActivity(familyId, identity.memberId, 'approved_cart', 'proposed_cart', args.cartId);
-        notifyOtherApprovers(
-          familyId, identity.memberId,
-          `✅ Carro aprobado por ${identity.memberName || 'un aprobador'}`,
-          `El carro fue aprobado. La familia puede revisar y pagar.\n\nhttps://avi-shopper-beta.vercel.app/carro/${args.cartId}`,
-        );
-        return result;
-      }),
-    );
-
-    server.registerTool(
-      'fill_cart',
-      {
-        description: 'Llena el carro real en la tienda. Solo aprobadores. NUNCA hace checkout.',
-        inputSchema: fillCartShape,
-      },
-      (args) => run(async () => {
-        const result = await fillStoreCart(familyId, args.cartId);
-        await logActivity(familyId, identity.memberId, 'filled_cart', 'proposed_cart', args.cartId);
-        return result;
-      }),
-    );
-
-    server.registerTool(
       'invite_member',
       {
         description: 'Invita a un integrante a conectar su propio bot. Genera un código de un solo uso (72h). Solo aprobadores.',
@@ -355,10 +363,16 @@ function createServer(familyId: string, identity: McpIdentity) {
       (args) => run(async () => {
         const member = await prisma.familyMember.findFirst({
           where: { id: args.memberId, familyId, isActive: true },
-          select: { id: true, name: true },
+          select: { id: true, name: true, role: true },
         });
         if (!member) throw new McpToolError('No encontré ese integrante en la familia');
-        const code = await generateInviteCode(familyId, member.id, args.role);
+        // Si pide rol 'approver', verificar que el invitado es realmente aprobador
+        if (args.role === 'approver') {
+          const ok = await isFamilyApproverById(member.id, familyId);
+          if (!ok) throw new McpToolError(`${member.name} no es aprobador/a de esta familia. Invítalo como member o viewer.`);
+        }
+        const label = args.label || member.name;
+        const code = await generateInviteCode(familyId, member.id, args.role, label);
         await logActivity(familyId, identity.memberId, 'invited_member', 'family_member', member.id, {
           role: args.role, memberName: member.name,
         });
@@ -368,7 +382,7 @@ function createServer(familyId: string, identity: McpIdentity) {
           role: args.role,
           code,
           expiresIn: '72 horas',
-          instructions: `Pásale esto a ${member.name}:\n\n"En tu Grok Bot, agrega un conector MCP:\n  URL: https://avi-shopper-beta.vercel.app/api/mcp\n  Token: (cualquiera temporal)\n\nDespués llama la herramienta redeem_invite con el código: ${code}\n\nEso te genera tu token personal."`,
+          instructions: `Pásale esto a ${member.name}:\n\n"Conecta AVI en tu asistente:\n  1. Llama a POST https://avi-shopper-beta.vercel.app/api/mcp/redeem con { \"code\": \"${code}\" }\n  2. Guarda el token que te devuelve — no se puede recuperar.\n  3. Agrega el conector MCP con URL: https://avi-shopper-beta.vercel.app/api/mcp y ese token como Bearer."`,
         };
       }),
     );
@@ -426,8 +440,24 @@ function unauthorized() {
   );
 }
 
+function serviceUnavailable() {
+  return Response.json(
+    { jsonrpc: '2.0', error: { code: -32003, message: 'Servicio temporalmente no disponible' }, id: null },
+    { status: 503 },
+  );
+}
+
 export async function POST(request: Request) {
-  const identity = await authenticateMcpToken(request.headers.get('authorization'));
+  let identity: McpIdentity | null;
+  try {
+    identity = await authenticateMcpToken(request.headers.get('authorization'));
+  } catch (error) {
+    if (error instanceof McpAuthDbError) {
+      console.error('[mcp] DB error en autenticación, respondiendo 503:', error.dbCause);
+      return serviceUnavailable();
+    }
+    throw error;
+  }
   if (!identity) return unauthorized();
 
   const server = createServer(identity.familyId, identity);

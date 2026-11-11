@@ -128,7 +128,7 @@ describe('/api/mcp', () => {
       'approve_cart', 'approve_item', 'check_allergens', 'compare_prices', 'connect_store',
       'fill_cart', 'get_activity', 'get_delivery_windows', 'get_household', 'get_locked_products',
       'get_pantry', 'get_purchase_history', 'get_store_connection_status', 'import_purchases',
-      'invite_member', 'list_member_tokens', 'propose_cart', 'redeem_invite',
+      'invite_member', 'list_member_tokens', 'propose_cart',
       'revoke_member_token', 'whoami',
     ]);
     for (const tool of json.result.tools) {

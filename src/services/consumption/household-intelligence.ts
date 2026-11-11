@@ -12,6 +12,9 @@
 
 import { prisma } from '@/lib/prisma';
 
+const BIG_SHOP_MIN_TOTAL = 50000;
+const BIG_SHOP_MIN_ITEMS = 15;
+
 // ── Contexto de consumo inferido ────────────────────────────────
 
 type ConsumptionContext = 'colacion' | 'cotidiano' | 'asado' | 'picoteo' | 'coctel' | 'mascota' | 'limpieza';

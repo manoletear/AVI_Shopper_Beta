@@ -445,6 +445,7 @@ model FamilyMember {
   activity     FamilyActivity[]
   proposedCarts ProposedCart[] @relation("ProposedByMember")
   approvedCarts ProposedCart[] @relation("ApprovedByMember")
+  approvedItems ProposedCartItem[] @relation("ItemApprovedByMember")
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -754,8 +755,10 @@ model ProposedCartItem {
   runOutAt           DateTime?
   pulledForward      Boolean  @default(false)
   // Decisión del aprobador por ítem (MCP approve_item). null = pendiente.
-  // Columna agregada por 20261101000000_proposed_cart_item_approval.sql.
   approved           Boolean?
+  approvedByMemberId String?
+  approvedByMember   FamilyMember? @relation("ItemApprovedByMember", fields: [approvedByMemberId], references: [id])
+  approvedAt         DateTime?
 
   @@index([cartId])
   @@map("proposed_cart_items")
@@ -962,13 +965,13 @@ model MemberInvite {
   family    Family    @relation(fields: [familyId], references: [id], onDelete: Cascade)
   memberId  String
   member    FamilyMember @relation(fields: [memberId], references: [id], onDelete: Cascade)
-  codeHash  String
+  codeHash  String    @unique
   role      String    @default("member")
+  label     String    @default("default")
   expiresAt DateTime
   usedAt    DateTime?
   createdAt DateTime  @default(now())
 
-  @@index([codeHash])
   @@map("member_invites")
 }
 
