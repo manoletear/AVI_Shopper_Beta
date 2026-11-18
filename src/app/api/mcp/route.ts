@@ -371,7 +371,7 @@ function createServer(familyId: string, identity: McpIdentity) {
     server.registerTool(
       'record_order',
       {
-        description: 'Registra un pedido confirmado y pagado. Idempotente por orderRef. Inserta las líneas REALES cobradas en purchase_history (pueden diferir del carro original por sustituciones o faltantes). Se llama DESPUÉS del pago, nunca automáticamente. Avisa si hay otro carro abierto.',
+        description: 'Registra un pedido confirmado y pagado. Idempotente por orderRef: si las compras ya están en el historial, solo vincula el carro sin duplicar. Registra las líneas REALES cobradas (no las del carro — puede haber sustituciones, faltantes, cambios de precio). Se llama DESPUÉS del pago. Valida que subtotal + despacho - descuento + ajustes = total.',
         inputSchema: {
           cartId: z.string().min(1),
           store: z.string().min(1).describe('Nombre de la tienda: Jumbo, Lider, etc.'),
@@ -383,11 +383,12 @@ function createServer(familyId: string, identity: McpIdentity) {
             qty: z.number().positive(),
             unitPrice: z.number().int().nonnegative().describe('Precio unitario CLP'),
             storeProductId: z.string().optional(),
-          })).min(1).describe('Líneas REALES cobradas'),
-          subtotal: z.number().int().nonnegative(),
-          deliveryFee: z.number().int().nonnegative().default(0),
-          discount: z.number().int().nonnegative().default(0),
-          total: z.number().int().nonnegative(),
+          })).min(1).describe('Líneas REALES cobradas, no las del carro original'),
+          subtotal: z.number().int().nonnegative().describe('Suma de líneas sin despacho'),
+          deliveryFee: z.number().int().nonnegative().default(0).describe('Costo de despacho'),
+          discount: z.number().int().nonnegative().default(0).describe('Descuento por promociones'),
+          adjustments: z.number().int().default(0).describe('Ajustes de la tienda (+ o -, ej. $6 de diferencia)'),
+          total: z.number().int().nonnegative().describe('Total cobrado: subtotal + despacho - descuento + ajustes'),
           paymentLast4: z.string().max(4).optional().describe('Últimos 4 dígitos de la tarjeta'),
         },
       },

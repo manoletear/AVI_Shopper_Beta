@@ -49,18 +49,25 @@ interface RecordOrderInput {
   subtotal: number;
   deliveryFee: number;
   discount: number;
+  adjustments: number;
   total: number;
   paymentLast4?: string;
 }
 
 export async function recordOrder(familyId: string, input: RecordOrderInput, memberId: string | null) {
-  // Idempotent by orderRef
-  const existing = await prisma.proposedCart.findFirst({
+  // ── Idempotencia completa por orderRef ──
+  // Si ya existe un carro con este orderRef, no hacer nada
+  const existingCart = await prisma.proposedCart.findFirst({
     where: { familyId, orderRef: input.orderRef },
   });
-  if (existing) {
-    return { cartId: existing.id, status: existing.status, orderRef: input.orderRef, message: 'Pedido ya registrado (idempotente)' };
+  if (existingCart) {
+    return { cartId: existingCart.id, status: existingCart.status, orderRef: input.orderRef, message: 'Pedido ya registrado' };
   }
+  // Si ya existen filas en purchase_history con este orderRef, solo vincular el carro
+  const existingPurchases = await prisma.purchaseHistory.count({
+    where: { orderRef: input.orderRef },
+  });
+  const alreadyImported = existingPurchases > 0;
 
   const cart = await prisma.proposedCart.findFirst({ where: { id: input.cartId, familyId } });
   if (!cart) throw new OrderError('No encontré ese carro en esta familia');
@@ -68,13 +75,21 @@ export async function recordOrder(familyId: string, input: RecordOrderInput, mem
     throw new OrderError(`El carro debe estar aprobado o lleno para registrar el pedido (estado: "${cart.status}")`);
   }
 
-  // Check for other open carts
+  // Validar totales: subtotal + deliveryFee - discount + adjustments = total
+  const expectedTotal = input.subtotal + input.deliveryFee - input.discount + input.adjustments;
+  if (Math.abs(expectedTotal - input.total) > 10) {
+    throw new OrderError(
+      `Los montos no cuadran: subtotal ($${input.subtotal}) + despacho ($${input.deliveryFee}) - descuento ($${input.discount}) + ajustes ($${input.adjustments}) = $${expectedTotal}, pero el total es $${input.total}.`
+    );
+  }
+
+  // Avisar si hay otro carro abierto
   const otherOpen = await prisma.proposedCart.findFirst({
     where: { familyId, status: { in: ['proposed', 'approved'] }, id: { not: cart.id } },
     select: { id: true, storeName: true, status: true },
   });
 
-  // Resolve userId for purchase_history
+  // Resolver userId
   let userId = 'unknown';
   if (memberId) {
     const member = await prisma.familyMember.findFirst({
@@ -96,7 +111,7 @@ export async function recordOrder(familyId: string, input: RecordOrderInput, mem
   const placedAt = new Date(input.placedAt);
 
   await prisma.$transaction(async (tx) => {
-    // Update cart to ordered
+    // Pasar carro a ordered
     await tx.proposedCart.update({
       where: { id: cart.id },
       data: {
@@ -118,7 +133,7 @@ export async function recordOrder(familyId: string, input: RecordOrderInput, mem
       },
     });
 
-    // Insert order_lines (the REAL lines charged)
+    // Insertar order_lines (las líneas REALES cobradas, no las del carro)
     for (const line of input.lines) {
       await tx.orderLine.create({
         data: {
@@ -134,14 +149,9 @@ export async function recordOrder(familyId: string, input: RecordOrderInput, mem
       });
     }
 
-    // Insert purchase_history (for pantry prediction)
-    for (const line of input.lines) {
-      // Idempotent: skip if already exists (unique index on orderRef + productName)
-      const exists = await tx.purchaseHistory.findFirst({
-        where: { orderRef: input.orderRef, productName: line.name },
-        select: { id: true },
-      });
-      if (!exists) {
+    // Insertar en purchase_history SOLO si no estaba importado antes
+    if (!alreadyImported) {
+      for (const line of input.lines) {
         await tx.purchaseHistory.create({
           data: {
             userId,
@@ -166,6 +176,7 @@ export async function recordOrder(familyId: string, input: RecordOrderInput, mem
     store: input.store,
     total: input.total,
     lines: input.lines.length,
+    alreadyImported,
   });
 
   return {
@@ -174,6 +185,7 @@ export async function recordOrder(familyId: string, input: RecordOrderInput, mem
     orderRef: input.orderRef,
     total: input.total,
     linesRecorded: input.lines.length,
+    alreadyImported: alreadyImported ? 'Las compras ya estaban en el historial — solo se vinculó el carro.' : undefined,
     ...(otherOpen ? { warning: `Hay otro carro abierto (${otherOpen.storeName}, ${otherOpen.status}). Revisa que no estén comprando doble.` } : {}),
   };
 }
