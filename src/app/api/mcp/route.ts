@@ -29,6 +29,12 @@ import {
   proposeCart,
 } from '@/lib/mcp/tools';
 import {
+  cancelCart,
+  recordOrder,
+  markDelivered,
+  OrderError,
+} from '@/services/order-lifecycle.service';
+import {
   approveCartShape,
   approveItemShape,
   checkAllergensShape,
@@ -47,8 +53,8 @@ async function run(fn: () => Promise<unknown>): Promise<ToolResult> {
   try {
     return { content: [{ type: 'text', text: JSON.stringify(await fn(), null, 2) }] };
   } catch (error) {
-    if (!(error instanceof McpToolError)) console.error('MCP tool error:', error);
-    const message = error instanceof McpToolError ? error.message : 'Error interno de AVI';
+    if (!(error instanceof McpToolError) && !(error instanceof OrderError)) console.error('MCP tool error:', error);
+    const message = error instanceof McpToolError || error instanceof OrderError ? error.message : 'Error interno de AVI';
     return { content: [{ type: 'text', text: message }], isError: true };
   }
 }
@@ -338,6 +344,76 @@ function createServer(familyId: string, identity: McpIdentity) {
       (args) => run(async () => {
         const result = await fillStoreCart(familyId, args.cartId);
         await logActivity(familyId, identity.memberId, 'filled_cart', 'proposed_cart', args.cartId);
+        return result;
+      }),
+    );
+
+    server.registerTool(
+      'cancel_cart',
+      {
+        description: 'Cancela un carro propuesto o aprobado. Solo aprobadores. No se puede cancelar un carro ya ordenado o entregado.',
+        inputSchema: {
+          cartId: z.string().min(1),
+          reason: z.string().max(500).optional().describe('Motivo de cancelación'),
+        },
+      },
+      (args) => run(async () => {
+        const result = await cancelCart(familyId, args.cartId, identity.memberId, args.reason);
+        notifyOtherApprovers(
+          familyId, identity.memberId,
+          `❌ Carro cancelado por ${identity.memberName || 'un aprobador'}`,
+          `${identity.memberName || 'Alguien'} canceló el carro.${args.reason ? ` Motivo: ${args.reason}` : ''}`,
+        );
+        return result;
+      }),
+    );
+
+    server.registerTool(
+      'record_order',
+      {
+        description: 'Registra un pedido confirmado y pagado. Idempotente por orderRef: si las compras ya están en el historial, solo vincula el carro sin duplicar. Registra las líneas REALES cobradas (no las del carro — puede haber sustituciones, faltantes, cambios de precio). Se llama DESPUÉS del pago. Valida que subtotal + despacho - descuento + ajustes = total.',
+        inputSchema: {
+          cartId: z.string().min(1),
+          store: z.string().min(1).describe('Nombre de la tienda: Jumbo, Lider, etc.'),
+          orderRef: z.string().min(1).describe('Número de pedido de la tienda'),
+          placedAt: z.string().describe('Fecha ISO del pedido'),
+          deliveryWindow: z.string().optional().describe('Ventana de despacho elegida'),
+          lines: z.array(z.object({
+            name: z.string().describe('Nombre del producto como aparece en la boleta'),
+            qty: z.number().positive(),
+            unitPrice: z.number().int().nonnegative().describe('Precio unitario CLP'),
+            storeProductId: z.string().optional(),
+          })).min(1).describe('Líneas REALES cobradas, no las del carro original'),
+          subtotal: z.number().int().nonnegative().describe('Suma de líneas sin despacho'),
+          deliveryFee: z.number().int().nonnegative().default(0).describe('Costo de despacho'),
+          discount: z.number().int().nonnegative().default(0).describe('Descuento por promociones'),
+          adjustments: z.number().int().default(0).describe('Ajustes de la tienda (+ o -, ej. $6 de diferencia)'),
+          total: z.number().int().nonnegative().describe('Total cobrado: subtotal + despacho - descuento + ajustes'),
+          paymentLast4: z.string().max(4).optional().describe('Últimos 4 dígitos de la tarjeta'),
+        },
+      },
+      (args) => run(async () => {
+        const result = await recordOrder(familyId, args, identity.memberId);
+        return result;
+      }),
+    );
+
+    server.registerTool(
+      'mark_delivered',
+      {
+        description: 'Marca un pedido como entregado. Registra ajustes si hubo faltantes o sustituciones. Solo para pedidos en estado "ordered".',
+        inputSchema: {
+          cartId: z.string().min(1),
+          adjustments: z.array(z.object({
+            name: z.string().describe('Nombre del producto'),
+            deliveredQty: z.number().nonnegative().describe('Cantidad que realmente llegó (0 si no llegó)'),
+            originalQty: z.number().optional().describe('Cantidad que se pidió originalmente'),
+            substitutedFor: z.string().optional().describe('Nombre del producto que lo reemplazó'),
+          })).optional().describe('Ajustes por faltantes o sustituciones. Si todo llegó bien, omitir.'),
+        },
+      },
+      (args) => run(async () => {
+        const result = await markDelivered(familyId, args.cartId, identity.memberId, args.adjustments);
         return result;
       }),
     );

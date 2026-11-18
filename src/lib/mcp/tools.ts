@@ -434,7 +434,7 @@ export async function importPurchases(
     pedidosya: { slug: 'pedidosya', name: 'PedidosYa' },
   };
 
-  const data = input.purchases
+  const candidates = input.purchases
     .filter((r) => r.productName && r.purchasedAt)
     .map((r) => {
       const storeKey = (r.storeSlug || r.storeName || '').toLowerCase().trim();
@@ -459,7 +459,23 @@ export async function importPurchases(
       };
     });
 
-  const result = await prisma.purchaseHistory.createMany({ data });
+  // Idempotent: skip rows that already exist by orderRef + productName
+  const withOrderRef = candidates.filter((r) => r.orderRef);
+  const existingRefs = withOrderRef.length > 0
+    ? await prisma.purchaseHistory.findMany({
+        where: {
+          orderRef: { in: withOrderRef.map((r) => r.orderRef!) },
+          productName: { in: withOrderRef.map((r) => r.productName) },
+        },
+        select: { orderRef: true, productName: true },
+      })
+    : [];
+  const existingSet = new Set(existingRefs.map((r) => `${r.orderRef}||${r.productName}`));
+  const data = candidates.filter((r) => !r.orderRef || !existingSet.has(`${r.orderRef}||${r.productName}`));
+
+  const result = data.length > 0
+    ? await prisma.purchaseHistory.createMany({ data })
+    : { count: 0 };
 
   return {
     imported: result.count,
