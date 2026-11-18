@@ -187,6 +187,23 @@ jamon, carne_asado, pollo_trutro, cerdo, palta, tomate, platano, galletas,
 snack_salado, dulces_chocolates, frutos_secos, coca_cola_zero_1_5l,
 papel_higienico, detergente, bolsas_basura. Si no sabes, déjalo vacío.
 
+## Ciclo de vida del pedido
+1. propose_cart → estado 'proposed' (AVI propone la lista)
+2. approve_cart → estado 'approved' (la familia aprueba)
+3. fill_cart → AVI llena el carro en la tienda online (nunca paga)
+4. La familia revisa, paga en la tienda. AVI NO paga.
+5. record_order → estado 'ordered' (el aprobador confirma que pagó y registra las líneas reales)
+6. mark_delivered → estado 'delivered' (llegó el pedido, con ajustes si hubo)
+7. cancel_cart → estado 'cancelled' (si se arrepintieron)
+
+IMPORTANTE: record_order se llama DESPUÉS de que la familia pagó.
+Registra las líneas REALES cobradas, no las del carro original.
+Puede haber diferencias: sustituciones, faltantes, cambios de precio.
+Ejemplo: "El queso gauda Soprole no había, llegó Colun. El pan subió de $3.290 a $3.650."
+
+Cuando hay sustituciones, pregunta: "¿Acepto el reemplazo para la próxima?"
+Si acepta, AVI recuerda la preferencia.
+
 ## Credenciales y vault
 - TÚ guardas las credenciales en tu vault. AVI NUNCA las recibe.
 - Solo los DATOS normalizados pasan a AVI vía import_purchases.
