@@ -21,6 +21,14 @@ export class McpAuthDbError extends Error {
   }
 }
 
+export interface McpIdentity {
+  familyId: string;
+  memberId: string | null;
+  memberName: string | null;
+  role: string | null;
+  isApprover: boolean;
+}
+
 function digestHex(value: string): string {
   return createHash('sha256').update(value, 'utf8').digest('hex');
 }
@@ -49,9 +57,13 @@ export function parseTokens(raw: string | undefined): TokenEntry[] {
 }
 
 /**
+<<<<<<< Updated upstream
  * Autenticación MCP. Busca en member_tokens → mcp_tokens (legacy) → env var.
  * Si la DB lanza un error real (no "no encontrado"), lanza McpAuthDbError
  * para que la ruta responda 503 en vez de caer al legacy silenciosamente.
+=======
+ * Autenticación MCP. Retorna identidad completa: familia + miembro + rol.
+>>>>>>> Stashed changes
  */
 export async function authenticateMcpToken(authHeader: string | null): Promise<McpIdentity | null> {
   if (!authHeader) return null;
@@ -62,6 +74,7 @@ export async function authenticateMcpToken(authHeader: string | null): Promise<M
 
   const hash = digestHex(token);
 
+<<<<<<< Updated upstream
   // 1. member_tokens (por integrante, con rol)
   let memberFound = false;
   try {
@@ -90,13 +103,20 @@ export async function authenticateMcpToken(authHeader: string | null): Promise<M
   }
 
   // 2. mcp_tokens (legacy por familia) — solo si member_tokens no lanzó error de DB
+=======
+  // 1. Buscar en DB (token por persona)
+>>>>>>> Stashed changes
   try {
     const row = await prisma.mcpToken.findFirst({
       where: { tokenHash: hash, isActive: true },
-      select: { id: true, familyId: true },
+      select: {
+        id: true, familyId: true, memberId: true,
+        member: { select: { name: true, role: true } },
+      },
     });
     if (row) {
       prisma.mcpToken.update({ where: { id: row.id }, data: { lastUsedAt: new Date() } }).catch(() => {});
+<<<<<<< Updated upstream
       return { familyId: row.familyId, memberId: null, memberName: null, role: 'approver' };
     }
   } catch (error) {
@@ -118,6 +138,27 @@ export async function authenticateMcpToken(authHeader: string | null): Promise<M
 }
 
 /** Auth legacy contra env var. Se mantiene para compatibilidad y tests. */
+=======
+      const isMaster = row.member?.role === 'master';
+      return {
+        familyId: row.familyId,
+        memberId: row.memberId,
+        memberName: row.member?.name ?? null,
+        role: row.member?.role ?? null,
+        isApprover: isMaster,
+      };
+    }
+  } catch {
+    // DB no disponible: continuar con env
+  }
+
+  // 2. Fallback: env var AVI_MCP_TOKENS (legacy, sin memberId)
+  const familyId = authenticateToken(authHeader);
+  if (!familyId) return null;
+  return { familyId, memberId: null, memberName: null, role: 'master', isApprover: true };
+}
+
+>>>>>>> Stashed changes
 export function authenticateToken(
   authHeader: string | null,
   raw: string | undefined = process.env.AVI_MCP_TOKENS,
@@ -135,6 +176,7 @@ export function authenticateToken(
   return found;
 }
 
+<<<<<<< Updated upstream
 /** Genera un token personal y lo guarda en member_tokens. */
 export async function generateMemberToken(
   familyId: string,
@@ -145,6 +187,13 @@ export async function generateMemberToken(
   const token = randomBytes(32).toString('base64url');
   await prisma.memberToken.create({
     data: { familyId, memberId, tokenHash: digestHex(token), label, role },
+=======
+export async function generateMcpToken(familyId: string, label = 'default', memberId?: string): Promise<string> {
+  const token = randomBytes(32).toString('base64url');
+  const hash = digestHex(token);
+  await prisma.mcpToken.create({
+    data: { familyId, tokenHash: hash, label, memberId: memberId || null },
+>>>>>>> Stashed changes
   });
   return token;
 }

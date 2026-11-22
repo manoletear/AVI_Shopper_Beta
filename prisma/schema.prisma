@@ -440,12 +440,16 @@ model FamilyMember {
   purchases   PurchaseHistory[]
   preferences MemberPreference[]
   feedback    AlertFeedback[]
+<<<<<<< Updated upstream
   memberTokens MemberToken[]
   memberInvites MemberInvite[]
   activity     FamilyActivity[]
   proposedCarts ProposedCart[] @relation("ProposedByMember")
   approvedCarts ProposedCart[] @relation("ApprovedByMember")
   approvedItems ProposedCartItem[] @relation("ItemApprovedByMember")
+=======
+  mcpTokens   McpToken[]
+>>>>>>> Stashed changes
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -920,12 +924,19 @@ model StoreCartFill {
   @@map("store_cart_fills")
 }
 
+<<<<<<< Updated upstream
 // DEPRECATED: Token MCP legacy por familia. Usar MemberToken para nuevos tokens.
 // Se mantiene para compatibilidad con AVI_MCP_TOKENS env var.
+=======
+// Token MCP por persona. Cada token identifica familia + integrante.
+// tokenHash es sha256 hex (64 chars). El token plano se muestra una sola vez.
+>>>>>>> Stashed changes
 model McpToken {
   id         String    @id @default(cuid())
   familyId   String
   family     Family    @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  memberId   String?
+  member     FamilyMember? @relation(fields: [memberId], references: [id], onDelete: SetNull)
   tokenHash  String
   label      String    @default("default")
   isActive   Boolean   @default(true)

@@ -1,6 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js';
 import { z } from 'zod';
+<<<<<<< Updated upstream
 import { prisma } from '@/lib/prisma';
 import {
   authenticateMcpToken,
@@ -10,6 +11,9 @@ import {
   type McpRole,
 } from '@/lib/mcp/auth';
 import { isFamilyApproverById } from '@/lib/family/approver';
+=======
+import { authenticateMcpToken, generateMcpToken, type McpIdentity } from '@/lib/mcp/auth';
+>>>>>>> Stashed changes
 import { AVI_MCP_INSTRUCTIONS } from '@/lib/mcp/instructions';
 import {
   approveCart,
@@ -53,6 +57,7 @@ async function run(fn: () => Promise<unknown>): Promise<ToolResult> {
   }
 }
 
+<<<<<<< Updated upstream
 function requireRole(identity: McpIdentity, ...allowed: McpRole[]) {
   if (!allowed.includes(identity.role)) {
     throw new McpToolError(
@@ -100,6 +105,9 @@ async function notifyOtherApprovers(familyId: string, excludeMemberId: string | 
   }
 }
 
+=======
+/** Un servidor por request: la identidad sale del token, nunca de los argumentos. */
+>>>>>>> Stashed changes
 function createServer(familyId: string, identity: McpIdentity) {
   const server = new McpServer(
     { name: 'avi-shopper', version: '2.1.0' },
@@ -178,6 +186,7 @@ function createServer(familyId: string, identity: McpIdentity) {
     }),
   );
 
+<<<<<<< Updated upstream
   // ── Lectura + escritura: approver + member ──
 
   if (identity.role !== 'viewer') {
@@ -429,6 +438,53 @@ function createServer(familyId: string, identity: McpIdentity) {
       }),
     );
   }
+=======
+  server.registerTool(
+    'invite_member',
+    {
+      description:
+        'Invita a un integrante de la familia a conectar su propio Grok Bot con AVI. Genera un token personal de un solo uso. El invitado agrega el conector MCP en su Grok con la URL + token. Cada persona ve y opera con su propia identidad. Solo los aprobadores (role=master) pueden invitar.',
+      inputSchema: {
+        memberId: z.string().describe('ID del integrante a invitar (de get_household)'),
+      },
+    },
+    (args) => run(async () => {
+      if (!identity.isApprover) throw new McpToolError('Solo los aprobadores pueden invitar a otros miembros');
+      const member = await prisma.familyMember.findFirst({
+        where: { id: args.memberId, familyId, isActive: true },
+        select: { id: true, name: true, role: true },
+      });
+      if (!member) throw new McpToolError('No encontré ese integrante en la familia');
+      const existing = await prisma.mcpToken.findFirst({
+        where: { familyId, memberId: member.id, isActive: true },
+      });
+      if (existing) throw new McpToolError(`${member.name} ya tiene un token activo`);
+      const token = await generateMcpToken(familyId, member.name, member.id);
+      return {
+        memberId: member.id,
+        memberName: member.name,
+        role: member.role,
+        mcpUrl: 'https://avi-shopper-beta.vercel.app/api/mcp',
+        token: `Bearer ${token}`,
+        instructions: `Pásale esto a ${member.name}: "Agrega un conector MCP en tu Grok Bot con esta URL y token. Con eso ${member.name} puede ver la despensa, proponer compras${member.role === 'master' ? ' y aprobar carros' : ''}."`,
+      };
+    }),
+  );
+
+  server.registerTool(
+    'whoami',
+    {
+      description: 'Muestra quién eres en esta familia: tu nombre, rol y si puedes aprobar carros.',
+    },
+    () => run(async () => ({
+      memberId: identity.memberId,
+      memberName: identity.memberName,
+      role: identity.role,
+      isApprover: identity.isApprover,
+      familyId,
+    })),
+  );
+>>>>>>> Stashed changes
 
   return server;
 }
