@@ -1,19 +1,16 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js';
 import { z } from 'zod';
-<<<<<<< Updated upstream
 import { prisma } from '@/lib/prisma';
 import {
   authenticateMcpToken,
   generateInviteCode,
+  generateMemberToken,
   McpAuthDbError,
   type McpIdentity,
   type McpRole,
 } from '@/lib/mcp/auth';
 import { isFamilyApproverById } from '@/lib/family/approver';
-=======
-import { authenticateMcpToken, generateMcpToken, type McpIdentity } from '@/lib/mcp/auth';
->>>>>>> Stashed changes
 import { AVI_MCP_INSTRUCTIONS } from '@/lib/mcp/instructions';
 import {
   approveCart,
@@ -33,6 +30,13 @@ import {
   proposeCart,
 } from '@/lib/mcp/tools';
 import {
+  cancelCart,
+  recordOrder,
+  markDelivered,
+  saveSubstitutionPreference,
+  OrderError,
+} from '@/services/order-lifecycle.service';
+import {
   approveCartShape,
   approveItemShape,
   checkAllergensShape,
@@ -51,13 +55,12 @@ async function run(fn: () => Promise<unknown>): Promise<ToolResult> {
   try {
     return { content: [{ type: 'text', text: JSON.stringify(await fn(), null, 2) }] };
   } catch (error) {
-    if (!(error instanceof McpToolError)) console.error('MCP tool error:', error);
-    const message = error instanceof McpToolError ? error.message : 'Error interno de AVI';
+    if (!(error instanceof McpToolError) && !(error instanceof OrderError)) console.error('MCP tool error:', error);
+    const message = error instanceof McpToolError || error instanceof OrderError ? error.message : 'Error interno de AVI';
     return { content: [{ type: 'text', text: message }], isError: true };
   }
 }
 
-<<<<<<< Updated upstream
 function requireRole(identity: McpIdentity, ...allowed: McpRole[]) {
   if (!allowed.includes(identity.role)) {
     throw new McpToolError(
@@ -105,9 +108,6 @@ async function notifyOtherApprovers(familyId: string, excludeMemberId: string | 
   }
 }
 
-=======
-/** Un servidor por request: la identidad sale del token, nunca de los argumentos. */
->>>>>>> Stashed changes
 function createServer(familyId: string, identity: McpIdentity) {
   const server = new McpServer(
     { name: 'avi-shopper', version: '2.1.0' },
@@ -186,17 +186,16 @@ function createServer(familyId: string, identity: McpIdentity) {
     }),
   );
 
-<<<<<<< Updated upstream
   // ── Lectura + escritura: approver + member ──
 
   if (identity.role !== 'viewer') {
     server.registerTool(
       'check_allergens',
       {
-        description: 'Compara un producto con las alergias de cada integrante.',
+        description: 'Compara un producto con las alergias de cada integrante. Acepta productNutritionId (si lo tienes) o productName (busca por nombre). Advierte por miembro sin bloquear: "Claudia: maní, frutos secos, mariscos".',
         inputSchema: checkAllergensShape,
       },
-      (args) => run(() => checkAllergensForFamily(familyId, args.productNutritionId)),
+      (args) => run(() => checkAllergensForFamily(familyId, args.productNutritionId, args.productName)),
     );
 
     server.registerTool(
@@ -360,6 +359,153 @@ function createServer(familyId: string, identity: McpIdentity) {
     );
 
     server.registerTool(
+      'compare_prices',
+      {
+        description: 'Compara precios en Jumbo, Lider, Unimarc y Tottus. Incluye delivery. Sugiere la tienda más barata o dividir entre dos.',
+        inputSchema: {
+          products: z.array(z.object({
+            groupKey: z.string(),
+            quantity: z.number().positive(),
+          })).min(1).max(50),
+        },
+      },
+      (args) => run(() => comparePrices(familyId, args)),
+    );
+  }
+
+  // ── Solo aprobadores ──
+
+  if (identity.role === 'approver') {
+    server.registerTool(
+      'approve_item',
+      {
+        description: 'Aprueba o rechaza un ítem del carro propuesto. Solo aprobadores.',
+        inputSchema: approveItemShape,
+      },
+      (args) => run(() => approveItem(familyId, args)),
+    );
+
+    server.registerTool(
+      'approve_cart',
+      {
+        description: 'Aprueba el carro propuesto completo. Solo aprobadores. AVI no paga.',
+        inputSchema: approveCartShape,
+      },
+      (args) => run(async () => {
+        const result = await approveCart(familyId, args);
+        if (identity.memberId) {
+          await prisma.proposedCart.update({
+            where: { id: args.cartId },
+            data: { approvedByMemberId: identity.memberId, approvedAt: new Date() },
+          }).catch(() => {});
+        }
+        await logActivity(familyId, identity.memberId, 'approved_cart', 'proposed_cart', args.cartId);
+        notifyOtherApprovers(
+          familyId, identity.memberId,
+          `✅ Carro aprobado por ${identity.memberName || 'un aprobador'}`,
+          `El carro fue aprobado. La familia puede revisar y pagar.\n\nhttps://avi-shopper-beta.vercel.app/carro/${args.cartId}`,
+        );
+        return result;
+      }),
+    );
+
+    server.registerTool(
+      'fill_cart',
+      {
+        description: 'Llena el carro real en la tienda. Solo aprobadores. NUNCA hace checkout.',
+        inputSchema: fillCartShape,
+      },
+      (args) => run(async () => {
+        const result = await fillStoreCart(familyId, args.cartId);
+        await logActivity(familyId, identity.memberId, 'filled_cart', 'proposed_cart', args.cartId);
+        return result;
+      }),
+    );
+
+    server.registerTool(
+      'cancel_cart',
+      {
+        description: 'Cancela un carro propuesto o aprobado. Solo aprobadores. No se puede cancelar un carro ya ordenado o entregado.',
+        inputSchema: {
+          cartId: z.string().min(1),
+          reason: z.string().max(500).optional().describe('Motivo de cancelación'),
+        },
+      },
+      (args) => run(async () => {
+        const result = await cancelCart(familyId, args.cartId, identity.memberId, args.reason);
+        notifyOtherApprovers(
+          familyId, identity.memberId,
+          `❌ Carro cancelado por ${identity.memberName || 'un aprobador'}`,
+          `${identity.memberName || 'Alguien'} canceló el carro.${args.reason ? ` Motivo: ${args.reason}` : ''}`,
+        );
+        return result;
+      }),
+    );
+
+    server.registerTool(
+      'record_order',
+      {
+        description: 'Registra un pedido confirmado y pagado. Idempotente por orderRef: si las compras ya están en el historial, solo vincula el carro sin duplicar. Registra las líneas REALES cobradas (no las del carro — puede haber sustituciones, faltantes, cambios de precio). Se llama DESPUÉS del pago. Valida que subtotal + despacho - descuento + ajustes = total.',
+        inputSchema: {
+          cartId: z.string().min(1),
+          store: z.string().min(1).describe('Nombre de la tienda: Jumbo, Lider, etc.'),
+          orderRef: z.string().min(1).describe('Número de pedido de la tienda'),
+          placedAt: z.string().describe('Fecha ISO del pedido'),
+          deliveryWindow: z.string().optional().describe('Ventana de despacho elegida'),
+          lines: z.array(z.object({
+            name: z.string().describe('Nombre del producto como aparece en la boleta'),
+            qty: z.number().positive(),
+            unitPrice: z.number().int().nonnegative().describe('Precio unitario CLP'),
+            storeProductId: z.string().optional(),
+          })).min(1).describe('Líneas REALES cobradas, no las del carro original'),
+          subtotal: z.number().int().nonnegative().describe('Suma de líneas sin despacho'),
+          deliveryFee: z.number().int().nonnegative().default(0).describe('Costo de despacho'),
+          discount: z.number().int().nonnegative().default(0).describe('Descuento por promociones'),
+          adjustments: z.number().int().default(0).describe('Ajustes de la tienda (+ o -, ej. $6 de diferencia)'),
+          total: z.number().int().nonnegative().describe('Total cobrado: subtotal + despacho - descuento + ajustes'),
+          paymentLast4: z.string().max(4).optional().describe('Últimos 4 dígitos de la tarjeta'),
+        },
+      },
+      (args) => run(async () => {
+        const result = await recordOrder(familyId, args, identity.memberId);
+        return result;
+      }),
+    );
+
+    server.registerTool(
+      'mark_delivered',
+      {
+        description: 'Marca un pedido como entregado. Registra ajustes si hubo faltantes o sustituciones. Solo para pedidos en estado "ordered".',
+        inputSchema: {
+          cartId: z.string().min(1),
+          adjustments: z.array(z.object({
+            name: z.string().describe('Nombre del producto'),
+            deliveredQty: z.number().nonnegative().describe('Cantidad que realmente llegó (0 si no llegó)'),
+            originalQty: z.number().optional().describe('Cantidad que se pidió originalmente'),
+            substitutedFor: z.string().optional().describe('Nombre del producto que lo reemplazó'),
+          })).optional().describe('Ajustes por faltantes o sustituciones. Si todo llegó bien, omitir.'),
+        },
+      },
+      (args) => run(async () => {
+        const result = await markDelivered(familyId, args.cartId, identity.memberId, args.adjustments);
+        return result;
+      }),
+    );
+
+    server.registerTool(
+      'accept_substitution',
+      {
+        description: 'Registra si la familia acepta o rechaza una sustitución de producto. AVI recuerda la preferencia para la próxima compra. Ej: "gauda Soprole no había, ¿aceptan gauda Colun?"',
+        inputSchema: {
+          original: z.string().min(1).describe('Nombre del producto original'),
+          substitute: z.string().min(1).describe('Nombre del sustituto propuesto'),
+          accepted: z.boolean().describe('true si la familia acepta el reemplazo'),
+        },
+      },
+      (args) => run(() => saveSubstitutionPreference(familyId, args.original, args.substitute, args.accepted)),
+    );
+
+    server.registerTool(
       'invite_member',
       {
         description: 'Invita a un integrante a conectar su propio bot. Genera un código de un solo uso (72h). Solo aprobadores.',
@@ -438,53 +584,6 @@ function createServer(familyId: string, identity: McpIdentity) {
       }),
     );
   }
-=======
-  server.registerTool(
-    'invite_member',
-    {
-      description:
-        'Invita a un integrante de la familia a conectar su propio Grok Bot con AVI. Genera un token personal de un solo uso. El invitado agrega el conector MCP en su Grok con la URL + token. Cada persona ve y opera con su propia identidad. Solo los aprobadores (role=master) pueden invitar.',
-      inputSchema: {
-        memberId: z.string().describe('ID del integrante a invitar (de get_household)'),
-      },
-    },
-    (args) => run(async () => {
-      if (!identity.isApprover) throw new McpToolError('Solo los aprobadores pueden invitar a otros miembros');
-      const member = await prisma.familyMember.findFirst({
-        where: { id: args.memberId, familyId, isActive: true },
-        select: { id: true, name: true, role: true },
-      });
-      if (!member) throw new McpToolError('No encontré ese integrante en la familia');
-      const existing = await prisma.mcpToken.findFirst({
-        where: { familyId, memberId: member.id, isActive: true },
-      });
-      if (existing) throw new McpToolError(`${member.name} ya tiene un token activo`);
-      const token = await generateMcpToken(familyId, member.name, member.id);
-      return {
-        memberId: member.id,
-        memberName: member.name,
-        role: member.role,
-        mcpUrl: 'https://avi-shopper-beta.vercel.app/api/mcp',
-        token: `Bearer ${token}`,
-        instructions: `Pásale esto a ${member.name}: "Agrega un conector MCP en tu Grok Bot con esta URL y token. Con eso ${member.name} puede ver la despensa, proponer compras${member.role === 'master' ? ' y aprobar carros' : ''}."`,
-      };
-    }),
-  );
-
-  server.registerTool(
-    'whoami',
-    {
-      description: 'Muestra quién eres en esta familia: tu nombre, rol y si puedes aprobar carros.',
-    },
-    () => run(async () => ({
-      memberId: identity.memberId,
-      memberName: identity.memberName,
-      role: identity.role,
-      isApprover: identity.isApprover,
-      familyId,
-    })),
-  );
->>>>>>> Stashed changes
 
   return server;
 }
