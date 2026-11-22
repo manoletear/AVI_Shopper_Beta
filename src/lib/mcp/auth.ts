@@ -79,13 +79,9 @@ export async function authenticateMcpToken(authHeader: string | null): Promise<M
     }
     memberFound = false;
   } catch (error) {
-    // Si la tabla existe pero hay un error real de DB, NO caer al legacy
-    const msg = error instanceof Error ? error.message : '';
-    if (!msg.includes('does not exist') && !msg.includes('P2021')) {
-      console.error('[mcp-auth] Error en member_tokens:', error);
-      throw new McpAuthDbError(error);
-    }
-    // Tabla no creada: continuar con legacy
+    // DB no disponible (sin DATABASE_URL, conexión caída, tabla no creada):
+    // loguear y seguir con el token legacy. No tumbar el MCP.
+    console.warn('[mcp-auth] member_tokens no disponible, usando fallback:', error instanceof Error ? error.message : 'unknown');
   }
 
   // 2. mcp_tokens (legacy por familia)
@@ -102,11 +98,7 @@ export async function authenticateMcpToken(authHeader: string | null): Promise<M
       return { familyId: row.familyId, memberId: null, memberName: null, role: 'approver' as McpRole };
     }
   } catch (error) {
-    const msg = error instanceof Error ? error.message : '';
-    if (!msg.includes('does not exist') && !msg.includes('P2021')) {
-      console.error('[mcp-auth] Error en mcp_tokens:', error);
-      throw new McpAuthDbError(error);
-    }
+    console.warn('[mcp-auth] mcp_tokens no disponible, usando fallback:', error instanceof Error ? error.message : 'unknown');
   }
 
   // 3. AVI_MCP_TOKENS env var (deprecado)

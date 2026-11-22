@@ -6,7 +6,6 @@ import {
   authenticateMcpToken,
   generateInviteCode,
   generateMemberToken,
-  McpAuthDbError,
   type McpIdentity,
   type McpRole,
 } from '@/lib/mcp/auth';
@@ -595,24 +594,8 @@ function unauthorized() {
   );
 }
 
-function serviceUnavailable() {
-  return Response.json(
-    { jsonrpc: '2.0', error: { code: -32003, message: 'Servicio temporalmente no disponible' }, id: null },
-    { status: 503 },
-  );
-}
-
 export async function POST(request: Request) {
-  let identity: McpIdentity | null;
-  try {
-    identity = await authenticateMcpToken(request.headers.get('authorization'));
-  } catch (error) {
-    if (error instanceof McpAuthDbError) {
-      console.error('[mcp] DB error en autenticación, respondiendo 503:', error.dbCause);
-      return serviceUnavailable();
-    }
-    throw error;
-  }
+  const identity = await authenticateMcpToken(request.headers.get('authorization'));
   if (!identity) return unauthorized();
 
   const server = createServer(identity.familyId, identity);
