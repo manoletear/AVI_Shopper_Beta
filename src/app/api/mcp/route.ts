@@ -32,6 +32,7 @@ import {
   cancelCart,
   recordOrder,
   markDelivered,
+  saveSubstitutionPreference,
   OrderError,
 } from '@/services/order-lifecycle.service';
 import {
@@ -197,10 +198,10 @@ function createServer(familyId: string, identity: McpIdentity) {
     server.registerTool(
       'check_allergens',
       {
-        description: 'Compara un producto con las alergias de cada integrante.',
+        description: 'Compara un producto con las alergias de cada integrante. Acepta productNutritionId (si lo tienes) o productName (busca por nombre). Advierte por miembro sin bloquear: "Claudia: maní, frutos secos, mariscos".',
         inputSchema: checkAllergensShape,
       },
-      (args) => run(() => checkAllergensForFamily(familyId, args.productNutritionId)),
+      (args) => run(() => checkAllergensForFamily(familyId, args.productNutritionId, args.productName)),
     );
 
     server.registerTool(
@@ -416,6 +417,19 @@ function createServer(familyId: string, identity: McpIdentity) {
         const result = await markDelivered(familyId, args.cartId, identity.memberId, args.adjustments);
         return result;
       }),
+    );
+
+    server.registerTool(
+      'accept_substitution',
+      {
+        description: 'Registra si la familia acepta o rechaza una sustitución de producto. AVI recuerda la preferencia para la próxima compra. Ej: "gauda Soprole no había, ¿aceptan gauda Colun?"',
+        inputSchema: {
+          original: z.string().min(1).describe('Nombre del producto original'),
+          substitute: z.string().min(1).describe('Nombre del sustituto propuesto'),
+          accepted: z.boolean().describe('true si la familia acepta el reemplazo'),
+        },
+      },
+      (args) => run(() => saveSubstitutionPreference(familyId, args.original, args.substitute, args.accepted)),
     );
 
     server.registerTool(

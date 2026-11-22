@@ -37,6 +37,8 @@ const CONTEXT_MAP: Record<string, ConsumptionContext> = {
   snack_salado: 'picoteo', papas_prefritas: 'picoteo', congelado_coctel: 'picoteo',
   queso_brie_camembert: 'picoteo', queso_savoyard: 'picoteo', jamon_serrano: 'picoteo',
 
+  leche_con_cafe: 'cotidiano',
+
   coca_cola_zero_1_5l: 'cotidiano', hielo: 'coctel', pisco_sour: 'coctel',
   licor_otro: 'coctel', cerveza: 'coctel',
 
@@ -323,10 +325,19 @@ export async function getHouseholdIntelligence(familyId: string): Promise<Househ
     const dailyRate = medInterval > 0 ? avgQty / medInterval : 0;
     const perPersonPerDay = consumers > 0 ? dailyRate / consumers : dailyRate;
 
-    // Stock estimation
+    // Stock estimation — sum all entries on the same last purchase date
+    // (e.g. 12 potes yoghurt + pack 6 yoghurt in one order = 18 total)
     const lastDate = pd.dates[pd.dates.length - 1];
     const daysSince = Math.round((nowMs - lastDate.getTime()) / 86400000);
-    const lastQty = pd.quantities[pd.quantities.length - 1];
+    const lastDateStr = lastDate.toISOString().slice(0, 10);
+    let lastQty = 0;
+    for (let i = pd.dates.length - 1; i >= 0; i--) {
+      if (pd.dates[i].toISOString().slice(0, 10) === lastDateStr) {
+        lastQty += pd.quantities[i];
+      } else {
+        break;
+      }
+    }
 
     // Adjust consumption by active days (colación only weekdays, etc.)
     const activeDaysSince = activeDaysUntil(ctx, now, lastDate);
