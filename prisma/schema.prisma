@@ -401,6 +401,8 @@ model Family {
   settings   FamilySettings?
   storeConnections StoreConnection[]
   storeCartFills   StoreCartFill[]
+  orderLines       OrderLine[]
+  substitutionPreferences SubstitutionPreference[]
   mcpTokens    McpToken[]
   memberTokens MemberToken[]
   memberInvites MemberInvite[]
@@ -444,8 +446,9 @@ model FamilyMember {
   memberTokens MemberToken[]
   memberInvites MemberInvite[]
   activity     FamilyActivity[]
-  proposedCarts ProposedCart[] @relation("ProposedByMember")
-  approvedCarts ProposedCart[] @relation("ApprovedByMember")
+  proposedCarts  ProposedCart[] @relation("ProposedByMember")
+  approvedCarts  ProposedCart[] @relation("ApprovedByMember")
+  cancelledCarts ProposedCart[] @relation("CancelledByMember")
   createdShoppingLists    FamilyShoppingList[]             @relation("FamilyShoppingListCreator")
   requestedShoppingItems  FamilyShoppingListItem[]         @relation("FamilyShoppingListItemRequester")
   shoppingListConfirmations FamilyShoppingListConfirmation[] @relation("FamilyShoppingListConfirmer")
@@ -710,14 +713,14 @@ model MemberPreference {
   @@map("member_preferences")
 }
 
-// Carro propuesto. La familia lo aprueba. AVI no paga ni hace el pedido.
+// Carro propuesto. proposed → approved → filled → ordered → delivered | cancelled.
 model ProposedCart {
   id            String   @id @default(cuid())
   familyId      String
   family        Family   @relation(fields: [familyId], references: [id], onDelete: Cascade)
   storeSlug     String
   storeName     String
-  // proposed, approved, dismissed
+  // proposed, approved, filling, filled, ordered, delivered, cancelled
   status        String   @default("proposed")
   subtotal      Int      @default(0)
   delivery      Int      @default(0)
@@ -734,6 +737,18 @@ model ProposedCart {
   approvedByMember    FamilyMember? @relation("ApprovedByMember", fields: [approvedByMemberId], references: [id])
   approvedAt          DateTime?
 
+  // Order lifecycle
+  orderRef             String?   @unique
+  orderedAt            DateTime?
+  deliveredAt          DateTime?
+  deliveryFee          Int       @default(0)
+  discount             Int       @default(0)
+  paymentLast4         String?
+  cancelledByMemberId  String?
+  cancelledByMember    FamilyMember? @relation("CancelledByMember", fields: [cancelledByMemberId], references: [id])
+  cancelReason         String?
+  cancelledAt          DateTime?
+
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -741,6 +756,7 @@ model ProposedCart {
   alerts        ReplenishmentAlert[]
   fills         StoreCartFill[]
   shoppingList  FamilyShoppingList?
+  orderLines    OrderLine[]
 
   @@index([familyId, status])
   @@map("proposed_carts")
@@ -759,9 +775,19 @@ model ProposedCartItem {
   payable            Int
   runOutAt           DateTime?
   pulledForward      Boolean  @default(false)
-  // Decisión del aprobador por ítem (MCP approve_item). null = pendiente.
-  // Columna agregada por 20261101000000_proposed_cart_item_approval.sql.
   approved           Boolean?
+
+  // Dual pricing: catálogo vs web con sesión
+  estimatedPrice     Int?
+  confirmedPrice     Int?
+  storeProductId     String?
+  // What was actually delivered (may differ from quantity)
+  deliveredQty       Float?
+  // Substitution tracking
+  substitutedFor     String?
+  substitutionAccepted Boolean?
+
+  orderLines         OrderLine[] @relation("OriginalItem")
 
   @@index([cartId])
   @@map("proposed_cart_items")
@@ -921,6 +947,45 @@ model StoreCartFill {
   @@index([cartId])
   @@index([familyId, createdAt])
   @@map("store_cart_fills")
+}
+
+// Líneas reales del pedido: lo que se cobró y entregó (puede diferir del carro aprobado).
+model OrderLine {
+  id             String   @id @default(cuid())
+  cartId         String
+  cart           ProposedCart @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  familyId       String
+  family         Family   @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  orderRef       String
+  productName    String
+  quantity       Float    @default(1)
+  unitPrice      Int
+  subtotal       Int
+  storeProductId String?
+  isSubstitution Boolean  @default(false)
+  originalItemId String?
+  originalItem   ProposedCartItem? @relation("OriginalItem", fields: [originalItemId], references: [id])
+  createdAt      DateTime @default(now())
+
+  @@index([cartId])
+  @@index([orderRef])
+  @@map("order_lines")
+}
+
+// Preferencias de sustitución: recuerda swaps aceptados/rechazados por la familia.
+model SubstitutionPreference {
+  id                 String   @id @default(cuid())
+  familyId           String
+  family             Family   @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  originalGroupKey   String
+  originalName       String
+  substituteName     String
+  substituteGroupKey String?
+  accepted           Boolean
+  createdAt          DateTime @default(now())
+
+  @@index([familyId, originalGroupKey])
+  @@map("substitution_preferences")
 }
 
 // DEPRECATED: Token MCP legacy por familia. Usar MemberToken para nuevos tokens.

@@ -26,7 +26,8 @@ export const proposeCartSchema = z.object(proposeCartShape);
 export type ProposeCartInput = z.infer<typeof proposeCartSchema>;
 
 export const checkAllergensShape = {
-  productNutritionId: z.string().trim().min(1),
+  productNutritionId: z.string().trim().min(1).optional().describe('ID de ficha nutricional. Si no lo tienes, usa productName.'),
+  productName: z.string().trim().min(1).optional().describe('Nombre del producto para buscar la ficha. Ej: "Queso gauda Soprole"'),
 };
 
 export const approveItemShape = {

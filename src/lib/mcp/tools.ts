@@ -117,9 +117,35 @@ export async function getLockedProducts(familyId: string): Promise<LockedProduct
 /** Advierte por integrante (contiene / puede contener). Nunca bloquea. */
 export async function checkAllergensForFamily(
   familyId: string,
-  productNutritionId: string,
-): Promise<AllergenCheckResult> {
-  return checkAllergens(productNutritionId, await familyAllergies(familyId));
+  productNutritionId?: string,
+  productName?: string,
+): Promise<AllergenCheckResult & { memberAllergens?: { name: string; allergens: string[] }[] }> {
+  let resolvedId = productNutritionId;
+
+  if (!resolvedId && productName) {
+    const match = await prisma.productNutrition.findFirst({
+      where: { name: { contains: productName, mode: 'insensitive' } },
+      select: { id: true },
+    });
+    if (!match) {
+      return {
+        productNutritionId: '',
+        warnings: [],
+        requiresApproval: false,
+        note: `No tengo ficha nutricional para "${productName}". Revisa los ingredientes manualmente.`,
+      } as any;
+    }
+    resolvedId = match.id;
+  }
+
+  if (!resolvedId) throw new McpToolError('Necesito productNutritionId o productName');
+
+  const members = await familyAllergies(familyId);
+  const result = await checkAllergens(resolvedId, members);
+  return {
+    ...result,
+    memberAllergens: members.map((m) => ({ name: m.name, allergens: [...m.allergens] })),
+  };
 }
 
 export async function proposeCart(familyId: string, input: ProposeCartInput): Promise<ProposedCartResult> {
@@ -164,6 +190,7 @@ export async function proposeCart(familyId: string, input: ProposeCartInput): Pr
             quantity: item.quantity,
             unit: item.unit,
             payable: payables[index],
+            estimatedPrice: item.unitPriceClp ?? null,
             canonicalProductId: item.canonicalProductId,
           },
         }),
@@ -292,12 +319,35 @@ async function viaWorker(job: WorkerJob): Promise<unknown> {
 }
 
 export async function fillStoreCart(familyId: string, cartId: string) {
-  const cart = await prisma.proposedCart.findFirst({ where: { id: cartId, familyId }, select: { status: true } });
+  const cart = await prisma.proposedCart.findFirst({
+    where: { id: cartId, familyId },
+    select: { status: true, storeSlug: true },
+  });
   if (!cart) throw new McpToolError('No encontré ese carro en esta familia');
   if (cart.status !== 'approved') {
     throw new McpToolError(`El carro debe estar aprobado por quien aprueba en la familia (estado: "${cart.status}")`);
   }
-  return viaWorker({ op: 'fill_cart', familyId, cartId });
+
+  const result = await viaWorker({ op: 'fill_cart', familyId, cartId }) as any;
+
+  // If there are unmatched items, suggest known-good substitutions
+  if (result?.unmatched?.length) {
+    const prefs = await prisma.substitutionPreference.findMany({
+      where: { familyId, accepted: true },
+    });
+    const prefMap = new Map(prefs.map((p) => [p.originalGroupKey, p.substituteName]));
+
+    for (const item of result.unmatched) {
+      const key = (item.name || item.groupKey || '').toLowerCase().replace(/\s+/g, '_');
+      const suggestion = prefMap.get(key);
+      if (suggestion) {
+        item.suggestedSubstitute = suggestion;
+        item.substitutionSource = 'Preferencia guardada de la familia';
+      }
+    }
+  }
+
+  return result;
 }
 
 export async function getStoreDeliveryWindows(
@@ -434,7 +484,7 @@ export async function importPurchases(
     pedidosya: { slug: 'pedidosya', name: 'PedidosYa' },
   };
 
-  const data = input.purchases
+  const candidates = input.purchases
     .filter((r) => r.productName && r.purchasedAt)
     .map((r) => {
       const storeKey = (r.storeSlug || r.storeName || '').toLowerCase().trim();
@@ -459,7 +509,23 @@ export async function importPurchases(
       };
     });
 
-  const result = await prisma.purchaseHistory.createMany({ data });
+  // Idempotent: skip rows that already exist by orderRef + productName
+  const withOrderRef = candidates.filter((r) => r.orderRef);
+  const existingRefs = withOrderRef.length > 0
+    ? await prisma.purchaseHistory.findMany({
+        where: {
+          orderRef: { in: withOrderRef.map((r) => r.orderRef!) },
+          productName: { in: withOrderRef.map((r) => r.productName) },
+        },
+        select: { orderRef: true, productName: true },
+      })
+    : [];
+  const existingSet = new Set(existingRefs.map((r) => `${r.orderRef}||${r.productName}`));
+  const data = candidates.filter((r) => !r.orderRef || !existingSet.has(`${r.orderRef}||${r.productName}`));
+
+  const result = data.length > 0
+    ? await prisma.purchaseHistory.createMany({ data })
+    : { count: 0 };
 
   return {
     imported: result.count,

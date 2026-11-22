@@ -125,13 +125,14 @@ describe('/api/mcp', () => {
     const json = (await list.json()) as { result: { tools: { name: string; inputSchema: { properties?: object } }[] } };
     const names = json.result.tools.map((tool) => tool.name).sort();
     assert.deepEqual(names, [
-      'add_list_items', 'approve_cart', 'approve_item', 'ask_household',
-      'check_allergens', 'compare_prices', 'confirm_list', 'connect_store',
-      'convert_list_to_cart', 'fill_cart', 'get_activity', 'get_delivery_windows',
-      'get_household', 'get_list', 'get_locked_products', 'get_pantry',
-      'get_purchase_history', 'get_store_connection_status', 'import_purchases',
-      'invite_member', 'list_member_tokens', 'open_list', 'propose_cart',
-      'redeem_invite', 'remove_list_item', 'revoke_member_token',
+      'accept_substitution', 'add_list_items', 'approve_cart', 'approve_item',
+      'ask_household', 'cancel_cart', 'check_allergens', 'compare_prices',
+      'confirm_list', 'connect_store', 'convert_list_to_cart', 'fill_cart',
+      'get_activity', 'get_delivery_windows', 'get_household', 'get_list',
+      'get_locked_products', 'get_pantry', 'get_purchase_history',
+      'get_store_connection_status', 'import_purchases', 'invite_member',
+      'list_member_tokens', 'mark_delivered', 'open_list', 'propose_cart',
+      'record_order', 'redeem_invite', 'remove_list_item', 'revoke_member_token',
       'suggest_for_list', 'update_list_item', 'whoami',
     ]);
     for (const tool of json.result.tools) {
