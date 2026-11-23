@@ -42,7 +42,7 @@ export function parseTokens(raw: string | undefined): TokenEntry[] {
 
 /**
  * Autenticación MCP. Busca en member_tokens → mcp_tokens (legacy) → env var.
- * Retorna la identidad completa: familia + integrante + rol.
+ * Si la DB no está disponible, cae al siguiente nivel sin tumbar el endpoint.
  */
 export async function authenticateMcpToken(authHeader: string | null): Promise<McpIdentity | null> {
   if (!authHeader) return null;
@@ -54,6 +54,7 @@ export async function authenticateMcpToken(authHeader: string | null): Promise<M
   const hash = digestHex(token);
 
   // 1. member_tokens (por integrante, con rol)
+  let memberFound = false;
   try {
     const row = await prisma.memberToken.findFirst({
       where: { tokenHash: hash, revokedAt: null },
@@ -68,31 +69,46 @@ export async function authenticateMcpToken(authHeader: string | null): Promise<M
         role: row.role as McpRole,
       };
     }
-  } catch { /* tabla no creada aún: continuar */ }
+    memberFound = false;
+  } catch (error) {
+    // DB no disponible (sin DATABASE_URL, conexión caída, tabla no creada):
+    // loguear y seguir con el token legacy. No tumbar el MCP.
+    console.warn('[mcp-auth] member_tokens no disponible, usando fallback:', error instanceof Error ? error.message : 'unknown');
+  }
 
   // 2. mcp_tokens (legacy por familia)
   try {
     const row = await prisma.mcpToken.findFirst({
       where: { tokenHash: hash, isActive: true },
-      select: { id: true, familyId: true },
+      select: {
+        id: true, familyId: true, memberId: true,
+        member: { select: { name: true, role: true } },
+      },
     });
     if (row) {
       prisma.mcpToken.update({ where: { id: row.id }, data: { lastUsedAt: new Date() } }).catch(() => {});
-      return { familyId: row.familyId, memberId: null, memberName: null, role: 'approver' };
+      const isMaster = row.member?.role === 'master';
+      return {
+        familyId: row.familyId,
+        memberId: row.memberId ?? null,
+        memberName: row.member?.name ?? null,
+        role: (isMaster ? 'approver' : row.memberId ? 'member' : 'approver') as McpRole,
+      };
     }
-  } catch { /* continuar */ }
+  } catch (error) {
+    console.warn('[mcp-auth] mcp_tokens no disponible, usando fallback:', error instanceof Error ? error.message : 'unknown');
+  }
 
   // 3. AVI_MCP_TOKENS env var (deprecado)
   const familyId = authenticateToken(authHeader);
   if (familyId) {
     console.warn('[mcp-auth] Token legacy por env var. Migrar a member_tokens.');
-    return { familyId, memberId: null, memberName: null, role: 'approver' };
+    return { familyId, memberId: null, memberName: null, role: 'approver' as McpRole };
   }
 
   return null;
 }
 
-/** Auth legacy contra env var. Se mantiene para compatibilidad y tests. */
 export function authenticateToken(
   authHeader: string | null,
   raw: string | undefined = process.env.AVI_MCP_TOKENS,
@@ -110,7 +126,7 @@ export function authenticateToken(
   return found;
 }
 
-/** Genera un token personal y lo guarda en member_tokens. Retorna el token plano (una sola vez). */
+/** Genera un token personal y lo guarda en member_tokens. */
 export async function generateMemberToken(
   familyId: string,
   memberId: string,
@@ -124,11 +140,13 @@ export async function generateMemberToken(
   return token;
 }
 
-/** Genera un código de invitación que vence en 72 h. */
+
+/** Genera un código de invitación que vence en 72 h. Incluye label para propagarlo al token. */
 export async function generateInviteCode(
   familyId: string,
   memberId: string,
   role: McpRole = 'member',
+  label = 'default',
 ): Promise<string> {
   const code = randomBytes(24).toString('base64url');
   await prisma.memberInvite.create({
@@ -137,28 +155,62 @@ export async function generateInviteCode(
       memberId,
       codeHash: digestHex(code),
       role,
+      label,
       expiresAt: new Date(Date.now() + INVITE_EXPIRY_MS),
     },
   });
   return code;
 }
 
-/** Redime una invitación: crea el member_token y marca la invitación como usada. */
+/**
+ * Redime una invitación de forma atómica.
+ * Usa $executeRawUnsafe para garantizar un solo uso ante canjes concurrentes.
+ */
 export async function redeemInviteCode(
   code: string,
-): Promise<{ token: string; familyId: string; memberId: string; role: string }> {
+): Promise<{ token: string; familyId: string; memberId: string; memberName: string; role: string }> {
   const hash = digestHex(code);
-  const invite = await prisma.memberInvite.findFirst({
-    where: { codeHash: hash, usedAt: null },
-    include: { member: { select: { name: true } } },
+
+  return prisma.$transaction(async (tx) => {
+    // UPDATE atómico: solo la primera transacción gana
+    const updated = await tx.$queryRaw<{ id: string; familyId: string; memberId: string; role: string; label: string }[]>`
+      UPDATE member_invites
+      SET "usedAt" = now()
+      WHERE "codeHash" = ${hash}
+        AND "usedAt" IS NULL
+        AND "expiresAt" > now()
+      RETURNING id, "familyId", "memberId", role, label
+    `;
+
+    if (updated.length === 0) {
+      throw new Error('Código inválido o vencido');
+    }
+
+    const invite = updated[0];
+    const member = await tx.familyMember.findFirst({
+      where: { id: invite.memberId },
+      select: { name: true },
+    });
+
+    const token = randomBytes(32).toString('base64url');
+    await tx.memberToken.create({
+      data: {
+        familyId: invite.familyId,
+        memberId: invite.memberId,
+        tokenHash: digestHex(token),
+        label: invite.label || member?.name || 'default',
+        role: invite.role,
+      },
+    });
+
+    return {
+      token,
+      familyId: invite.familyId,
+      memberId: invite.memberId,
+      memberName: member?.name || '',
+      role: invite.role,
+    };
   });
-  if (!invite) throw new Error('Código de invitación inválido o ya usado');
-  if (invite.expiresAt < new Date()) throw new Error('La invitación expiró. Pide una nueva al aprobador.');
-
-  const token = await generateMemberToken(invite.familyId, invite.memberId, invite.role as McpRole, invite.member.name);
-  await prisma.memberInvite.update({ where: { id: invite.id }, data: { usedAt: new Date() } });
-
-  return { token, familyId: invite.familyId, memberId: invite.memberId, role: invite.role };
 }
 
 /** DEPRECATED: Genera token legacy en mcp_tokens. Usar generateMemberToken. */
