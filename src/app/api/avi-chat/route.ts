@@ -125,7 +125,7 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
   update_list_item: (c, a) => updateListItem(c.familyId, a.itemId as string, a as any),
   remove_list_item: (c, a) => removeListItem(c.familyId, a.itemId as string),
   suggest_for_list: (c, a) => suggestForList(c.familyId, a.listId as string),
-  ask_household: (c, a) => askHousehold(c.familyId, a.listId as string, a.question as string, a.toMemberIds as string[] | undefined, c.memberId),
+  ask_household: (c, a) => askHousehold(c.familyId, a.listId as string, a.question as string, c.memberId, a.toMemberIds as string[] | undefined),
   import_purchases: (c, a) => { approverOnly(c); return importPurchases(c.familyId, a as any); },
 
   // Approver-only
@@ -140,17 +140,17 @@ const TOOL_HANDLERS: Record<string, ToolHandler> = {
   mark_delivered: (c, a) => { approverOnly(c); return markDelivered(c.familyId, a.cartId as string, c.memberId, (a.adjustments as any) || undefined); },
   accept_substitution: (c, a) => { approverOnly(c); return saveSubstitutionPreference(c.familyId, a.original as string, a.substitute as string, a.accepted as boolean); },
   confirm_list: (c) => { approverOnly(c); return confirmList(c.familyId, c.memberId); },
-  convert_list_to_cart: (c, a) => { approverOnly(c); return convertListToCart(c.familyId, a.store as string, c.memberId); },
+  convert_list_to_cart: (c, a) => { approverOnly(c); return convertListToCart(c.familyId, a.store as 'jumbo' | 'lider' | 'unimarc' | 'tottus', c.memberId); },
   invite_member: async (c, a) => {
     approverOnly(c);
     const member = await prisma.familyMember.findFirst({ where: { id: a.memberId as string, familyId: c.familyId, isActive: true }, select: { id: true, name: true, role: true } });
     if (!member) throw new Error('No encontré ese integrante en la familia');
-    const role = (a.role as string) || 'member';
+    const role = ((a.role as string) || 'member') as 'approver' | 'member' | 'viewer';
     if (role === 'approver') {
       const ok = await isFamilyApproverById(member.id, c.familyId);
       if (!ok) throw new Error(`${member.name} no es aprobador/a. Invítalo como member o viewer.`);
     }
-    const code = await generateInviteCode(c.familyId, member.id, role, a.label as string || member.name);
+    const code = await generateInviteCode(c.familyId, member.id, role, (a.label as string) || member.name);
     return { memberId: member.id, memberName: member.name, role, code, expiresIn: '72 horas' };
   },
   list_member_tokens: async (c) => {
