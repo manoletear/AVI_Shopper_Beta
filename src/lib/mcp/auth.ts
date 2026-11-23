@@ -13,14 +13,6 @@ export interface McpIdentity {
   role: McpRole;
 }
 
-export class McpAuthDbError extends Error {
-  readonly dbCause: unknown;
-  constructor(cause: unknown) {
-    super('Error de base de datos en autenticación MCP');
-    this.dbCause = cause;
-  }
-}
-
 function digestHex(value: string): string {
   return createHash('sha256').update(value, 'utf8').digest('hex');
 }
@@ -50,7 +42,7 @@ export function parseTokens(raw: string | undefined): TokenEntry[] {
 
 /**
  * Autenticación MCP. Busca en member_tokens → mcp_tokens (legacy) → env var.
- * Si la DB lanza un error real, lanza McpAuthDbError → ruta responde 503.
+ * Si la DB no está disponible, cae al siguiente nivel sin tumbar el endpoint.
  */
 export async function authenticateMcpToken(authHeader: string | null): Promise<McpIdentity | null> {
   if (!authHeader) return null;
@@ -95,7 +87,13 @@ export async function authenticateMcpToken(authHeader: string | null): Promise<M
     });
     if (row) {
       prisma.mcpToken.update({ where: { id: row.id }, data: { lastUsedAt: new Date() } }).catch(() => {});
-      return { familyId: row.familyId, memberId: null, memberName: null, role: 'approver' as McpRole };
+      const isMaster = row.member?.role === 'master';
+      return {
+        familyId: row.familyId,
+        memberId: row.memberId ?? null,
+        memberName: row.member?.name ?? null,
+        role: (isMaster ? 'approver' : row.memberId ? 'member' : 'approver') as McpRole,
+      };
     }
   } catch (error) {
     console.warn('[mcp-auth] mcp_tokens no disponible, usando fallback:', error instanceof Error ? error.message : 'unknown');

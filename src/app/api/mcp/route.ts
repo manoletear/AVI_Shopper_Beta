@@ -357,70 +357,11 @@ function createServer(familyId: string, identity: McpIdentity) {
       }),
     );
 
-    server.registerTool(
-      'compare_prices',
-      {
-        description: 'Compara precios en Jumbo, Lider, Unimarc y Tottus. Incluye delivery. Sugiere la tienda más barata o dividir entre dos.',
-        inputSchema: {
-          products: z.array(z.object({
-            groupKey: z.string(),
-            quantity: z.number().positive(),
-          })).min(1).max(50),
-        },
-      },
-      (args) => run(() => comparePrices(familyId, args)),
-    );
   }
 
   // ── Solo aprobadores ──
 
   if (identity.role === 'approver') {
-    server.registerTool(
-      'approve_item',
-      {
-        description: 'Aprueba o rechaza un ítem del carro propuesto. Solo aprobadores.',
-        inputSchema: approveItemShape,
-      },
-      (args) => run(() => approveItem(familyId, args)),
-    );
-
-    server.registerTool(
-      'approve_cart',
-      {
-        description: 'Aprueba el carro propuesto completo. Solo aprobadores. AVI no paga.',
-        inputSchema: approveCartShape,
-      },
-      (args) => run(async () => {
-        const result = await approveCart(familyId, args);
-        if (identity.memberId) {
-          await prisma.proposedCart.update({
-            where: { id: args.cartId },
-            data: { approvedByMemberId: identity.memberId, approvedAt: new Date() },
-          }).catch(() => {});
-        }
-        await logActivity(familyId, identity.memberId, 'approved_cart', 'proposed_cart', args.cartId);
-        notifyOtherApprovers(
-          familyId, identity.memberId,
-          `✅ Carro aprobado por ${identity.memberName || 'un aprobador'}`,
-          `El carro fue aprobado. La familia puede revisar y pagar.\n\nhttps://avi-shopper-beta.vercel.app/carro/${args.cartId}`,
-        );
-        return result;
-      }),
-    );
-
-    server.registerTool(
-      'fill_cart',
-      {
-        description: 'Llena el carro real en la tienda. Solo aprobadores. NUNCA hace checkout.',
-        inputSchema: fillCartShape,
-      },
-      (args) => run(async () => {
-        const result = await fillStoreCart(familyId, args.cartId);
-        await logActivity(familyId, identity.memberId, 'filled_cart', 'proposed_cart', args.cartId);
-        return result;
-      }),
-    );
-
     server.registerTool(
       'cancel_cart',
       {

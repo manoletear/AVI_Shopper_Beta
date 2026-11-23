@@ -43,11 +43,12 @@ describe('Multi-user — role matrix', () => {
     ...MEMBER_TOOLS,
     'approve_item', 'approve_cart', 'fill_cart',
     'connect_store', 'import_purchases',
+    'cancel_cart', 'record_order', 'mark_delivered', 'accept_substitution',
     'invite_member', 'list_member_tokens', 'revoke_member_token',
   ];
 
-  it('approver tiene 19 herramientas (redeem_invite es endpoint público aparte)', () => {
-    assert.equal(APPROVER_TOOLS.length, 19);
+  it('approver tiene 23 herramientas', () => {
+    assert.equal(APPROVER_TOOLS.length, 23);
   });
 
   it('member tiene 11 herramientas', () => {
@@ -141,12 +142,3 @@ describe('Multi-user — rate limit logic', () => {
   });
 });
 
-describe('Multi-user — McpAuthDbError', () => {
-  it('McpAuthDbError is importable and has correct message', async () => {
-    const { McpAuthDbError } = await import('../../src/lib/mcp/auth');
-    const err = new McpAuthDbError(new Error('connection refused'));
-    assert.ok(err instanceof Error);
-    assert.ok(err.message.includes('base de datos'));
-    assert.ok(err.dbCause instanceof Error);
-  });
-});
