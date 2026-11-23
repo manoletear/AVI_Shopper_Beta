@@ -129,9 +129,12 @@ describe('/api/mcp', () => {
       'compare_prices', 'connect_store', 'fill_cart', 'get_activity', 'get_delivery_windows',
       'get_household', 'get_locked_products', 'get_pantry', 'get_purchase_history',
       'get_store_connection_status', 'import_purchases', 'invite_member', 'list_member_tokens',
-      'mark_delivered', 'propose_cart', 'record_order', 'redeem_invite', 'revoke_member_token',
-      'whoami',
+      'mark_delivered', 'propose_cart', 'record_order', 'revoke_member_token', 'whoami',
     ]);
+    // No duplicate tools
+    const duplicates = names.filter((n, i) => names.indexOf(n) !== i);
+    assert.deepEqual(duplicates, [], 'Duplicate tool registrations found');
+
     for (const tool of json.result.tools) {
       assert.equal(Object.keys(tool.inputSchema.properties ?? {}).includes('familyId'), false, tool.name);
     }
