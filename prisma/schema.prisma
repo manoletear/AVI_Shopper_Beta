@@ -407,6 +407,7 @@ model Family {
   memberTokens MemberToken[]
   memberInvites MemberInvite[]
   activity     FamilyActivity[]
+  familyShoppingLists FamilyShoppingList[]
 
   @@map("families")
 }
@@ -450,6 +451,10 @@ model FamilyMember {
   approvedCarts  ProposedCart[] @relation("ApprovedByMember")
   approvedItems  ProposedCartItem[] @relation("ItemApprovedByMember")
   cancelledCarts ProposedCart[] @relation("CancelledByMember")
+  createdShoppingLists    FamilyShoppingList[]             @relation("FamilyShoppingListCreator")
+  requestedShoppingItems  FamilyShoppingListItem[]         @relation("FamilyShoppingListItemRequester")
+  shoppingListConfirmations FamilyShoppingListConfirmation[] @relation("FamilyShoppingListConfirmer")
+  shoppingListMessages    FamilyShoppingListMessage[]      @relation("FamilyShoppingListMessageAuthor")
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -752,6 +757,7 @@ model ProposedCart {
   items         ProposedCartItem[]
   alerts        ReplenishmentAlert[]
   fills         StoreCartFill[]
+  shoppingList  FamilyShoppingList?
   orderLines    OrderLine[]
 
   @@index([familyId, status])
@@ -1041,6 +1047,82 @@ model MemberInvite {
   createdAt DateTime  @default(now())
 
   @@map("member_invites")
+}
+
+// Lista familiar de compras. Flujo: nana pide → AVI consolida → aprobadores confirman → carro.
+model FamilyShoppingList {
+  id                 String   @id @default(cuid())
+  familyId           String
+  family             Family   @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  status             String   @default("open")
+  title              String?
+  storeHint          String?
+  targetDate         DateTime? @db.Date
+  createdByMemberId  String?
+  createdByMember    FamilyMember? @relation("FamilyShoppingListCreator", fields: [createdByMemberId], references: [id], onDelete: SetNull)
+  cartId             String?  @unique
+  cart               ProposedCart? @relation(fields: [cartId], references: [id], onDelete: SetNull)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @default(now()) @updatedAt
+
+  items              FamilyShoppingListItem[]
+  confirmations      FamilyShoppingListConfirmation[]
+  messages           FamilyShoppingListMessage[]
+
+  @@index([familyId, status])
+  @@map("family_shopping_lists")
+}
+
+model FamilyShoppingListItem {
+  id                  String   @id @default(cuid())
+  listId              String
+  list                FamilyShoppingList @relation(fields: [listId], references: [id], onDelete: Cascade)
+  rawText             String
+  normalizedName      String?
+  brand               String?
+  size                String?
+  quantity            Float    @default(1)
+  unitPriceClp        Int?
+  priceSource         String?
+  requestedByMemberId String?
+  requestedByMember   FamilyMember? @relation("FamilyShoppingListItemRequester", fields: [requestedByMemberId], references: [id], onDelete: SetNull)
+  requestedByLabel    String?
+  source              String   @default("member")
+  status              String   @default("pending")
+  allergenWarnings    Json     @default("[]")
+  note                String?
+  groupKey            String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @default(now()) @updatedAt
+
+  @@index([listId])
+  @@map("family_shopping_list_items")
+}
+
+model FamilyShoppingListConfirmation {
+  listId      String
+  list        FamilyShoppingList @relation(fields: [listId], references: [id], onDelete: Cascade)
+  memberId    String
+  member      FamilyMember @relation("FamilyShoppingListConfirmer", fields: [memberId], references: [id], onDelete: Cascade)
+  confirmedAt DateTime @default(now())
+
+  @@id([listId, memberId])
+  @@map("family_shopping_list_confirmations")
+}
+
+model FamilyShoppingListMessage {
+  id              String   @id @default(cuid())
+  listId          String
+  list            FamilyShoppingList @relation(fields: [listId], references: [id], onDelete: Cascade)
+  authorMemberId  String?
+  authorMember    FamilyMember? @relation("FamilyShoppingListMessageAuthor", fields: [authorMemberId], references: [id], onDelete: SetNull)
+  authorLabel     String?
+  kind            String
+  body            String
+  createdAt       DateTime @default(now())
+
+  @@index([listId, createdAt])
+  @@map("family_shopping_list_messages")
 }
 
 // Log de actividad: quién hizo qué en la familia.

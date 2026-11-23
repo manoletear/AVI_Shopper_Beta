@@ -29,6 +29,17 @@ import {
   proposeCart,
 } from '@/lib/mcp/tools';
 import {
+  openList,
+  addListItems,
+  getList,
+  updateListItem,
+  removeListItem,
+  suggestForList,
+  askHousehold,
+  confirmList,
+  convertListToCart,
+} from '@/services/shopping-list.service';
+import {
   cancelCart,
   recordOrder,
   markDelivered,
@@ -183,6 +194,14 @@ function createServer(familyId: string, identity: McpIdentity) {
         take: 50,
       });
     }),
+  );
+
+  server.registerTool(
+    'get_list',
+    {
+      description: 'Muestra la lista de compras familiar con precios estimados, alérgenos, quién pidió cada cosa y quién falta por confirmar. Úsala antes de proponer un carro.',
+    },
+    () => run(() => getList(familyId)),
   );
 
   // ── Lectura + escritura: approver + member ──
@@ -357,6 +376,114 @@ function createServer(familyId: string, identity: McpIdentity) {
       }),
     );
 
+    // ── Lista familiar: approver + member ──
+
+    server.registerTool(
+      'open_list',
+      {
+        description: 'Abre o retoma la lista de compras de la familia. Solo hay una lista abierta a la vez. Si ya existe, la devuelve.',
+        inputSchema: {
+          title: z.string().optional().describe('Nombre de la lista, ej: "Compra del mes" o "Asado del domingo"'),
+          targetDate: z.string().optional().describe('Fecha objetivo ISO, ej: "2026-11-20"'),
+        },
+      },
+      (args) => run(async () => {
+        const result = await openList(familyId, identity.memberId, args);
+        await logActivity(familyId, identity.memberId, 'opened_list', 'family_shopping_list', result.id);
+        return result;
+      }),
+    );
+
+    server.registerTool(
+      'add_list_items',
+      {
+        description: 'Agrega productos a la lista. AVI normaliza contra el historial: busca la marca, formato y precio habitual. Si hay ambigüedad pregunta. Revisa alérgenos.',
+        inputSchema: {
+          items: z.array(z.object({
+            rawText: z.string().min(1).describe('Lo que dijo la persona, ej: "Quik lava losa", "leche 2 litros"'),
+            qty: z.number().positive().optional().default(1),
+            requestedByLabel: z.string().optional().describe('Quién lo pidió si no tiene token, ej: "Nana", "Raimundo"'),
+          })).min(1).max(30),
+        },
+      },
+      (args) => run(async () => {
+        const list = await prisma.familyShoppingList.findFirst({
+          where: { familyId, status: 'open' },
+          select: { id: true },
+        });
+        if (!list) throw new McpToolError('No hay una lista abierta. Usa open_list primero.');
+        const result = await addListItems(familyId, list.id, args.items, identity.memberId);
+        await logActivity(familyId, identity.memberId, 'added_list_items', 'family_shopping_list', list.id, {
+          count: result.added.length, questions: result.questions.length,
+        });
+        if (result.added.length > 0) {
+          const names = result.added.map((i: any) => i.normalizedName || i.rawText).slice(0, 5).join(', ');
+          notifyOtherApprovers(
+            familyId, identity.memberId,
+            `🛒 ${identity.memberName || 'Alguien'} agregó ${result.added.length} producto${result.added.length > 1 ? 's' : ''} a la lista`,
+            `${identity.memberName || 'Un integrante'} agregó a la lista: ${names}${result.added.length > 5 ? '...' : ''}\n\nRevisa y confirma cuando estés listo.`,
+          );
+        }
+        return result;
+      }),
+    );
+
+    server.registerTool(
+      'update_list_item',
+      {
+        description: 'Modifica cantidad, estado (accepted/rejected) o nota de un ítem de la lista.',
+        inputSchema: {
+          itemId: z.string().min(1),
+          qty: z.number().positive().optional(),
+          status: z.enum(['pending', 'accepted', 'rejected']).optional(),
+          note: z.string().optional(),
+        },
+      },
+      (args) => run(() => updateListItem(familyId, args.itemId, args)),
+    );
+
+    server.registerTool(
+      'remove_list_item',
+      {
+        description: 'Elimina un ítem de la lista.',
+        inputSchema: { itemId: z.string().min(1) },
+      },
+      (args) => run(() => removeListItem(familyId, args.itemId)),
+    );
+
+    server.registerTool(
+      'suggest_for_list',
+      {
+        description: 'AVI revisa la despensa y sugiere productos agotados que no están en la lista. No los agrega — solo los propone para que la familia decida.',
+      },
+      () => run(async () => {
+        const list = await prisma.familyShoppingList.findFirst({
+          where: { familyId, status: 'open' },
+          select: { id: true },
+        });
+        if (!list) throw new McpToolError('No hay una lista abierta.');
+        return suggestForList(familyId, list.id);
+      }),
+    );
+
+    server.registerTool(
+      'ask_household',
+      {
+        description: 'Pregunta a la familia por la lista: "¿falta algo?", "¿queda detergente?", "¿alguien necesita algo?". Envía la pregunta por email a los aprobadores.',
+        inputSchema: {
+          question: z.string().min(1).max(500),
+          toMemberIds: z.array(z.string()).optional().describe('IDs de miembros específicos. Si no se indica, se pregunta a todos los aprobadores.'),
+        },
+      },
+      (args) => run(async () => {
+        const list = await prisma.familyShoppingList.findFirst({
+          where: { familyId, status: { in: ['open', 'consolidating'] } },
+          select: { id: true },
+        });
+        if (!list) throw new McpToolError('No hay una lista abierta.');
+        return askHousehold(familyId, list.id, args.question, identity.memberId, args.toMemberIds);
+      }),
+    );
   }
 
   // ── Solo aprobadores ──
@@ -521,6 +648,43 @@ function createServer(familyId: string, identity: McpIdentity) {
           memberName: token.member.name,
         });
         return { revoked: true, memberName: token.member.name };
+      }),
+    );
+
+    // ── Lista familiar: solo aprobadores ──
+
+    server.registerTool(
+      'confirm_list',
+      {
+        description: 'Confirma la lista de compras. Cuando TODOS los aprobadores confirman, la lista queda lista para convertir en carro. Solo aprobadores.',
+      },
+      () => run(async () => {
+        if (!identity.memberId) throw new McpToolError('Necesitas un token personal para confirmar');
+        const result = await confirmList(familyId, identity.memberId);
+        await logActivity(familyId, identity.memberId, 'confirmed_list', 'family_shopping_list', result.listId);
+        return result;
+      }),
+    );
+
+    server.registerTool(
+      'convert_list_to_cart',
+      {
+        description: 'Convierte la lista confirmada en un carro propuesto en la tienda elegida. Solo si todos los aprobadores ya confirmaron. AVI no paga.',
+        inputSchema: {
+          store: z.enum(['jumbo', 'lider', 'unimarc', 'tottus']).describe('Supermercado donde armar el carro'),
+        },
+      },
+      (args) => run(async () => {
+        const result = await convertListToCart(familyId, args.store, identity.memberId);
+        await logActivity(familyId, identity.memberId, 'converted_list', 'family_shopping_list', result.listId, {
+          cartId: result.cartId, store: result.store,
+        });
+        notifyOtherApprovers(
+          familyId, identity.memberId,
+          `🛒 Lista convertida en carro — ${result.store} $${result.subtotal.toLocaleString('es-CL')}`,
+          `La lista fue convertida en un carro propuesto en ${result.store}. Revísalo y apruébalo.\n\nhttps://avi-shopper-beta.vercel.app/carro/${result.cartId}`,
+        );
+        return result;
       }),
     );
   }
