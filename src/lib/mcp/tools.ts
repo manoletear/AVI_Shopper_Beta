@@ -13,6 +13,7 @@ import type {
   PantryItem,
   ProposeCartInput,
   ProposedCartResult,
+  RecordOrderInput,
 } from '@/types/mcp';
 
 /**
@@ -388,6 +389,173 @@ export async function getPurchaseHistory(
       appliedAt: r.appliedAt?.toISOString() ?? null,
       applied: !!r.appliedAt,
     })),
+  };
+}
+
+/**
+ * Marca los carros AVI indicados como "ordered" (la familia ya hizo y pagó el pedido en la tienda).
+ * Solo toca carros de esta familia. Devuelve los ids efectivamente actualizados.
+ */
+async function markCartsOrdered(
+  familyId: string,
+  cartIds: string[] | undefined,
+  orderRef: string,
+): Promise<string[]> {
+  if (!cartIds?.length) return [];
+  const carts = await prisma.proposedCart.findMany({
+    where: { id: { in: cartIds }, familyId },
+    select: { id: true },
+  });
+  if (!carts.length) return [];
+  await prisma.proposedCart.updateMany({
+    where: { id: { in: carts.map((c) => c.id) }, familyId },
+    data: { status: 'ordered', note: `Pedido realizado en la tienda (orderRef ${orderRef}). AVI no pagó.` },
+  });
+  return carts.map((c) => c.id);
+}
+
+/**
+ * Crea/actualiza la fila en orders para que el gasto se refleje en los KPIs.
+ * Id determinista por orderRef → idempotente. Devuelve null si falta la tienda en el catálogo.
+ */
+async function upsertOrderRow(
+  userId: string,
+  input: RecordOrderInput,
+  orderRef: string,
+  purchasedAt: Date,
+): Promise<{ id: string } | null> {
+  const store = await prisma.store.findUnique({ where: { slug: input.store }, select: { id: true } });
+  if (!store) return null;
+  const id = `ord_${orderRef}`;
+  const items = JSON.stringify(
+    input.lines.map((line) => ({
+      name: line.name,
+      quantity: line.quantity,
+      unit: line.unit,
+      unitPrice: line.unitPriceClp ?? null,
+    })),
+  );
+  const delivery = input.deliveryFee ?? 0;
+  const subtotal = input.subtotal ?? Math.max(0, input.total - delivery);
+  const deliveredAt = input.deliveredAt ? new Date(input.deliveredAt) : null;
+  const status = deliveredAt ? 'delivered' : 'confirmed';
+  return prisma.order.upsert({
+    where: { id },
+    update: { status, subtotal, delivery, total: input.total, deliveredAt },
+    create: {
+      id,
+      userId,
+      storeId: store.id,
+      status,
+      items,
+      subtotal,
+      delivery,
+      total: input.total,
+      eta: null,
+      deliveredAt,
+      createdAt: purchasedAt,
+    },
+    select: { id: true },
+  });
+}
+
+/**
+ * Registra un pedido YA comprado y pagado por la familia: historial de líneas (purchase_history),
+ * la orden para KPIs (orders) y marca los carros asociados como "ordered".
+ * Idempotente por orderRef: si ya está registrado, no duplica (actualiza/vincula y vuelve con status "exists").
+ * AVI no paga ni hace checkout: esto solo deja constancia de lo que la familia ya compró.
+ */
+export async function recordOrder(familyId: string, input: RecordOrderInput) {
+  const family = await prisma.family.findUnique({
+    where: { id: familyId },
+    include: {
+      members: {
+        where: { isActive: true, userId: { not: null } },
+        orderBy: [{ role: 'asc' }, { createdAt: 'asc' }],
+        select: { role: true, userId: true },
+      },
+    },
+  });
+  if (!family) throw new McpToolError('No encontré la familia de este token');
+  const owner = family.members.find((m) => m.role === 'master') ?? family.members[0];
+  if (!owner?.userId) {
+    throw new McpToolError('La familia no tiene un integrante con cuenta para asociar la compra');
+  }
+  const userId = owner.userId;
+
+  const storeName = STORE_LABELS[input.store];
+  const orderRef = input.orderRef;
+  // "v244113174jmch-01" también cubre el alias corto "v244113174jmch" para no duplicar.
+  const shortRef = orderRef.replace(/-\d+$/, '');
+  const refs = Array.from(new Set([orderRef, shortRef]));
+  const purchasedAt = input.placedAt ? new Date(input.placedAt) : new Date();
+
+  const existing = await prisma.purchaseHistory.findMany({
+    where: { familyId, orderRef: { in: refs } },
+    select: { id: true },
+  });
+
+  if (existing.length > 0) {
+    // Ya registrado: normaliza al orderRef canónico y asegura carros/orden. No inserta líneas.
+    await prisma.purchaseHistory.updateMany({
+      where: { familyId, orderRef: { in: refs } },
+      data: { orderRef },
+    });
+    const cartsUpdated = await markCartsOrdered(familyId, input.cartIds, orderRef);
+    const order = await upsertOrderRow(userId, input, orderRef, purchasedAt);
+    return {
+      orderRef,
+      store: storeName,
+      status: 'exists' as const,
+      lines: existing.length,
+      inserted: 0,
+      cartsUpdated,
+      orderId: order?.id ?? null,
+      total: input.total,
+    };
+  }
+
+  const created = await prisma.purchaseHistory.createMany({
+    data: input.lines.map((line) => ({
+      userId,
+      familyId,
+      orderRef,
+      productName: line.name,
+      brand: line.brand ?? null,
+      category: line.category ?? null,
+      storeSlug: input.store,
+      storeName,
+      price: line.unitPriceClp ?? null,
+      quantity: line.quantity,
+      unit: line.unit,
+      canonicalProductId: line.canonicalProductId ?? null,
+      source: 'order',
+      purchasedAt,
+    })),
+  });
+  const cartsUpdated = await markCartsOrdered(familyId, input.cartIds, orderRef);
+  const order = await upsertOrderRow(userId, input, orderRef, purchasedAt);
+
+  // Alimenta despensa y perfiles. No bloquea el registro si falla.
+  let pantryApplied = 0;
+  try {
+    const result = await applyPendingPurchases();
+    pantryApplied = result.applied;
+    await refreshProfiles();
+  } catch (error) {
+    console.warn('[recordOrder] no pude aplicar compras a la despensa:', error instanceof Error ? error.message : 'unknown');
+  }
+
+  return {
+    orderRef,
+    store: storeName,
+    status: 'recorded' as const,
+    lines: created.count,
+    inserted: created.count,
+    cartsUpdated,
+    orderId: order?.id ?? null,
+    total: input.total,
+    pantryApplied,
   };
 }
 

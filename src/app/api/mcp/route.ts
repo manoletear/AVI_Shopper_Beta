@@ -16,6 +16,7 @@ import {
   getPurchaseHistory,
   McpToolError,
   proposeCart,
+  recordOrder,
 } from '@/lib/mcp/tools';
 import {
   approveCartShape,
@@ -24,6 +25,7 @@ import {
   deliveryWindowsShape,
   fillCartShape,
   proposeCartShape,
+  recordOrderShape,
 } from '@/types/mcp';
 
 export const runtime = 'nodejs';
@@ -151,6 +153,16 @@ function createServer(familyId: string) {
       },
     },
     (args) => run(() => getPurchaseHistory(familyId, args)),
+  );
+
+  server.registerTool(
+    'record_order',
+    {
+      description:
+        'Registra un pedido YA comprado y pagado por la familia en la tienda: guarda las líneas en el historial, deja la orden para los KPIs y marca los carros asociados como "ordered". Idempotente por orderRef (no duplica). Usa el total realmente cobrado, no el checkout inicial. AVI no paga ni hace checkout; solo deja constancia.',
+      inputSchema: recordOrderShape,
+    },
+    (args) => run(() => recordOrder(familyId, args)),
   );
 
   return server;

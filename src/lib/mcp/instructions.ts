@@ -31,6 +31,12 @@ Si el carro se llena, la familia revisa y paga ella misma en la tienda.
 - Llama check_allergens para cada producto que tenga ficha nutricional.
 - Si hay alérgenos que afectan a un miembro, AVISA en el carro. No bloquees.
 
+## Registrar un pedido ya comprado
+- Cuando la familia ya hizo y pagó el pedido en la tienda, usa record_order para dejarlo en el historial.
+- Usa el total REALMENTE cobrado (incluye cobros adicionales), no el checkout inicial.
+- Es idempotente por orderRef: no se duplica si ya lo registraste.
+- Si no conoces el precio unitario de una línea, déjalo en null; nunca lo inventes.
+
 ## Conexión de tienda
 - Si la familia no tiene cuenta de supermercado conectada, usa connect_store.
 - Las credenciales se usan una vez y se descartan. Solo cookies cifradas se guardan.

@@ -26,6 +26,39 @@ export const checkAllergensShape = {
   productNutritionId: z.string().trim().min(1),
 };
 
+// Registrar un pedido YA comprado y pagado por la familia (historial real, no una propuesta).
+// Idempotente por orderRef: no duplica si ya se registró.
+export const recordOrderLineSchema = z.object({
+  name: z.string().trim().min(1).max(200),
+  quantity: z.number().positive().max(9999),
+  unit: z.string().trim().min(1).max(20).default('un'),
+  // Precio unitario en CLP. null/omitido cuando no se conoce (p. ej. Vanish recarga).
+  unitPriceClp: z.number().int().nonnegative().max(10_000_000).nullable().optional(),
+  brand: z.string().trim().max(120).optional(),
+  category: z.string().trim().max(120).optional(),
+  barcode: z.string().trim().max(40).optional(),
+  canonicalProductId: z.string().trim().min(1).optional(),
+});
+export type RecordOrderLineInput = z.infer<typeof recordOrderLineSchema>;
+
+export const recordOrderShape = {
+  store: z.enum(STORE_NAMES),
+  // Referencia única del pedido en la tienda (canónica, p. ej. "v244113174jmch-01").
+  orderRef: z.string().trim().min(1).max(120),
+  placedAt: z.string().trim().min(1).optional(),
+  deliveredAt: z.string().trim().min(1).optional(),
+  // Total REALMENTE cobrado en CLP (incluye cobros adicionales), no el checkout inicial.
+  total: z.number().int().nonnegative().max(100_000_000),
+  subtotal: z.number().int().nonnegative().max(100_000_000).optional(),
+  deliveryFee: z.number().int().nonnegative().max(10_000_000).optional(),
+  // Carros AVI asociados; se marcan como "ordered" si existen en la familia.
+  cartIds: z.array(z.string().trim().min(1)).max(20).optional(),
+  lines: z.array(recordOrderLineSchema).min(1).max(300),
+  note: z.string().trim().max(1000).optional(),
+};
+export const recordOrderSchema = z.object(recordOrderShape);
+export type RecordOrderInput = z.infer<typeof recordOrderSchema>;
+
 export const approveItemShape = {
   cartId: z.string().trim().min(1),
   itemId: z.string().trim().min(1),
